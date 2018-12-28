@@ -16,12 +16,13 @@ For now, only some GET part of the API are handled. It means you cannot alter da
 
 class Vr900Connector:
 
-    def __init__(self, user, password, smartphone_id=None, base_url=None, file_dir=None):
+    def __init__(self, user, password, smartphone_id=constant.DEFAULT_SMARTPHONE_ID,
+                 base_url=constant.DEFAULT_BASE_URL, file_dir=constant.DEFAULT_FILES_DIR):
         self.user = user
         self.password = password
-        self.smartphoneId = smartphone_id if smartphone_id is not None else constant.DEFAULT_SMARTPHONE_ID
-        self.baseUrl = base_url if base_url is not None else constant.DEFAULT_BASE_URL
-        self.fileDir = file_dir if file_dir is not None else constant.DEFAULT_FILES_DIR
+        self.smartphoneId = smartphone_id
+        self.baseUrl = base_url
+        self.fileDir = file_dir
         self.headers = {"content-type": "application/json"}
         self.__serialNumber = self.__load_serial_number_from_file()
         self.__session = self.__create_session()
