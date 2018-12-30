@@ -1,8 +1,7 @@
 from vr900connector import constant
 from vr900connector.vr900connectorerror import Vr900ConnectorError
+from vr900connector.fileutils import FileUtils
 import requests
-import pickle
-import os
 import logging
 
 logger = logging.getLogger('Vr900Connector')
@@ -27,31 +26,35 @@ class Vr900Connector:
         self.__serialNumber = self.__load_serial_number_from_file()
         self.__session = self.__create_session()
 
-    def facilities(self):
+    def get_facilities(self):
         return self.__secure_call('GET', self.baseUrl + constant.FACILITIES_URL)
 
-    def live_report(self):
-        return self.__secure_call('GET', self.baseUrl +
-                                  constant.LIVE_REPORT_URL.replace("{serialNumber}", self.__serialNumber))
+    def get_live_report(self):
+        return self.__secure_call('GET', self.baseUrl + constant.LIVE_REPORT_URL)
 
-    def system_status(self):
-        return self.__secure_call('GET', self.baseUrl +
-                                  constant.SYSTEM_STATUS_URL.replace("{serialNumber}", self.__serialNumber))
+    def get_system_status(self):
+        return self.__secure_call('GET', self.baseUrl + constant.SYSTEM_STATUS_URL)
 
-    def hvac_status(self):
-        return self.__secure_call('GET', self.baseUrl + constant.HVAC_STATUS_URL)
+    def get_hvac_state(self):
+        return self.__secure_call('GET', self.baseUrl + constant.HVAC_STATE_URL)
 
     def get_rooms(self):
-        return self.__secure_call('GET', self.baseUrl +
-                                  constant.ROOMS_URl.replace("{serialNumber}", self.__serialNumber))
+        return self.__secure_call('GET', self.baseUrl + constant.ROOMS_URl)
 
-    def system_control(self):
-        return self.__secure_call('GET', self.baseUrl +
-                                  constant.SYSTEM_CONTROL_URL.replace("{serialNumber}", self.__serialNumber))
+    def get_room(self, index):
+        return self.__secure_call('GET', self.baseUrl + constant.ROOMS_URl + "/" + str(index))
+
+    def get_zones(self):
+        return self.__secure_call('GET', self.baseUrl + constant.ZONES_URL)
+
+    def get_system_control(self):
+        return self.__secure_call('GET', self.baseUrl + constant.SYSTEM_CONTROL_URL)
 
     def __secure_call(self, method, url):
+        response = None
         try:
             self.__login()
+            url = url.replace("{serialNumber}", self.__serialNumber)
             response = self.__session.request(method, url)
 
             if response.status_code > 499:
@@ -62,7 +65,7 @@ class Vr900Connector:
             raise
         except Exception as e:
             logger.exception("Cannot %s url: %s", method, url)
-            raise Vr900ConnectorError(str(e), None)
+            raise Vr900ConnectorError(str(e), response)
         finally:
             self.__close_session()
 
@@ -88,9 +91,7 @@ class Vr900Connector:
                         raise Vr900ConnectorError("Logging test failed, relogin=" + str(relogin), testLoginResponse)
                     else:
                         logger.info("Cookie and serial files are outdated, re-logging")
-                        self.__delete_file(self.fileDir + '/' + constant.DEFAULT_SERIAL_NUMBER_FILE_NAME)
-                        self.__delete_file(self.fileDir + '/' + constant.DEFAULT_COOKIE_FILE_NAME)
-                        self.__session = requests.session()
+                        self.__clear_session()
                         self.__login(True)
                 else:
                     logger.debug("... session is ok")
@@ -148,48 +149,34 @@ class Vr900Connector:
     def __create_session(self):
         session = requests.session()
         cookies = self.__load_cookies_from_file()
-        logging.debug("Found cookies %s", cookies)
+        logger.debug("Found cookies %s", cookies)
         if cookies is not None:
             session.cookies = cookies
         return session
 
+    def __clear_session(self):
+        self.__clear_cookie()
+        self.__clear_serial_numbr()
+        self.__session = requests.session()
+
     def __close_session(self):
-        logging.debug("Closing session")
+        logger.debug("Closing session")
         self.__session.close()
 
     def __save_cookies_to_file(self):
-        self.__save_to_file(self.__session.cookies, constant.DEFAULT_COOKIE_FILE_NAME, self.fileDir)
+        FileUtils.save_to_file(self.__session.cookies, constant.DEFAULT_COOKIE_FILE_NAME, self.fileDir)
 
     def __save_serial_number_to_file(self):
-        self.__save_to_file(self.__serialNumber, constant.DEFAULT_SERIAL_NUMBER_FILE_NAME, self.fileDir)
+        FileUtils.save_to_file(self.__serialNumber, constant.DEFAULT_SERIAL_NUMBER_FILE_NAME, self.fileDir)
 
     def __load_cookies_from_file(self):
-        return self.__load_from_file(self.fileDir + constant.DEFAULT_COOKIE_FILE_NAME)
+        return FileUtils.load_from_file(self.fileDir + constant.DEFAULT_COOKIE_FILE_NAME)
 
     def __load_serial_number_from_file(self):
-        return self.__load_from_file(self.fileDir + constant.DEFAULT_SERIAL_NUMBER_FILE_NAME)
+        return FileUtils.load_from_file(self.fileDir + constant.DEFAULT_SERIAL_NUMBER_FILE_NAME)
 
-    @staticmethod
-    def __load_from_file(path):
-        try:
-            with open(path, "rb") as f:
-                return pickle.load(f)
-        except FileNotFoundError:
-            logger.debug("File %s not found", path)
-            return None
-        except Exception as e:
-            logger.error("Cannot open file: %s, error: %s", path, str(e))
-            return None
+    def __clear_cookie(self):
+        FileUtils.delete_file(self.fileDir + '/' + constant.DEFAULT_COOKIE_FILE_NAME)
 
-    @staticmethod
-    def __save_to_file(data, filename, path=constant.DEFAULT_FILES_DIR):
-        try:
-            os.makedirs(path, exist_ok=True)
-            with open(path + "/" + filename, "wb+") as f:
-                pickle.dump(data, f)
-        except Exception as e:
-            logger.error("Cannot save data: %s file: %s, error: ", path + filename, data, str(e))
-
-    @staticmethod
-    def __delete_file(path):
-        os.remove(path)
+    def __clear_serial_numbr(self):
+        FileUtils.delete_file(self.fileDir + '/' + constant.DEFAULT_SERIAL_NUMBER_FILE_NAME)

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Dict, List
 
 
@@ -12,37 +12,53 @@ class BoxDetails:
     ethernetWifi: str
     ethernetWifiAP: str
     firmwareVersion: str
+    serialNumber: str
 
 
 class BoilerStatus:
     code: str
     description: str
     date: datetime
-
-
-class Configuration:
-    pass
+    currentTemperature: float
+    waterPressure: float
 
 
 class TimeProgramDaySetting:
     startTime: str
-    setting: str
+    temperature: float
+
+    def __init__(self, start_time: str, temperature: float):
+        self.startTime = start_time
+        self.temperature = temperature
 
 
 class TimeProgramDay:
     timeProgramDaySettings: List[TimeProgramDaySetting]
 
+    def __init__(self):
+        self.timeProgramDaySettings = dict()
+
+    def add_setting(self, start_time: str, temperature: float):
+        self.timeProgramDaySettings.append(TimeProgramDaySetting(start_time, temperature))
+
 
 class TimeProgram:
-    TimeProgramDays: Dict[str, TimeProgramDay]
+    timeProgramDays: Dict[str, TimeProgramDay]
+
+    def __init__(self):
+        self.timeProgramDays = dict()
+
+    def add_day(self, day: str, time_program_day: TimeProgramDay):
+        self.timeProgramDays[day] = time_program_day
 
 
 class Heated:
-    timeProgram: TimeProgram
     name: str
+    timeProgram: TimeProgram
     currentTemperature: float
     configuredTemperature: float
     operationMode: str
+    remainingQuickVeto: int
 
 
 class Zone(Heated):
@@ -77,7 +93,15 @@ class Circulation:
     activeMode: str
 
 
-class VaillantSetup:
+class HolidayMode:
+    active: bool
+    startDate: date
+    endDate: date
+    configuredTemperature: float
+
+
+class VaillantSystem:
+    holidayMode: HolidayMode
     boilerStatus: BoilerStatus
     boxStatus: BoxStatus
     boxDetails: BoxDetails
@@ -85,10 +109,13 @@ class VaillantSetup:
     zones: Dict[str, Zone]
     dhw: DomesticHotWater
     circulation: Circulation
-    serialNumber: str
     name: str
     outsideTemperature: float
 
+    def set_rooms(self, rooms: List[Room]):
+        self.rooms = dict()
+        for room in rooms:
+            self.rooms[room.index] = room
 
 
 
