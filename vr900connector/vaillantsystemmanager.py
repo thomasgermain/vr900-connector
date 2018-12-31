@@ -1,5 +1,3 @@
-from typing import List
-
 from model import VaillantSystem, Zone, Room
 from modelmapper import Mapper
 from vr900connector.vr900connector import Vr900Connector
@@ -15,38 +13,49 @@ class VaillantSystemManager:
 
     def get_system(self):
         full_system = self.__connector.get_system_control()
-        livereport = self.__connector.get_live_report()
+        live_report = self.__connector.get_live_report()
         hvac_state = self.__connector.get_hvac_state()
         facilities = self.__connector.get_facilities()
         system_status = self.__connector.get_system_status()
 
         raw_rooms = dict()
-        raw_zones = dict()
-        if "ROOM_BY_ROOM" in facilities.get("body", dict()).get("facilitiesList", list())[0].get("capabilities"):
+        room_by_room = "ROOM_BY_ROOM" in facilities.get("body", dict()).get("facilitiesList",
+                                                                            list())[0].get("capabilities")
+        if room_by_room:
             raw_rooms = self.__connector.get_rooms()
-            raw_zones = self.__filter_zones(full_system.get("body").get("zones"))
 
-        holiday_mode = None
-        if full_system.get("body").get("configuration", dict()).get("holidaymode", dict()).get("active", False):
-            holiday_mode = Mapper.holiday_mode(full_system["body"]["configuration"]["holidaymode"])
+        holiday_mode = Mapper.holiday_mode(full_system)
+        boiler_status = Mapper.boiler_status(hvac_state, live_report)
+        box_detail = Mapper.box_detail(facilities, system_status)
 
-        Mapper.boiler_status(hvac_state, livereport)
-        Mapper.box_status(system_status)
-        Mapper.box_detail(facilities)
         rooms = Mapper.rooms(raw_rooms)
-        zones = Mapper.zones(raw_zones)
-        Mapper.domestic_hot_water(full_system, livereport)
-        Mapper.circulation(full_system)
+        zones = Mapper.zones(full_system)
+        if room_by_room:
+            for zone in zones:
+                if zone.rbr:
+                    zone.set_rooms(rooms)
+                    break
+
+        dhw = Mapper.domestic_hot_water(full_system, live_report)
+        circulation = Mapper.circulation(full_system)
 
         outsideTemp = full_system.get("body").get("status", dict()).get('outside_temperature')
         installation_name = facilities.get("body", dict()).get("facilitiesList", list())[0].get("name")
 
         vaillant_system = VaillantSystem()
-        vaillant_system.set_rooms(rooms)
+        vaillant_system.holidayMode = holiday_mode
+        vaillant_system.boilerStatus = boiler_status
+        vaillant_system.dhw = dhw
+        vaillant_system.circulation = circulation
+        vaillant_system.boxDetails = box_detail
+        vaillant_system.outsideTemperature = outsideTemp
+        vaillant_system.set_zones(zones)
+        vaillant_system.name = installation_name
+
         return vaillant_system
 
     def refresh_room(self, room: Room):
-        rawRoom = self.__connector.get_room(room.index)
+        rawRoom = self.__connector.get_room(room.id)
         return self.__mapper.room(rawRoom)
 
     def refresh_rooms(self):
@@ -56,16 +65,3 @@ class VaillantSystemManager:
     def refresh_zone(self, zone: Zone):
         self.__connector.get_zones()
         return zone
-
-    """
-        Remove Zone controlled by RBR (room by room). This mean the zone is irrelevant and time program and 
-        temperatures settings will be overridden by rooms
-    """
-    def __filter_zones(self, zones):
-        filteredZone = list()
-        if zones is not None:
-            for zone in zones:
-                if zone.get("currently_controlled_by") is None:
-                    filteredZone.append(zone)
-
-        return filteredZone
