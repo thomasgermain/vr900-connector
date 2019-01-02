@@ -39,9 +39,11 @@ class TimeProgramDaySetting:
     @staticmethod
     def to_absolute_minute(start_time):
         split = start_time.split(":")
-        hour = int(split[0]) * 60
-        minute = int(split[1])
-        return hour + minute
+        if len(split) > 1:
+            hour = int(split[0]) * 60
+            minute = int(split[1])
+            return hour + minute
+        return 0
 
 
 class TimeProgramDay:
@@ -89,15 +91,22 @@ class TimeProgram:
         return None
 
 
+class QuickMode:
+    name: str
+    remainingDuration: int
+
+    def __init__(self, name: str, remaining_duration: int):
+        self.name = name
+        self.remainingDuration = remaining_duration
+
+
 class QuickVeto:
-    startTime: datetime
     remainingTime: int
     configuredTemperature: float
 
-    def __init__(self, remaining_time: int, configured_temperature: float, start_time: datetime = None):
+    def __init__(self, remaining_time, configured_temperature):
         self.remainingTime = remaining_time
         self.configuredTemperature = configured_temperature
-        self.startTime = start_time
 
 
 class Heated:
@@ -110,7 +119,7 @@ class Heated:
     quickVeto: QuickVeto = None
 
     def get_active_mode(self):
-        if self.quickVeto and self.quickVeto.remainingTime > 0:
+        if self.quickVeto:
             return TimeProgramDaySetting(str(self.quickVeto.remainingTime),
                                          self.quickVeto.configuredTemperature, "QUICK_VETO")
 
@@ -167,6 +176,7 @@ class VaillantSystem:
     circulation: Circulation
     name: str
     outsideTemperature: float
+    quickMode: QuickMode
 
     def set_zones(self, zones: List[Zone]):
         self.zones = dict()

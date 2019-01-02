@@ -39,8 +39,9 @@ class VaillantSystemManager:
         dhw = Mapper.domestic_hot_water(full_system, live_report)
         circulation = Mapper.circulation(full_system)
 
-        outsideTemp = full_system.get("body").get("status", dict()).get('outside_temperature')
-        installation_name = facilities.get("body", dict()).get("facilitiesList", list())[0].get("name")
+        outsideTemp = Mapper.outside_temp(full_system)
+        installation_name = Mapper.installation_name(facilities)
+        quickMode = Mapper.quick_mode(full_system)
 
         vaillant_system = VaillantSystem()
         vaillant_system.holidayMode = holiday_mode
@@ -51,6 +52,7 @@ class VaillantSystemManager:
         vaillant_system.outsideTemperature = outsideTemp
         vaillant_system.set_zones(zones)
         vaillant_system.name = installation_name
+        vaillant_system.quickMode = quickMode
 
         return vaillant_system
 

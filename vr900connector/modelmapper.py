@@ -1,12 +1,26 @@
 import datetime
 
 from model import Room, Device, TimeProgram, TimeProgramDay, HolidayMode, BoilerStatus, DomesticHotWater, Circulation, \
-    BoxDetails, Zone, QuickVeto
+    BoxDetails, Zone, QuickMode, QuickVeto
 
 DATE_FORMAT = "%Y-%m-%d"
 
 
 class Mapper:
+
+    @staticmethod
+    def quick_mode(full_system):
+        quick_mode = full_system.get("body").get("configuration", dict()).get("quickmode")
+        if quick_mode:
+            return QuickMode(quick_mode.get("quickmode"), quick_mode.get("duration"))
+
+    @staticmethod
+    def outside_temp(full_system):
+        return full_system.get("body").get("status", dict()).get('outside_temperature')
+
+    @staticmethod
+    def installation_name(facilities):
+        return facilities.get("body", dict()).get("facilitiesList", list())[0].get("name")
 
     @staticmethod
     def rooms(raw_rooms):
@@ -144,7 +158,7 @@ class Mapper:
     @staticmethod
     def zones(full_system):
         zones = list()
-        meta = full_system.get("meta", dict()).get("resourceState", list())
+        meta = full_system.get("meta", dict())
         for raw_zone in full_system.get("body", dict()).get("zones", list()):
             zones.append(Mapper.zone(raw_zone, meta))
 
@@ -154,44 +168,31 @@ class Mapper:
     def zone(raw_zone, meta=None):
         zone = Zone()
 
-        meta = meta if meta is not None else raw_zone.get("meta", dict())
+        # meta = meta if meta is not None else raw_zone.get("meta", dict())
         zone.id = raw_zone.get("_id")
 
         heating = raw_zone.get("heating", dict())
-        zone.operationMode = heating.get("configuration", dict()).get("mode")
-        zone.configuredTemperature = heating.get("configuration", dict()).get("setpoint_temperature")
-        zone.configuredMinTemperature = heating.get("configuration", dict()).get("setback_temperature")
+        configuration = raw_zone.get("configuration", dict())
+        heating_configuration = heating.get("configuration", dict())
+        zone.operationMode = heating_configuration.get("mode")
+        zone.configuredTemperature = heating_configuration.get("setpoint_temperature")
+        zone.configuredMinTemperature = heating_configuration.get("setback_temperature")
         zone.timeProgram = Mapper.time_program(heating.get("timeprogram"), "setting")
 
-        configuration = raw_zone.get("configuration", dict())
         zone.name = configuration.get("name").strip()
         zone.currentTemperature = configuration.get("inside_temperature")
         zone.activeFunction = configuration.get("active_function")
 
         quickVeto = configuration.get("quick_veto")
         if quickVeto and quickVeto.get("active"):
-            timestamp = Mapper.__find_zone_quick_veto_timestamp(zone.id, meta)
-
-            if timestamp:
-                """timestamp is the start date of the quick veto. Quick veto on zone lasts 6 hours"""
-                end_timestamp = timestamp + 6 * 60 * 60 * 1000
-                end_timestamp /= 1000
-                remaining = end_timestamp - datetime.datetime.now().timestamp()
-                remaining = int(remaining/60)
-                zone.quickVeto = QuickVeto(remaining, quickVeto.get("setpoint_temperature"),
-                                           datetime.datetime.fromtimestamp(timestamp/1000))
+            """No way to find start_date Quick veto on zone lasts 6 hours"""
+            zone.quickVeto = QuickVeto(-1, quickVeto.get("setpoint_temperature"))
 
         zone.rbr = raw_zone.get("currently_controlled_by", dict()).get("name", "") == "RBR"
 
         return zone
 
-    @staticmethod
-    def __find_zone_quick_veto_timestamp(zone_id, meta):
-        for state in meta:
-            if state.get("link", dict()).get("resourceLink", "")\
-                    .find("/zones/" + zone_id + "/configuration/quick_veto"):
-                return state.get("timestamp")
-        return None
+
 
     @staticmethod
     def domestic_hot_water(full_system, live_report):
@@ -206,6 +207,9 @@ class Mapper:
                 domesticHotWater.operationMode = dhw.get("configuration", dict()).get("operation_mode")
                 domesticHotWater.timeProgram = Mapper.time_program(dhw.get("timeprogram", "mode"))
                 domesticHotWater.id = dhws[0].get("_id")
+                if dhws[0].get("controlled_by"):
+                    """Didn't find a way to get start_date, and remaining = 0. Quick veto dhw is 1 hour"""
+                    domesticHotWater.quickVeto = QuickVeto(-1, domesticHotWater.configuredTemperature)
 
             dhw_report = Mapper.__find_dhw_temperature_report(live_report)
 
@@ -267,3 +271,25 @@ class Mapper:
                     return report
 
         return None
+
+    @staticmethod
+    def __find_zone_quick_veto_timestamp(zone_id, meta):
+        for state in meta.get("resourceState", list()):
+            if state.get("link", dict()).get("resourceLink", "") \
+                    .find("/zones/" + zone_id + "/configuration/quick_veto"):
+                return state.get("timestamp")
+        return None
+
+    @staticmethod
+    def __find_dhw_quick_veto_timestamp(meta):
+        for state in meta.get("resourceState", list()):
+            if state.get("link", dict()).get("resourceLink", "") \
+                    .find("/systemcontrol/v1/configuration/quickmode"):
+                return state.get("timestamp")
+        return None
+
+    @staticmethod
+    def __get_delta(start_time, time_to_add):
+        end_time = start_time + time_to_add
+        delta = (end_time / 1000) - datetime.datetime.now().timestamp()
+        return int(delta / 60)
