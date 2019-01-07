@@ -12,58 +12,61 @@ class VaillantSystemManager:
         self.__mapper = Mapper()
 
     def get_system(self):
-        full_system = self.__connector.get_system_control()
-        live_report = self.__connector.get_live_report()
-        hvac_state = self.__connector.get_hvac_state()
-        facilities = self.__connector.get_facilities()
-        system_status = self.__connector.get_system_status()
+        try:
+            self.__connector.autoCloseSession = False
+            full_system = self.__connector.get_system_control()
+            live_report = self.__connector.get_live_report()
+            hvac_state = self.__connector.get_hvac_state()
+            facilities = self.__connector.get_facilities()
+            system_status = self.__connector.get_system_status()
 
-        raw_rooms = dict()
-        room_by_room = "ROOM_BY_ROOM" in facilities.get("body", dict()).get("facilitiesList",
-                                                                            list())[0].get("capabilities")
-        if room_by_room:
-            raw_rooms = self.__connector.get_rooms()
+            holiday_mode = self.__mapper.holiday_mode(full_system)
+            boiler_status = self.__mapper.boiler_status(hvac_state, live_report)
+            box_detail = self.__mapper.box_detail(facilities, system_status)
 
-        holiday_mode = Mapper.holiday_mode(full_system)
-        boiler_status = Mapper.boiler_status(hvac_state, live_report)
-        box_detail = Mapper.box_detail(facilities, system_status)
+            zones = self.__mapper.zones(full_system)
 
-        rooms = Mapper.rooms(raw_rooms)
-        zones = Mapper.zones(full_system)
-        if room_by_room:
             for zone in zones:
                 if zone.rbr:
+                    raw_rooms = self.__connector.get_rooms()
+                    rooms = self.__mapper.rooms(raw_rooms)
                     zone.set_rooms(rooms)
                     break
 
-        dhw = Mapper.domestic_hot_water(full_system, live_report)
-        circulation = Mapper.circulation(full_system)
+            dhw = self.__mapper.domestic_hot_water(full_system, live_report)
+            circulation = self.__mapper.circulation(full_system)
 
-        outsideTemp = Mapper.outside_temp(full_system)
-        installation_name = Mapper.installation_name(facilities)
-        quickMode = Mapper.quick_mode(full_system)
+            outsideTemp = self.__mapper.outside_temp(full_system)
+            installation_name = self.__mapper.installation_name(facilities)
+            quickMode = self.__mapper.quick_mode(full_system)
 
-        vaillant_system = VaillantSystem()
-        vaillant_system.holidayMode = holiday_mode
-        vaillant_system.boilerStatus = boiler_status
-        vaillant_system.dhw = dhw
-        vaillant_system.circulation = circulation
-        vaillant_system.boxDetails = box_detail
-        vaillant_system.outsideTemperature = outsideTemp
-        vaillant_system.set_zones(zones)
-        vaillant_system.name = installation_name
-        vaillant_system.quickMode = quickMode
+            vaillant_system = VaillantSystem()
+            vaillant_system.holidayMode = holiday_mode
+            vaillant_system.boilerStatus = boiler_status
+            vaillant_system.dhw = dhw
+            vaillant_system.circulation = circulation
+            vaillant_system.boxDetails = box_detail
+            vaillant_system.outsideTemperature = outsideTemp
+            vaillant_system.set_zones(zones)
+            vaillant_system.name = installation_name
+            vaillant_system.quickMode = quickMode
 
-        return vaillant_system
+            return vaillant_system
+        finally:
+            self.__connector.close_session()
 
     def refresh_room(self, room: Room):
-        rawRoom = self.__connector.get_room(room.id)
-        return self.__mapper.room(rawRoom)
+        self.__connector.autoCloseSession = True
+        return self.__mapper.room(self.__connector.get_room(room.id))
 
     def refresh_rooms(self):
-        rawRoom = self.__connector.get_rooms()
-        return self.__mapper.room(rawRoom)
+        self.__connector.autoCloseSession = True
+        return self.__mapper.rooms(self.__connector.get_rooms())
+
+    def refresh_zones(self):
+        self.__connector.autoCloseSession = True
+        return self.__mapper.zones(self.__connector.get_zones())
 
     def refresh_zone(self, zone: Zone):
-        self.__connector.get_zones()
-        return zone
+        self.__connector.autoCloseSession = True
+        return self.__mapper.zones(self.__connector.get_zone(zone.id))

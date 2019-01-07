@@ -8,31 +8,26 @@ DATE_FORMAT = "%Y-%m-%d"
 
 class Mapper:
 
-    @staticmethod
-    def quick_mode(full_system):
+    def quick_mode(self, full_system):
         quick_mode = full_system.get("body").get("configuration", dict()).get("quickmode")
         if quick_mode:
             return QuickMode(quick_mode.get("quickmode"), quick_mode.get("duration"))
 
-    @staticmethod
-    def outside_temp(full_system):
+    def outside_temp(self, full_system):
         return full_system.get("body").get("status", dict()).get('outside_temperature')
 
-    @staticmethod
-    def installation_name(facilities):
+    def installation_name(self, facilities):
         return facilities.get("body", dict()).get("facilitiesList", list())[0].get("name")
 
-    @staticmethod
-    def rooms(raw_rooms):
+    def rooms(self, raw_rooms):
         rooms = list()
         if raw_rooms is not None:
             for raw_room in raw_rooms.get("body", dict()).get("rooms"):
-                rooms.append(Mapper.room(raw_room))
+                rooms.append(self.room(raw_room))
 
         return rooms
 
-    @staticmethod
-    def room(raw_room):
+    def room(self, raw_room):
         room = Room()
         raw_room = raw_room.get("body") if raw_room.get("body") is not None else raw_room
         config = raw_room.get("configuration", dict())
@@ -41,7 +36,7 @@ class Mapper:
         room.childLock = config.get("childLock")
         room.configuredTemperature = config.get("temperatureSetpoint")
         room.currentTemperature = config.get("currentTemperature")
-        room.devices = Mapper.devices(config.get("devices"))
+        room.devices = self.devices(config.get("devices"))
         room.isWindowOpen = config.get("isWindowOpen")
         room.name = config.get("name")
         room.operationMode = config.get("operationMode")
@@ -50,11 +45,10 @@ class Mapper:
         if raw_quickVeto:
             room.quickVeto = QuickVeto(raw_quickVeto.get("remainingDuration"), config.get("temperatureSetpoint"))
 
-        room.timeProgram = Mapper.time_program(raw_room.get("timeprogram"))
+        room.timeProgram = self.time_program(raw_room.get("timeprogram"))
         return room
 
-    @staticmethod
-    def devices(raw_devices):
+    def devices(self, raw_devices):
         devices = list()
         if raw_devices is not None:
             for raw_device in raw_devices:
@@ -68,22 +62,20 @@ class Mapper:
 
         return devices
 
-    @staticmethod
-    def time_program(raw_time_program, mode_key_name=""):
+    def time_program(self, raw_time_program, mode_key_name=""):
         timeProgram = TimeProgram()
         if raw_time_program is not None:
-            timeProgram.add_day("monday", Mapper.time_program_day(raw_time_program.get("monday"), mode_key_name))
-            timeProgram.add_day("tuesday", Mapper.time_program_day(raw_time_program.get("tuesday"), mode_key_name))
-            timeProgram.add_day("wednesday", Mapper.time_program_day(raw_time_program.get("wednesday"), mode_key_name))
-            timeProgram.add_day("thursday", Mapper.time_program_day(raw_time_program.get("thursday"), mode_key_name))
-            timeProgram.add_day("friday", Mapper.time_program_day(raw_time_program.get("friday"), mode_key_name))
-            timeProgram.add_day("saturday", Mapper.time_program_day(raw_time_program.get("saturday"), mode_key_name))
-            timeProgram.add_day("sunday", Mapper.time_program_day(raw_time_program.get("sunday"), mode_key_name))
+            timeProgram.add_day("monday", self.time_program_day(raw_time_program.get("monday"), mode_key_name))
+            timeProgram.add_day("tuesday", self.time_program_day(raw_time_program.get("tuesday"), mode_key_name))
+            timeProgram.add_day("wednesday", self.time_program_day(raw_time_program.get("wednesday"), mode_key_name))
+            timeProgram.add_day("thursday", self.time_program_day(raw_time_program.get("thursday"), mode_key_name))
+            timeProgram.add_day("friday", self.time_program_day(raw_time_program.get("friday"), mode_key_name))
+            timeProgram.add_day("saturday", self.time_program_day(raw_time_program.get("saturday"), mode_key_name))
+            timeProgram.add_day("sunday", self.time_program_day(raw_time_program.get("sunday"), mode_key_name))
 
         return timeProgram
 
-    @staticmethod
-    def time_program_day(raw_time_program_day, mode_key_name=""):
+    def time_program_day(self, raw_time_program_day, mode_key_name=""):
         timeProgramDay: TimeProgramDay = TimeProgramDay()
         if raw_time_program_day is not None:
             for time_setting in raw_time_program_day:
@@ -92,8 +84,7 @@ class Mapper:
 
         return timeProgramDay
 
-    @staticmethod
-    def holiday_mode(full_system):
+    def holiday_mode(self, full_system):
         holidayMode = None
         raw_holiday_mode = full_system.get("body", dict()).get("configuration", dict()).get("holidaymode")
         if raw_holiday_mode is not None:
@@ -105,11 +96,10 @@ class Mapper:
 
         return holidayMode
 
-    @staticmethod
-    def boiler_status(hvac_state, live_report):
+    def boiler_status(self, hvac_state, live_report):
         boilerStatus = BoilerStatus()
 
-        hvac_state_info = Mapper.__find_hvac_message_status(hvac_state)
+        hvac_state_info = self.__find_hvac_message_status(hvac_state)
         if hvac_state_info is not None:
             timestamp = hvac_state_info.get("timestamp")
             if timestamp is not None:
@@ -121,19 +111,18 @@ class Mapper:
             boilerStatus.description = hvac_state_info.get("description")
             boilerStatus.hint = hvac_state_info.get("hint")
 
-        water_pressure_report = Mapper.__find_water_pressure_report(live_report)
+        water_pressure_report = self.__find_water_pressure_report(live_report)
         if water_pressure_report is not None:
             boilerStatus.waterPressure = water_pressure_report.get("value")
             boilerStatus.waterPressureUnit = water_pressure_report.get("unit")
 
-        boiler_temp_report = Mapper.__find_boiler_temperature_report(live_report)
+        boiler_temp_report = self.__find_boiler_temperature_report(live_report)
         if boiler_temp_report is not None:
             boilerStatus.currentTemperature = boiler_temp_report.get("value")
 
         return boilerStatus
 
-    @staticmethod
-    def box_detail(facilities, system_status):
+    def box_detail(self, facilities, system_status):
         boxDetails = None
 
         facilityList = facilities.get("body", dict()).get("facilitiesList", list())
@@ -155,17 +144,15 @@ class Mapper:
 
         return boxDetails
 
-    @staticmethod
-    def zones(full_system):
+    def zones(self, full_system):
         zones = list()
         meta = full_system.get("meta", dict())
         for raw_zone in full_system.get("body", dict()).get("zones", list()):
-            zones.append(Mapper.zone(raw_zone, meta))
+            zones.append(self.zone(raw_zone, meta))
 
         return zones
 
-    @staticmethod
-    def zone(raw_zone, meta=None):
+    def zone(self, raw_zone, meta=None):
         zone = Zone()
 
         # meta = meta if meta is not None else raw_zone.get("meta", dict())
@@ -177,7 +164,7 @@ class Mapper:
         zone.operationMode = heating_configuration.get("mode")
         zone.configuredTemperature = heating_configuration.get("setpoint_temperature")
         zone.configuredMinTemperature = heating_configuration.get("setback_temperature")
-        zone.timeProgram = Mapper.time_program(heating.get("timeprogram"), "setting")
+        zone.timeProgram = self.time_program(heating.get("timeprogram"), "setting")
 
         zone.name = configuration.get("name").strip()
         zone.currentTemperature = configuration.get("inside_temperature")
@@ -192,10 +179,7 @@ class Mapper:
 
         return zone
 
-
-
-    @staticmethod
-    def domestic_hot_water(full_system, live_report):
+    def domestic_hot_water(self, full_system, live_report):
         domesticHotWater = None
         dhws = full_system.get("body", dict()).get("dhw", list())
 
@@ -205,13 +189,13 @@ class Mapper:
                 domesticHotWater = DomesticHotWater()
                 domesticHotWater.configuredTemperature = dhw.get("configuration", dict()).get("temperature_setpoint")
                 domesticHotWater.operationMode = dhw.get("configuration", dict()).get("operation_mode")
-                domesticHotWater.timeProgram = Mapper.time_program(dhw.get("timeprogram", "mode"))
+                domesticHotWater.timeProgram = self.time_program(dhw.get("timeprogram", "mode"))
                 domesticHotWater.id = dhws[0].get("_id")
                 if dhws[0].get("controlled_by"):
                     """Didn't find a way to get start_date, and remaining = 0. Quick veto dhw is 1 hour"""
                     domesticHotWater.quickVeto = QuickVeto(-1, domesticHotWater.configuredTemperature)
 
-            dhw_report = Mapper.__find_dhw_temperature_report(live_report)
+            dhw_report = self.__find_dhw_temperature_report(live_report)
 
             if dhw_report is not None:
                 domesticHotWater.currentTemperature = dhw_report.get("value")
@@ -219,8 +203,7 @@ class Mapper:
 
         return domesticHotWater
 
-    @staticmethod
-    def circulation(full_system):
+    def circulation(self, full_system):
         circulation = None
         dhws = full_system.get("body", dict()).get("dhw", list())
 
@@ -229,22 +212,20 @@ class Mapper:
             if raw_circulation is not None:
                 circulation = Circulation()
                 circulation.name = "Circulation"
-                circulation.timeProgram = Mapper.time_program(raw_circulation.get("timeprogram", "setting"))
+                circulation.timeProgram = self.time_program(raw_circulation.get("timeprogram", "setting"))
                 circulation.operationMode = raw_circulation.get("configuration", dict()).get("operationMode")
                 circulation.id = dhws[0].get("_id")
 
         return circulation
 
-    @staticmethod
-    def __find_hvac_message_status(hvac_state):
+    def __find_hvac_message_status(self, hvac_state):
         for message in hvac_state.get("body", dict()).get("errorMessages"):
             if message.get("type") == "STATUS":
                 return message
 
         return None
 
-    @staticmethod
-    def __find_water_pressure_report(live_report):
+    def __find_water_pressure_report(self, live_report):
         for device in live_report.get("body", dict()).get("devices", list()):
             for report in device.get("reports", list()):
                 if report.get("associated_device_function") == "HEATING" and report.get("_id") == "WaterPressureSensor":
@@ -252,8 +233,7 @@ class Mapper:
 
         return None
 
-    @staticmethod
-    def __find_boiler_temperature_report(live_report):
+    def __find_boiler_temperature_report(self, live_report):
         for device in live_report.get("body", dict()).get("devices", list()):
             for report in device.get("reports", list()):
                 if report.get("associated_device_function") == "HEATING" \
@@ -262,8 +242,7 @@ class Mapper:
 
         return None
 
-    @staticmethod
-    def __find_dhw_temperature_report(live_report):
+    def __find_dhw_temperature_report(self, live_report):
         for device in live_report.get("body", dict()).get("devices", list()):
             for report in device.get("reports", list()):
                 if report.get("associated_device_function") == "DHW" \
@@ -272,24 +251,21 @@ class Mapper:
 
         return None
 
-    @staticmethod
-    def __find_zone_quick_veto_timestamp(zone_id, meta):
+    def __find_zone_quick_veto_timestamp(self, zone_id, meta):
         for state in meta.get("resourceState", list()):
             if state.get("link", dict()).get("resourceLink", "") \
                     .find("/zones/" + zone_id + "/configuration/quick_veto"):
                 return state.get("timestamp")
         return None
 
-    @staticmethod
-    def __find_dhw_quick_veto_timestamp(meta):
+    def __find_dhw_quick_veto_timestamp(self, meta):
         for state in meta.get("resourceState", list()):
             if state.get("link", dict()).get("resourceLink", "") \
                     .find("/systemcontrol/v1/configuration/quickmode"):
                 return state.get("timestamp")
         return None
 
-    @staticmethod
-    def __get_delta(start_time, time_to_add):
+    def __get_delta(self, start_time, time_to_add):
         end_time = start_time + time_to_add
         delta = (end_time / 1000) - datetime.datetime.now().timestamp()
         return int(delta / 60)
