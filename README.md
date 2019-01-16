@@ -60,5 +60,5 @@ from vaillantsystemmanager import VaillantSystemManager
 manager = VaillantSystemManager('user', 'pass')
 manager.get_system() 
 ```
-Basically, the is returning quite the same information as the android mobile app can display (and maybe a bit more)
+Basically, the connector is returning quite the same information as the android mobile app can display (and maybe a bit more)
 
