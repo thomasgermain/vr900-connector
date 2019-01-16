@@ -1,6 +1,6 @@
 import datetime
 
-from model import Room, Device, TimeProgram, TimeProgramDay, HolidayMode, BoilerStatus, DomesticHotWater, Circulation, \
+from vr900connector.model import Room, Device, TimeProgram, TimeProgramDay, HolidayMode, BoilerStatus, DomesticHotWater, Circulation, \
     BoxDetails, Zone, QuickMode, QuickVeto
 
 DATE_FORMAT = "%Y-%m-%d"

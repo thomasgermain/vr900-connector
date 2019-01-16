@@ -1,7 +1,7 @@
-from model import VaillantSystem, Zone, Room
-from modelmapper import Mapper
+from vr900connector.model import VaillantSystem, Zone, Room
+from vr900connector.modelmapper import Mapper
 from vr900connector.vr900connector import Vr900Connector
-import constant
+from vr900connector import constant
 
 
 class VaillantSystemManager:

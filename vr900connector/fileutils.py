@@ -2,7 +2,7 @@ import os
 import pickle
 import logging
 
-import constant
+from vr900connector import constant
 
 logger = logging.getLogger('FileUtils')
 
