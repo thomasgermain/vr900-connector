@@ -1,15 +1,6 @@
 from datetime import datetime, date, timedelta
 from typing import Dict, List
-
-
-class BoxDetails:
-    onlineStatus: str
-    updateStatus: str
-    ethernetMac: str
-    wifiMac: str
-    wifiAPMac: str
-    firmwareVersion: str
-    serialNumber: str
+from . import constant
 
 
 class BoilerStatus:
@@ -35,6 +26,7 @@ class TimeProgramDaySetting:
         self.temperature = temperature
         self.mode = mode
         self.absoluteMinutes = TimeProgramDaySetting.to_absolute_minute(start_time)
+
 
     @staticmethod
     def to_absolute_minute(start_time):
@@ -88,6 +80,8 @@ class TimeProgram:
 
             if idx == 0:
                 return timeProgramDay.timeProgramDaySettings[0]
+            elif idx == len(timeProgramDay.timeProgramDaySettings) - 1:
+                return timeProgramDay.timeProgramDaySettings[-1]
         return None
 
 
@@ -114,9 +108,10 @@ class Heated:
     name: str
     timeProgram: TimeProgram
     currentTemperature: float
-    configuredTemperature: float
+    targetTemperature: float
     operationMode: str
     quickVeto: QuickVeto = None
+    availableOperationModes: List[str]
 
     def get_active_mode(self):
         if self.quickVeto:
@@ -141,19 +136,31 @@ class Room(Heated):
 
 
 class Zone(Heated):
-    configuredMinTemperature: float
+    targetMinTemperature: float
     activeFunction: str
-    rooms: Dict[str, Room]
+    rooms: List[Room]
     rbr: bool
 
-    def set_rooms(self, rooms: List[Room]):
-        self.rooms = dict()
-        for room in rooms:
-            self.rooms[room.id] = room
 
+class DomesticHotWater(Heated):
 
-class DomesticHotWater(Zone):
-    pass
+    def get_active_mode(self):
+        if self.operationMode == constant.WATER_HEATER_MODE_ON:
+            return TimeProgramDaySetting(str(0), self.targetTemperature, constant.WATER_HEATER_MODE_ON)
+        elif self.operationMode == constant.WATER_HEATER_MODE_OFF:
+            return TimeProgramDaySetting(str(0), constant.WATER_HEATER_MIN_TEMP, constant.WATER_HEATER_MODE_OFF)
+        elif self.operationMode == constant.WATER_HEATER_MODE_BOOST:
+            return TimeProgramDaySetting(str(0), self.targetTemperature, constant.WATER_HEATER_MODE_BOOST)
+        else:
+            # Mode AUTO
+            mode = super().get_active_mode()
+            if mode.mode == constant.WATER_HEATER_MODE_ON:
+                mode.temperature = self.targetTemperature
+                mode.mode = constant.WATER_HEATER_MODE_AUTO_ON
+            else:
+                mode.temperature = constant.WATER_HEATER_MIN_TEMP
+                mode.mode = constant.WATER_HEATER_MODE_AUTO_OFF
+            return mode
 
 
 class Circulation(Heated):
@@ -170,15 +177,8 @@ class HolidayMode:
 class VaillantSystem:
     holidayMode: HolidayMode
     boilerStatus: BoilerStatus
-    boxDetails: BoxDetails
-    zones: Dict[str, Zone]
+    zones: List[Zone]
     dhw: DomesticHotWater
-    circulation: Circulation
-    name: str
-    outsideTemperature: float
+    #circulation: Circulation
+    outdoorTemperature: float
     quickMode: QuickMode
-
-    def set_zones(self, zones: List[Zone]):
-        self.zones = dict()
-        for zone in zones:
-            self.zones[zone.id] = zone

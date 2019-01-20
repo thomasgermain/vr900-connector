@@ -1,7 +1,7 @@
 import datetime
 
-from vr900connector.model import Room, Device, TimeProgram, TimeProgramDay, HolidayMode, BoilerStatus, DomesticHotWater, Circulation, \
-    BoxDetails, Zone, QuickMode, QuickVeto
+from .model import Room, Device, TimeProgram, TimeProgramDay, HolidayMode, BoilerStatus, DomesticHotWater, Circulation,\
+    Zone, QuickMode, QuickVeto
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -13,7 +13,7 @@ class Mapper:
         if quick_mode:
             return QuickMode(quick_mode.get("quickmode"), quick_mode.get("duration"))
 
-    def outside_temp(self, full_system):
+    def outdoor_temp(self, full_system):
         return full_system.get("body").get("status", dict()).get('outside_temperature')
 
     def installation_name(self, facilities):
@@ -34,7 +34,7 @@ class Mapper:
 
         room.id = raw_room.get("roomIndex")
         room.childLock = config.get("childLock")
-        room.configuredTemperature = config.get("temperatureSetpoint")
+        room.targetTemperature = config.get("temperatureSetpoint")
         room.currentTemperature = config.get("currentTemperature")
         room.devices = self.devices(config.get("devices"))
         room.isWindowOpen = config.get("isWindowOpen")
@@ -122,27 +122,27 @@ class Mapper:
 
         return boilerStatus
 
-    def box_detail(self, facilities, system_status):
-        boxDetails = None
-
-        facilityList = facilities.get("body", dict()).get("facilitiesList", list())
-
-        if facilityList:
-            boxDetails = BoxDetails()
-
-            details = facilityList[0]
-            boxDetails.serialNumber = details.get("serialNumber")
-            boxDetails.firmwareVersion = details.get("firmwareVersion")
-
-            network = details.get("networkInformation", dict())
-            boxDetails.ethernetMac = network.get("macAddressEthernet")
-            boxDetails.wifiMac = network.get("macAddressWifiClient")
-            boxDetails.wifiAPMac = network.get("macAddressWifiAccessPoint")
-
-            boxDetails.onlineStatus = system_status.get("body", dict()).get("onlineStatus", dict()).get("status")
-            boxDetails.updateStatus = system_status.get("body", dict()).get("firmwareUpdateStatus", dict()).get("status")
-
-        return boxDetails
+    # def box_detail(self, facilities, system_status):
+    #     boxDetails = None
+    #
+    #     facilityList = facilities.get("body", dict()).get("facilitiesList", list())
+    #
+    #     if facilityList:
+    #         boxDetails = BoxDetails()
+    #
+    #         details = facilityList[0]
+    #         boxDetails.serialNumber = details.get("serialNumber")
+    #         boxDetails.firmwareVersion = details.get("firmwareVersion")
+    #
+    #         network = details.get("networkInformation", dict())
+    #         boxDetails.ethernetMac = network.get("macAddressEthernet")
+    #         boxDetails.wifiMac = network.get("macAddressWifiClient")
+    #         boxDetails.wifiAPMac = network.get("macAddressWifiAccessPoint")
+    #
+    #         boxDetails.onlineStatus = system_status.get("body", dict()).get("onlineStatus", dict()).get("status")
+    #         boxDetails.updateStatus = system_status.get("body", dict()).get("firmwareUpdateStatus", dict()).get("status")
+    #
+    #     return boxDetails
 
     def zones(self, full_system):
         zones = list()
@@ -162,8 +162,8 @@ class Mapper:
         configuration = raw_zone.get("configuration", dict())
         heating_configuration = heating.get("configuration", dict())
         zone.operationMode = heating_configuration.get("mode")
-        zone.configuredTemperature = heating_configuration.get("setpoint_temperature")
-        zone.configuredMinTemperature = heating_configuration.get("setback_temperature")
+        zone.targetTemperature = heating_configuration.get("setpoint_temperature")
+        zone.targetMinTemperature = heating_configuration.get("setback_temperature")
         zone.timeProgram = self.time_program(heating.get("timeprogram"), "setting")
 
         zone.name = configuration.get("name").strip()
@@ -187,13 +187,13 @@ class Mapper:
             dhw = dhws[0].get("hotwater")
             if dhw is not None:
                 domesticHotWater = DomesticHotWater()
-                domesticHotWater.configuredTemperature = dhw.get("configuration", dict()).get("temperature_setpoint")
+                domesticHotWater.targetTemperature = dhw.get("configuration", dict()).get("temperature_setpoint")
                 domesticHotWater.operationMode = dhw.get("configuration", dict()).get("operation_mode")
-                domesticHotWater.timeProgram = self.time_program(dhw.get("timeprogram", "mode"))
+                domesticHotWater.timeProgram = self.time_program(dhw.get("timeprogram", dict()), "mode")
                 domesticHotWater.id = dhws[0].get("_id")
                 if dhws[0].get("controlled_by"):
                     """Didn't find a way to get start_date, and remaining = 0. Quick veto dhw is 1 hour"""
-                    domesticHotWater.quickVeto = QuickVeto(-1, domesticHotWater.configuredTemperature)
+                    domesticHotWater.operationMode = self.quick_mode(full_system).name
 
             dhw_report = self.__find_dhw_temperature_report(live_report)
 

@@ -1,8 +1,9 @@
-from vr900connector import constant
-from vr900connector.vr900connectorerror import Vr900ConnectorError
-from vr900connector.fileutils import FileUtils
 import requests
 import logging
+
+from .fileutils import FileUtils
+from . import constant
+from .apierror import ApiError
 
 logger = logging.getLogger('Vr900Connector')
 
@@ -13,7 +14,7 @@ For now, only some GET part of the API are handled. It means you cannot alter da
 """
 
 
-class Vr900Connector:
+class ApiConnector:
 
     def __init__(self, user, password, smartphone_id=constant.DEFAULT_SMARTPHONE_ID, base_url=constant.DEFAULT_BASE_URL,
                  file_dir=constant.DEFAULT_FILES_DIR, auto_close_session=True):
@@ -76,14 +77,14 @@ class Vr900Connector:
                                               headers=None if content is None else self.__headers)
 
             if response.status_code > 499:
-                raise Vr900ConnectorError("Received error from server url: " + url + " and method " + method, response)
+                raise ApiError("Received error from server url: " + url + " and method " + method, response)
             return response.json()
-        except Vr900ConnectorError:
+        except ApiError:
             logger.error("Cannot %s url: %s", method, url)
             raise
         except Exception as e:
             logger.exception("Cannot %s url: %s", method, url)
-            raise Vr900ConnectorError(str(e), response)
+            raise ApiError(str(e), response)
         finally:
             if self.autoCloseSession:
                 self.close_session()
@@ -106,18 +107,18 @@ class Vr900Connector:
                 testLoginResponse = self.__test_login()
                 if testLoginResponse.status_code != 200:
                     if relogin:
-                        raise Vr900ConnectorError("Logging test failed, relogin=" + str(relogin), testLoginResponse)
+                        raise ApiError("Logging test failed, relogin=" + str(relogin), testLoginResponse)
                     else:
                         logger.info("Cookie and serial files are outdated, re-logging")
                         self.__clear_session()
                         self.__login(True)
                 else:
                     logger.debug("... session is ok")
-        except Vr900ConnectorError:
+        except ApiError:
             raise
         except Exception as e:
             logger.error("Error during logging", e)
-            raise Vr900ConnectorError("Error during logging " + str(e), None)
+            raise ApiError("Error during logging " + str(e), None)
 
     def __request_token(self):
         params = {
@@ -132,10 +133,10 @@ class Vr900Connector:
             logger.debug("Token generation successful")
             authtoken = response.json()["body"]["authToken"]
             if not authtoken:
-                raise Vr900ConnectorError("Generated token is empty", response)
+                raise ApiError("Generated token is empty", response)
             return authtoken
         else:
-            raise Vr900ConnectorError("Cannot generate token", response)
+            raise ApiError("Cannot generate token", response)
 
     def __get_cookies(self, authtoken):
         params = {
@@ -149,7 +150,7 @@ class Vr900Connector:
             logger.debug("Cookie successfully retrieved")
             self.__save_cookies_to_file()
         else:
-            raise Vr900ConnectorError("Cannot generate token", response)
+            raise ApiError("Cannot generate token", response)
 
     def __get_serial_number(self):
         response = self.__session.get(self.__baseUrl + constant.FACILITIES_URL)
@@ -159,7 +160,7 @@ class Vr900Connector:
             self.__serialNumber = response.json()["body"]["facilitiesList"][0]["serialNumber"]
             self.__save_serial_number_to_file()
         else:
-            raise Vr900ConnectorError("Cannot get serial number", response)
+            raise ApiError("Cannot get serial number", response)
 
     def __test_login(self):
         return self.__session.get(self.__baseUrl + constant.TEST_LOGIN_URL)

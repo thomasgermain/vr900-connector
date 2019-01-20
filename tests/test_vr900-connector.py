@@ -3,7 +3,8 @@ import unittest
 import uuid
 
 import responses
-from vr900connector import Vr900Connector, Vr900ConnectorError
+from vr900connector.vr900connectorerror import Vr900ConnectorError
+from vr900connector.vr900connector import Vr900Connector
 
 
 class TestVr900Connector(unittest.TestCase):
