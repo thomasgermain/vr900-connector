@@ -107,7 +107,7 @@ class ApiConnector:
                 testLoginResponse = self.__test_login()
                 if testLoginResponse.status_code != 200:
                     if relogin:
-                        raise ApiError("Logging test failed, relogin=" + str(relogin), testLoginResponse)
+                        raise ApiError("Logging test failed", testLoginResponse)
                     else:
                         logger.info("Cookie and serial files are outdated, re-logging")
                         self.__clear_session()

@@ -1,5 +1,6 @@
 from datetime import datetime, date, timedelta
 from typing import Dict, List
+import copy
 from . import constant
 
 
@@ -153,7 +154,7 @@ class DomesticHotWater(Heated):
             return TimeProgramDaySetting(str(0), self.targetTemperature, constant.WATER_HEATER_MODE_BOOST)
         else:
             # Mode AUTO
-            mode = super().get_active_mode()
+            mode = copy.deepcopy(super().get_active_mode())
             if mode.mode == constant.WATER_HEATER_MODE_ON:
                 mode.temperature = self.targetTemperature
                 mode.mode = constant.WATER_HEATER_MODE_AUTO_ON
