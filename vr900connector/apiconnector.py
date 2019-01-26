@@ -29,31 +29,31 @@ class ApiConnector:
         self.__session = self.__create_session()
 
     def get_facilities(self):
-        return self.__secure_call('GET', self.__baseUrl + constant.FACILITIES_URL)
+        return self.__secure_call('GET', constant.FACILITIES_URL)
 
     def get_live_report(self):
-        return self.__secure_call('GET', self.__baseUrl + constant.LIVE_REPORT_URL)
+        return self.__secure_call('GET', constant.LIVE_REPORT_URL)
 
     def get_system_status(self):
-        return self.__secure_call('GET', self.__baseUrl + constant.SYSTEM_STATUS_URL)
+        return self.__secure_call('GET', constant.SYSTEM_STATUS_URL)
 
     def get_hvac_state(self):
-        return self.__secure_call('GET', self.__baseUrl + constant.HVAC_STATE_URL)
+        return self.__secure_call('GET', constant.HVAC_STATE_URL)
 
     def get_rooms(self):
-        return self.__secure_call('GET', self.__baseUrl + constant.ROOMS_URl)
+        return self.__secure_call('GET', constant.ROOMS_URl)
 
     def get_system_control(self):
-        return self.__secure_call('GET', self.__baseUrl + constant.SYSTEM_CONTROL_URL)
+        return self.__secure_call('GET', constant.SYSTEM_CONTROL_URL)
 
     def get_zones(self):
-        return self.__secure_call('GET', self.__baseUrl + constant.ZONES_URL)
+        return self.__secure_call('GET', constant.ZONES_URL)
 
     def get_room(self, index):
-        return self.__secure_call('GET', self.__baseUrl + constant.ROOMS_URl + "/" + str(index))
+        return self.__secure_call('GET', constant.ROOMS_URl + "/" + str(index))
 
     def get_zone(self, zone_id):
-        return self.__secure_call('GET', self.__baseUrl + constant.ZONES_URL + "/" + str(zone_id))
+        return self.__secure_call('GET', constant.ZONES_URL + "/" + str(zone_id))
 
     def get_dhw(self, dhw_id):
         return self.__secure_call('GET', self.__baseUrl + constant.DHW_URL.replace("{id}", str(dhw_id)))
@@ -61,8 +61,12 @@ class ApiConnector:
     def get_circulation(self, dhw_id):
         return self.__secure_call('GET', self.__baseUrl + constant.CIRCULATION_URL.replace("{id}", str(dhw_id)))
 
-    def update_time_program_room(self, index, time_program):
-        return self.__secure_call('POST', self.__baseUrl + constant.ROOM_TIMEPROGRAM_URL.replace("{index}, str(index)"))
+    # def update_time_program_room(self, index, time_program):
+    #   return self.__secure_call('POST', self.__baseUrl + constant.ROOM_TIMEPROGRAM_URL.replace("{index}", str(index)))
+
+    def set_dhw_setpoint_temperature(self, dhw_id, temperature):
+        return self.__secure_call('PUT', constant.DHW_SETPOINT_TEMPERATURE_URL.replace("{id}", str(dhw_id)),
+                                  {"temperature_setpoint": temperature})
 
     def close_session(self):
         logger.debug("Closing session")
@@ -73,12 +77,16 @@ class ApiConnector:
         try:
             self.__login()
             url = url.replace("{serialNumber}", self.__serialNumber)
+            url = self.__baseUrl + url
             response = self.__session.request(method, url, json=content,
                                               headers=None if content is None else self.__headers)
 
             if response.status_code > 499:
                 raise ApiError("Received error from server url: " + url + " and method " + method, response)
-            return response.json()
+            if response.text:
+                return response.json()
+            else:
+                return {"ok": "ok"}
         except ApiError:
             logger.error("Cannot %s url: %s", method, url)
             raise

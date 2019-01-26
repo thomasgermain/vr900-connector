@@ -1,4 +1,4 @@
-from .model import VaillantSystem, Room, Zone
+from .model import VaillantSystem, Room, Zone, DomesticHotWater
 from .modelmapper import Mapper
 from .apiconnector import ApiConnector
 from . import constant
@@ -17,12 +17,9 @@ class VaillantSystemManager:
             full_system = self.__connector.get_system_control()
             live_report = self.__connector.get_live_report()
             hvac_state = self.__connector.get_hvac_state()
-            # facilities = self.__connector.get_facilities()
-            # system_status = self.__connector.get_system_status()
 
             holiday_mode = self.__mapper.holiday_mode(full_system)
             boiler_status = self.__mapper.boiler_status(hvac_state, live_report)
-            # box_detail = self.__mapper.box_detail(facilities, system_status)
 
             zones = self.__mapper.zones(full_system)
 
@@ -34,21 +31,16 @@ class VaillantSystemManager:
                     break
 
             dhw = self.__mapper.domestic_hot_water(full_system, live_report)
-            # circulation = self.__mapper.circulation(full_system)
 
             outdoorTemperature = self.__mapper.outdoor_temp(full_system)
-            # installation_name = self.__mapper.installation_name(facilities)
             quickMode = self.__mapper.quick_mode(full_system)
 
             vaillant_system = VaillantSystem()
             vaillant_system.holidayMode = holiday_mode
             vaillant_system.boilerStatus = boiler_status
             vaillant_system.dhw = dhw
-            # vaillant_system.circulation = circulation
-            # vaillant_system.boxDetails = box_detail
             vaillant_system.outdoorTemperature = outdoorTemperature
             vaillant_system.zones = zones
-            # vaillant_system.name = installation_name
             vaillant_system.quickMode = quickMode
 
             return vaillant_system
@@ -70,3 +62,6 @@ class VaillantSystemManager:
     def refresh_zone(self, zone: Zone):
         self.__connector.autoCloseSession = True
         return self.__mapper.zones(self.__connector.get_zone(zone.id))
+
+    def set_dhw_setpoint_temperature(self, dhw: DomesticHotWater, temperature):
+        self.__connector.set_dhw_setpoint_temperature(dhw.id, temperature)

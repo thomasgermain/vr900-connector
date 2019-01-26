@@ -16,8 +16,9 @@ FACILITIES_URL = "/facilities"
 ROOMS_URl = "/facilities/{serialNumber}/rbr/v1/rooms"
 ROOM_TIMEPROGRAM_URL = "/facilities/{serialNumber}/rbr/v1/rooms/{index}/timeprogram"
 ZONES_URL = "/facilities/{serialNumber}/systemcontrol/v1/zones"
-DHW_URL = "/facilities/${serialNumber}/systemcontrol/v1/dhw/{id}/hotwater"
-CIRCULATION_URL = "/facilities/${serialNumber}/systemcontrol/v1/dhw/{id}/circulation"
+DHW_URL = "/facilities/{serialNumber}/systemcontrol/v1/dhw/{id}/hotwater"
+DHW_SETPOINT_TEMPERATURE_URL = DHW_URL + '/configuration/temperature_setpoint'
+CIRCULATION_URL = "/facilities/{serialNumber}/systemcontrol/v1/dhw/{id}/circulation"
 HVAC_STATE_URL = "/facilities/{serialNumber}/hvacstate/v1/overview"
 SYSTEM_STATUS_URL = "/facilities/{serialNumber}/system/v1/status"
 SYSTEM_CONTROL_URL = "/facilities/{serialNumber}/systemcontrol/v1"
@@ -29,7 +30,7 @@ WATER_HEATER_MODE_AUTO_ON = 'AUTO_ON'
 WATER_HEATER_MODE_OFF = 'OFF'
 WATER_HEATER_MODE_ON = 'ON'
 WATER_HEATER_MODE_BOOST = 'QM_HOTWATER_BOOST'
-WATER_HEATER_MODES = [WATER_HEATER_MODE_AUTO_ON, WATER_HEATER_MODE_AUTO_OFF,
-                      WATER_HEATER_MODE_ON, WATER_HEATER_MODE_OFF, WATER_HEATER_MODE_BOOST]
+WATER_HEATER_MODES = [WATER_HEATER_MODE_ON, WATER_HEATER_MODE_OFF, WATER_HEATER_MODE_BOOST]
+
 WATER_HEATER_MIN_TEMP = 35
 WATER_HEATER_MAX_TEMP = 70
