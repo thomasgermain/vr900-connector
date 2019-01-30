@@ -1,7 +1,12 @@
+import logging
+from datetime import date
+
 from .model import VaillantSystem, Room, Zone, DomesticHotWater
 from .modelmapper import Mapper
 from .apiconnector import ApiConnector
 from . import constant
+
+LOGGER = logging.getLogger('VaillantSystemManager')
 
 
 class VaillantSystemManager:
@@ -63,5 +68,56 @@ class VaillantSystemManager:
         self.__connector.autoCloseSession = True
         return self.__mapper.zones(self.__connector.get_zone(zone.id))
 
+    def set_away(self, start_date: date, end_date: date):
+        """TODO if not provided, default date, one day ?"""
+        pass
+
+    def remove_away(self):
+        """TODO """
+        pass
+
     def set_dhw_setpoint_temperature(self, dhw: DomesticHotWater, temperature):
-        self.__connector.set_dhw_setpoint_temperature(dhw.id, temperature)
+        LOGGER.info("Will try to set dhw target temperature to %s", temperature)
+        if temperature:
+            self.__connector.set_dhw_setpoint_temperature(dhw.id, round(float(temperature)))
+            return True
+        else:
+            LOGGER.debug("No temperature provided, nothing to do")
+            return False
+
+    """
+        Returns True/False whether new_mode has been set or not.
+        Throw an error if something went wrong while setting new_mode
+    """
+    def set_dhw_operation_mode(self, sys: VaillantSystem, new_mode):
+        LOGGER.info("Will try to set dhw mode to %s", new_mode)
+
+        dhw = sys.dhw
+        quick_mode = sys.quickMode
+        if new_mode:
+            if dhw.operationMode != new_mode:
+                if quick_mode:
+                    if new_mode != constant.WATER_HEATER_MODE_BOOST:
+                        LOGGER.debug("Quick mode %s is running and will get kept, new mode will be set", quick_mode.name)
+                        self.__connector.set_dhw_operation_mode(dhw.id, new_mode)
+                        return True
+                    else:
+                        LOGGER.debug("Quick mode %s is running and new_mode is also quick mode, won't change",
+                                     quick_mode.name)
+                        return False
+                else:
+                    if new_mode == constant.WATER_HEATER_MODE_BOOST:
+                        LOGGER.debug("No quick mode running, "
+                                     "new_mode is a quick mode and will be applied for the whole system")
+                        self.__connector.set_quick_mode(new_mode)
+                        return True
+                    else:
+                        LOGGER.debug("No quick mode running, new_mode is a classic mode")
+                        self.__connector.set_dhw_operation_mode(dhw.id, new_mode)
+                        return True
+            else:
+                LOGGER.debug("Mode %s is the same as previous mode %s", new_mode, dhw.operationMode)
+                return False
+        else:
+            LOGGER.debug("No new mode provided, nothing to do")
+            return False

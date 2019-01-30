@@ -5,7 +5,7 @@ from .fileutils import FileUtils
 from . import constant
 from .apierror import ApiError
 
-logger = logging.getLogger('Vr900Connector')
+LOGGER = logging.getLogger('Vr900Connector')
 
 """
 This is the low level smart.vaillant.com API connector.
@@ -68,8 +68,20 @@ class ApiConnector:
         return self.__secure_call('PUT', constant.DHW_SETPOINT_TEMPERATURE_URL.replace("{id}", str(dhw_id)),
                                   {"temperature_setpoint": temperature})
 
+    def set_dhw_operation_mode(self, dhw_id, mode):
+        return self.__secure_call('PUT', constant.DHW_SET_OPERATION_MODE_URL.replace("{id}", str(dhw_id)),
+                                  {"operation_mode": mode})
+
+    def remove_quick_mode(self):
+        return self.__secure_call('DELETE', constant.QUICK_MODE_URL)
+
+    def set_quick_mode(self, mode, duration=None):
+        return self.__secure_call('PUT', constant.QUICK_MODE_URL,
+                                  {"quickmode": {"quickmode": str(mode),
+                                                 "duration": duration if duration is not None else 0}})
+
     def close_session(self):
-        logger.debug("Closing session")
+        LOGGER.debug("Closing session")
         self.__session.close()
 
     def __secure_call(self, method, url, content=None):
@@ -81,17 +93,17 @@ class ApiConnector:
             response = self.__session.request(method, url, json=content,
                                               headers=None if content is None else self.__headers)
 
-            if response.status_code > 499:
+            if response.status_code > 399:
                 raise ApiError("Received error from server url: " + url + " and method " + method, response)
             if response.text:
                 return response.json()
             else:
                 return {"ok": "ok"}
         except ApiError:
-            logger.error("Cannot %s url: %s", method, url)
+            LOGGER.error("Cannot %s url: %s", method, url)
             raise
         except Exception as e:
-            logger.exception("Cannot %s url: %s", method, url)
+            LOGGER.exception("Cannot %s url: %s", method, url)
             raise ApiError(str(e), response)
         finally:
             if self.autoCloseSession:
@@ -103,7 +115,7 @@ class ApiConnector:
                 self.__session = self.__create_session()
 
                 if not self.__session.cookies:
-                    logger.info(
+                    LOGGER.info(
                         "No previous session found, will try to logging with username: %s and smartphoneId: %s to %s",
                         self.__user, self.__smartphoneId, self.__baseUrl)
 
@@ -111,21 +123,21 @@ class ApiConnector:
                     self.__get_cookies(authtoken)
                     self.__get_serial_number()
             else:
-                logger.debug("Session already exists, will test it...")
+                LOGGER.debug("Session already exists, will test it...")
                 testLoginResponse = self.__test_login()
                 if testLoginResponse.status_code != 200:
                     if relogin:
                         raise ApiError("Logging test failed", testLoginResponse)
                     else:
-                        logger.info("Cookie and serial files are outdated, re-logging")
+                        LOGGER.info("Cookie and serial files are outdated, re-logging")
                         self.__clear_session()
                         self.__login(True)
                 else:
-                    logger.debug("... session is ok")
+                    LOGGER.debug("... session is ok")
         except ApiError:
             raise
         except Exception as e:
-            logger.error("Error during logging", e)
+            LOGGER.error("Error during logging", e)
             raise ApiError("Error during logging " + str(e), None)
 
     def __request_token(self):
@@ -138,7 +150,7 @@ class ApiConnector:
         response = self.__session.post(self.__baseUrl + constant.REQUEST_NEW_TOKEN_URL,
                                        json=params, headers=self.__headers)
         if response.status_code == 200:
-            logger.debug("Token generation successful")
+            LOGGER.debug("Token generation successful")
             authtoken = response.json()["body"]["authToken"]
             if not authtoken:
                 raise ApiError("Generated token is empty", response)
@@ -155,7 +167,7 @@ class ApiConnector:
         response = self.__session.post(self.__baseUrl + constant.AUTHENTICATE_URL, json=params, headers=self.__headers)
 
         if response.status_code == 200:
-            logger.debug("Cookie successfully retrieved")
+            LOGGER.debug("Cookie successfully retrieved")
             self.__save_cookies_to_file()
         else:
             raise ApiError("Cannot generate token", response)
@@ -164,7 +176,7 @@ class ApiConnector:
         response = self.__session.get(self.__baseUrl + constant.FACILITIES_URL)
 
         if response.status_code == 200:
-            logger.debug("Serial number successfully retrieved")
+            LOGGER.debug("Serial number successfully retrieved")
             self.__serialNumber = response.json()["body"]["facilitiesList"][0]["serialNumber"]
             self.__save_serial_number_to_file()
         else:
@@ -176,7 +188,7 @@ class ApiConnector:
     def __create_session(self):
         session = requests.session()
         cookies = self.__load_cookies_from_file()
-        logger.debug("Found cookies %s", cookies)
+        LOGGER.debug("Found cookies %s", cookies)
         if cookies is not None:
             session.cookies = cookies
         return session

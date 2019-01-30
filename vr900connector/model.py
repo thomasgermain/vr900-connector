@@ -135,12 +135,41 @@ class Room(Heated):
     isWindowOpen: bool
     devices: List[Device]
 
+    def get_active_mode(self):
+
+        mode = copy.deepcopy(super().get_active_mode())
+        if self.quickVeto is None:
+            if self.operationMode == constant.THERMOSTAT_ROOM_MODE_OFF:
+                mode = TimeProgramDaySetting(str(0), constant.THERMOSTAT_MIN_TEMP, constant.THERMOSTAT_ROOM_MODE_OFF)
+            elif mode.mode == constant.THERMOSTAT_ROOM_MODE_MANUAL:
+                mode.temperature = self.targetTemperature
+            else:
+                if mode.temperature >= self.targetTemperature:
+                    mode.mode = constant.THERMOSTAT_ROOM_MODE_AUTO_OFF
+                else:
+                    mode.mode = constant.THERMOSTAT_ROOM_MODE_AUTO_ON
+        return mode
+
 
 class Zone(Heated):
     targetMinTemperature: float
     activeFunction: str
     rooms: List[Room]
     rbr: bool
+
+    def get_active_mode(self):
+
+        mode = copy.deepcopy(super().get_active_mode())
+        if self.quickVeto is None:
+            if self.operationMode == constant.THERMOSTAT_ZONE_MODE_OFF:
+                mode = TimeProgramDaySetting(str(0), constant.THERMOSTAT_MIN_TEMP, constant.THERMOSTAT_ZONE_MODE_OFF)
+            elif mode.mode == constant.THERMOSTAT_ROOM_MODE_MANUAL:
+                mode.temperature = self.targetTemperature
+            elif mode.mode == constant.THERMOSTAT_ZONE_MODE_DAY:
+                mode.temperature = self.targetTemperature
+            else:
+                mode.temperature = self.targetMinTemperature
+        return mode
 
 
 class DomesticHotWater(Heated):
@@ -156,11 +185,11 @@ class DomesticHotWater(Heated):
             # Mode AUTO
             mode = copy.deepcopy(super().get_active_mode())
             if mode.mode == constant.WATER_HEATER_MODE_ON:
-                mode.temperature = self.targetTemperature
                 mode.mode = constant.WATER_HEATER_MODE_AUTO_ON
+                mode.temperature = self.targetTemperature
             else:
-                mode.temperature = constant.WATER_HEATER_MIN_TEMP
                 mode.mode = constant.WATER_HEATER_MODE_AUTO_OFF
+                mode.temperature = constant.WATER_HEATER_MIN_TEMP
             return mode
 
 
