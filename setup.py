@@ -10,4 +10,5 @@ setup(name='vr900-connector',
       license='MIT',
       packages=['vr900connector'],
       zip_safe=False,
-      install_requires=["responses", "requests"])
+      setup_requires=["pytest-runner"],
+      install_requires=["requests", "responses", "pytest"])

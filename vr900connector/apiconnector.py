@@ -5,7 +5,7 @@ from .fileutils import FileUtils
 from . import constant
 from .apierror import ApiError
 
-LOGGER = logging.getLogger('Vr900Connector')
+LOGGER = logging.getLogger('ApiConnector')
 
 """
 This is the low level smart.vaillant.com API connector.
@@ -151,12 +151,12 @@ class ApiConnector:
                                        json=params, headers=self.__headers)
         if response.status_code == 200:
             LOGGER.debug("Token generation successful")
-            authtoken = response.json()["body"]["authToken"]
-            if not authtoken:
+            auth_token = response.json()["body"]["authToken"]
+            if not auth_token:
                 raise ApiError("Generated token is empty", response)
-            return authtoken
+            return auth_token
         else:
-            raise ApiError("Cannot generate token", response)
+            raise ApiError("Authentication failed", response)
 
     def __get_cookies(self, authtoken):
         params = {
@@ -170,7 +170,7 @@ class ApiConnector:
             LOGGER.debug("Cookie successfully retrieved")
             self.__save_cookies_to_file()
         else:
-            raise ApiError("Cannot generate token", response)
+            raise ApiError("Cannot get cookies", response)
 
     def __get_serial_number(self):
         response = self.__session.get(self.__baseUrl + constant.FACILITIES_URL)

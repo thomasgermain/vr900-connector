@@ -17,9 +17,9 @@ but it can be overridden. File are named .vr900-vaillant.cookies and .vr900-vail
 
 Here is an example how to use it:
 ```python
-from vr900connector import Vr900Connector
+from vr900connector.apiconnector import ApiConnector
    
-connector = Vr900Connector('user', 'pass')
+connector = ApiConnector('user', 'pass')
 connector.get_facilities() 
 ```
 to get some information about your installation, this returns the raw response, something like this:
@@ -60,5 +60,5 @@ from vaillantsystemmanager import VaillantSystemManager
 manager = VaillantSystemManager('user', 'pass')
 manager.get_system() 
 ```
-Basically, the connector is returning quite the same information as the android mobile app can display (and maybe a bit more)
+Basically, the connector is returning quite the same information as the android mobile app can display
 
