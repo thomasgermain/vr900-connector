@@ -1,7 +1,7 @@
 import datetime
 
-from .model import Room, Device, TimeProgram, TimeProgramDay, HolidayMode, BoilerStatus, DomesticHotWater, Circulation,\
-    Zone, QuickMode, QuickVeto
+from .model import Room, Device, TimeProgram, TimeProgramDay, HolidayMode, BoilerStatus, DomesticHotWater, \
+    Circulation, Zone, QuickMode, QuickVeto
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -21,7 +21,7 @@ class Mapper:
 
     def rooms(self, raw_rooms):
         rooms = list()
-        if raw_rooms is not None:
+        if raw_rooms:
             for raw_room in raw_rooms.get("body", dict()).get("rooms"):
                 rooms.append(self.room(raw_room))
 
@@ -50,7 +50,7 @@ class Mapper:
 
     def devices(self, raw_devices):
         devices = list()
-        if raw_devices is not None:
+        if raw_devices:
             for raw_device in raw_devices:
                 device = Device()
                 device.name = raw_device["name"]
@@ -64,7 +64,7 @@ class Mapper:
 
     def time_program(self, raw_time_program, mode_key_name=""):
         timeProgram = TimeProgram()
-        if raw_time_program is not None:
+        if raw_time_program:
             timeProgram.add_day("monday", self.time_program_day(raw_time_program.get("monday"), mode_key_name))
             timeProgram.add_day("tuesday", self.time_program_day(raw_time_program.get("tuesday"), mode_key_name))
             timeProgram.add_day("wednesday", self.time_program_day(raw_time_program.get("wednesday"), mode_key_name))
@@ -77,7 +77,7 @@ class Mapper:
 
     def time_program_day(self, raw_time_program_day, mode_key_name=""):
         timeProgramDay: TimeProgramDay = TimeProgramDay()
-        if raw_time_program_day is not None:
+        if raw_time_program_day:
             for time_setting in raw_time_program_day:
                 timeProgramDay.add_setting(time_setting.get("startTime"), time_setting.get("temperatureSetpoint"),
                                            time_setting.get(mode_key_name))
@@ -85,14 +85,15 @@ class Mapper:
         return timeProgramDay
 
     def holiday_mode(self, full_system):
-        holidayMode = None
+        holidayMode = HolidayMode()
+        holidayMode.active = False
+
         raw_holiday_mode = full_system.get("body", dict()).get("configuration", dict()).get("holidaymode")
-        if raw_holiday_mode is not None:
-            holidayMode = HolidayMode()
-            holidayMode.configuredTemperature = raw_holiday_mode.get("temperature_setpoint")
-            holidayMode.active = raw_holiday_mode.get("active")
-            holidayMode.startDate = datetime.datetime.strptime(raw_holiday_mode.get("start_date"), DATE_FORMAT)
-            holidayMode.endDate = datetime.datetime.strptime(raw_holiday_mode.get("end_date"), DATE_FORMAT)
+        if raw_holiday_mode and raw_holiday_mode.get("active"):
+            holidayMode.targetTemperature = raw_holiday_mode.get("temperature_setpoint")
+            holidayMode.active = True
+            holidayMode.startDate = datetime.datetime.strptime(raw_holiday_mode.get("start_date"), DATE_FORMAT).date()
+            holidayMode.endDate = datetime.datetime.strptime(raw_holiday_mode.get("end_date"), DATE_FORMAT).date()
 
         return holidayMode
 
@@ -100,9 +101,9 @@ class Mapper:
         boilerStatus = BoilerStatus()
 
         hvac_state_info = self.__find_hvac_message_status(hvac_state)
-        if hvac_state_info is not None:
+        if hvac_state_info:
             timestamp = hvac_state_info.get("timestamp")
-            if timestamp is not None:
+            if timestamp:
                 boilerStatus.lastUpdate = datetime.datetime.fromtimestamp(timestamp / 1000)
 
             boilerStatus.deviceName = hvac_state_info.get("deviceName")
@@ -112,12 +113,12 @@ class Mapper:
             boilerStatus.hint = hvac_state_info.get("hint")
 
         water_pressure_report = self.__find_water_pressure_report(live_report)
-        if water_pressure_report is not None:
+        if water_pressure_report:
             boilerStatus.waterPressure = water_pressure_report.get("value")
             boilerStatus.waterPressureUnit = water_pressure_report.get("unit")
 
         boiler_temp_report = self.__find_boiler_temperature_report(live_report)
-        if boiler_temp_report is not None:
+        if boiler_temp_report:
             boilerStatus.currentTemperature = boiler_temp_report.get("value")
 
         return boilerStatus
@@ -181,23 +182,22 @@ class Mapper:
 
     def domestic_hot_water(self, full_system, live_report):
         domesticHotWater = None
-        dhws = full_system.get("body", dict()).get("dhw", list())
+        hot_water_list = full_system.get("body", dict()).get("dhw", list())
 
-        if dhws:
-            dhw = dhws[0].get("hotwater")
-            if dhw is not None:
+        if hot_water_list:
+            hot_water = hot_water_list[0].get("hotwater")
+            if hot_water:
                 domesticHotWater = DomesticHotWater()
-                domesticHotWater.targetTemperature = dhw.get("configuration", dict()).get("temperature_setpoint")
-                domesticHotWater.operationMode = dhw.get("configuration", dict()).get("operation_mode")
-                domesticHotWater.timeProgram = self.time_program(dhw.get("timeprogram", dict()), "mode")
-                domesticHotWater.id = dhws[0].get("_id")
-                if dhws[0].get("controlled_by"):
-                    """Didn't find a way to get start_date, and remaining = 0. Quick veto dhw is 1 hour"""
-                    domesticHotWater.operationMode = self.quick_mode(full_system).name
+                domesticHotWater.targetTemperature = hot_water.get("configuration", dict()).get("temperature_setpoint")
+                domesticHotWater.operationMode = hot_water.get("configuration", dict()).get("operation_mode")
+                domesticHotWater.timeProgram = self.time_program(hot_water.get("timeprogram", dict()), "mode")
+                domesticHotWater.id = hot_water_list[0].get("_id")
+                if hot_water_list[0].get("controlled_by"):
+                    domesticHotWater.operationMode = self.quick_mode(full_system).boostMode.name
 
             dhw_report = self.__find_dhw_temperature_report(live_report)
 
-            if dhw_report is not None:
+            if dhw_report:
                 domesticHotWater.currentTemperature = dhw_report.get("value")
                 domesticHotWater.name = dhw_report.get("name")
 
@@ -205,16 +205,18 @@ class Mapper:
 
     def circulation(self, full_system):
         circulation = None
-        dhws = full_system.get("body", dict()).get("dhw", list())
+        hot_water_list = full_system.get("body", dict()).get("dhw", list())
 
-        if dhws:
-            raw_circulation = dhws[0].get("circulation")
-            if raw_circulation is not None:
+        if hot_water_list:
+            raw_circulation = hot_water_list[0].get("circulation")
+            if raw_circulation:
                 circulation = Circulation()
                 circulation.name = "Circulation"
                 circulation.timeProgram = self.time_program(raw_circulation.get("timeprogram", "setting"))
                 circulation.operationMode = raw_circulation.get("configuration", dict()).get("operationMode")
-                circulation.id = dhws[0].get("_id")
+                circulation.id = hot_water_list[0].get("_id")
+                circulation.targetTemperature = 0
+                circulation.currentTemperature = 0
 
         return circulation
 

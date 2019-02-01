@@ -66,7 +66,7 @@
                     "name": "RBR",
                     "link": {
                         "rel": "self",
-                        "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones"
+                        "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones"
                     }
                 },
                 "_id": "Control_ZO1"
@@ -220,7 +220,7 @@
                     "name": "QUICK_VETO",
                     "link": {
                         "rel": "self",
-                        "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones"
+                        "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones"
                     }
                 },
                 "_id": "Control_ZO2"
@@ -250,7 +250,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/heating/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/heating/timeprogram"
                 }
             },
             {
@@ -263,7 +263,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/heating/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/heating/timeprogram"
                 }
             },
             {
@@ -276,7 +276,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_SYS_MultiMatic/heating/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_SYS_MultiMatic/heating/timeprogram"
                 }
             },
             {
@@ -289,7 +289,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_DHW/heating/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_DHW/heating/timeprogram"
                 }
             },
             {
@@ -302,7 +302,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/cooling/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/cooling/timeprogram"
                 }
             },
             {
@@ -315,7 +315,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/cooling/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/cooling/timeprogram"
                 }
             },
             {
@@ -328,7 +328,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_SYS_MultiMatic/cooling/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_SYS_MultiMatic/cooling/timeprogram"
                 }
             },
             {
@@ -341,7 +341,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_DHW/cooling/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_DHW/cooling/timeprogram"
                 }
             },
             {
@@ -353,7 +353,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/heating/configuration/setpoint_temperature"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/heating/configuration/setpoint_temperature"
                 }
             },
             {
@@ -365,7 +365,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/heating/configuration/setback_temperature"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/heating/configuration/setback_temperature"
                 }
             },
             {
@@ -375,7 +375,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/cooling/configuration/mode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/cooling/configuration/mode"
                 }
             },
             {
@@ -389,7 +389,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/heating/configuration/mode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/heating/configuration/mode"
                 }
             },
             {
@@ -405,7 +405,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/configuration/quickmode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/configuration/quickmode"
                 }
             },
             {
@@ -417,7 +417,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/cooling/configuration/setpoint_temperature"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/cooling/configuration/setpoint_temperature"
                 }
             },
             {
@@ -429,7 +429,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/configuration/quick_veto"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/configuration/quick_veto"
                 }
             },
             {
@@ -441,7 +441,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/heating/configuration/setpoint_temperature"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/heating/configuration/setpoint_temperature"
                 }
             },
             {
@@ -453,7 +453,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/heating/configuration/setback_temperature"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/heating/configuration/setback_temperature"
                 }
             },
             {
@@ -463,7 +463,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/cooling/configuration/mode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/cooling/configuration/mode"
                 }
             },
             {
@@ -477,7 +477,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/heating/configuration/mode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/heating/configuration/mode"
                 }
             },
             {
@@ -493,7 +493,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/configuration/quickmode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/configuration/quickmode"
                 }
             },
             {
@@ -505,7 +505,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/cooling/configuration/setpoint_temperature"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/cooling/configuration/setpoint_temperature"
                 }
             },
             {
@@ -517,7 +517,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/configuration/quick_veto"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/configuration/quick_veto"
                 }
             },
             {
@@ -529,7 +529,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/configuration/holidaymode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/configuration/holidaymode"
                 }
             },
             {
@@ -541,7 +541,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/ventilation/Control_SYS_MultiMatic/fan/configuration/day_level"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/ventilation/Control_SYS_MultiMatic/fan/configuration/day_level"
                 }
             },
             {
@@ -555,7 +555,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/ventilation/Control_SYS_MultiMatic/fan/configuration/operation_mode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/ventilation/Control_SYS_MultiMatic/fan/configuration/operation_mode"
                 }
             },
             {
@@ -571,7 +571,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/configuration/quickmode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/configuration/quickmode"
                 }
             },
             {
@@ -583,7 +583,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/ventilation/Control_SYS_MultiMatic/fan/configuration/night_level"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/ventilation/Control_SYS_MultiMatic/fan/configuration/night_level"
                 }
             },
             {
@@ -597,7 +597,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/dhw/Control_DHW/hotwater/configuration/operation_mode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/dhw/Control_DHW/hotwater/configuration/operation_mode"
                 }
             }
         ],
@@ -825,7 +825,7 @@
                 "timestamp": 1546437198191,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/status"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/status"
                 }
             },
             {
@@ -833,7 +833,7 @@
                 "timestamp": 1546437170043,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/heating/configuration"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/heating/configuration"
                 }
             },
             {
@@ -841,7 +841,7 @@
                 "timestamp": 1546440702000,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/heating/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/heating/timeprogram"
                 }
             },
             {
@@ -849,7 +849,7 @@
                 "timestamp": 1546437254066,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/configuration/quick_veto"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/configuration/quick_veto"
                 }
             },
             {
@@ -857,7 +857,7 @@
                 "timestamp": 1546437254066,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO1/configuration"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO1/configuration"
                 }
             },
             {
@@ -865,7 +865,7 @@
                 "timestamp": 1546437215605,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/heating/configuration"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/heating/configuration"
                 }
             },
             {
@@ -873,7 +873,7 @@
                 "timestamp": 1546440702000,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/heating/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/heating/timeprogram"
                 }
             },
             {
@@ -881,7 +881,7 @@
                 "timestamp": 1546437242160,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/configuration/quick_veto"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/configuration/quick_veto"
                 }
             },
             {
@@ -889,7 +889,7 @@
                 "timestamp": 1546437242160,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/zones/Control_ZO2/configuration"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/zones/Control_ZO2/configuration"
                 }
             },
             {
@@ -897,7 +897,7 @@
                 "timestamp": 1546440857607,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/dhw/Control_DHW/circulation/configuration"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/dhw/Control_DHW/circulation/configuration"
                 }
             },
             {
@@ -905,7 +905,7 @@
                 "timestamp": 1546440857607,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/dhw/Control_DHW/hotwater/configuration"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/dhw/Control_DHW/hotwater/configuration"
                 }
             },
             {
@@ -913,7 +913,7 @@
                 "timestamp": 1546440702000,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/dhw/Control_DHW/circulation/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/dhw/Control_DHW/circulation/timeprogram"
                 }
             },
             {
@@ -921,7 +921,7 @@
                 "timestamp": 1546440702000,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/dhw/Control_DHW/hotwater/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/dhw/Control_DHW/hotwater/timeprogram"
                 }
             },
             {
@@ -929,7 +929,7 @@
                 "timestamp": 1546437246649,
                 "link": {
                     "rel": "self",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/configuration"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/configuration"
                 }
             },
             {
@@ -937,7 +937,7 @@
                 "timestamp": 1546437068769,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/configuration/holidaymode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/configuration/holidaymode"
                 }
             },
             {
@@ -945,7 +945,7 @@
                 "timestamp": 1546437246649,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/systemcontrol/v1/configuration/quickmode"
+                    "resourceLink": "/facilities/1234567890123456789012345678/systemcontrol/v1/configuration/quickmode"
                 }
             }
         ]

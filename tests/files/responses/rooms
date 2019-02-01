@@ -15,8 +15,8 @@
                             "name": "Device 1",
                             "sgtin": "R13456789012345678901234",
                             "deviceType": "VALVE",
-                            "isBatteryLow": false,
-                            "isRadioOutOfReach": false
+                            "isBatteryLow": true,
+                            "isRadioOutOfReach": true
                         }
                     ],
                     "iconId": "BEDROOM"
@@ -557,7 +557,7 @@
                 "timestamp": 1546438790000,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/rbr/v1/rooms/0/configuration"
+                    "resourceLink": "/facilities/1234567890123456789012345678/rbr/v1/rooms/0/configuration"
                 }
             },
             {
@@ -565,7 +565,7 @@
                 "timestamp": 1546293081000,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/rbr/v1/rooms/0/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/rbr/v1/rooms/0/timeprogram"
                 }
             },
             {
@@ -573,7 +573,7 @@
                 "timestamp": 1546438648000,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/rbr/v1/rooms/1/configuration"
+                    "resourceLink": "/facilities/1234567890123456789012345678/rbr/v1/rooms/1/configuration"
                 }
             },
             {
@@ -581,7 +581,7 @@
                 "timestamp": 1546293077000,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/rbr/v1/rooms/1/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/rbr/v1/rooms/1/timeprogram"
                 }
             },
             {
@@ -589,7 +589,7 @@
                 "timestamp": 1546437431000,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/rbr/v1/rooms/2/configuration"
+                    "resourceLink": "/facilities/1234567890123456789012345678/rbr/v1/rooms/2/configuration"
                 }
             },
             {
@@ -597,7 +597,7 @@
                 "timestamp": 1546293070000,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/rbr/v1/rooms/2/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/rbr/v1/rooms/2/timeprogram"
                 }
             },
             {
@@ -605,7 +605,7 @@
                 "timestamp": 1546438640000,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/rbr/v1/rooms/3/configuration"
+                    "resourceLink": "/facilities/1234567890123456789012345678/rbr/v1/rooms/3/configuration"
                 }
             },
             {
@@ -613,7 +613,7 @@
                 "timestamp": 1546293075000,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/rbr/v1/rooms/3/timeprogram"
+                    "resourceLink": "/facilities/1234567890123456789012345678/rbr/v1/rooms/3/timeprogram"
                 }
             }
         ]

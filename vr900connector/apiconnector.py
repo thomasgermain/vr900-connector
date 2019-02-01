@@ -28,6 +28,25 @@ class ApiConnector:
         self.__serialNumber = self.__load_serial_number_from_file()
         self.__session = self.__create_session()
 
+    """
+    url must be relative to base_url.
+    Serial number can be provided if you put {serialNumber} in url
+    """
+    def query(self, url, method='GET', payload=None):
+        return self.__secure_call(method, url, payload)
+
+    def get(self, url):
+        return self.query(url)
+
+    def put(self, url, payload=None):
+        return self.query(url, 'PUT', payload)
+
+    def post(self, url, payload=None):
+        return self.query(url, 'POST', payload)
+
+    def delete(self, url):
+        return self.query(url, 'DELETE')
+
     def get_facilities(self):
         return self.__secure_call('GET', constant.FACILITIES_URL)
 
@@ -84,14 +103,14 @@ class ApiConnector:
         LOGGER.debug("Closing session")
         self.__session.close()
 
-    def __secure_call(self, method, url, content=None):
+    def __secure_call(self, method, url, payload=None):
         response = None
         try:
             self.__login()
             url = url.replace("{serialNumber}", self.__serialNumber)
             url = self.__baseUrl + url
-            response = self.__session.request(method, url, json=content,
-                                              headers=None if content is None else self.__headers)
+            response = self.__session.request(method, url, json=payload,
+                                              headers=None if payload is None else self.__headers)
 
             if response.status_code > 399:
                 raise ApiError("Received error from server url: " + url + " and method " + method, response)

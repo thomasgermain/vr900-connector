@@ -35,18 +35,14 @@ class VaillantSystemManager:
                     zone.rooms = rooms
                     break
 
-            dhw = self.__mapper.domestic_hot_water(full_system, live_report)
+            hot_water = self.__mapper.domestic_hot_water(full_system, live_report)
+            circulation = self.__mapper.circulation(full_system)
 
             outdoorTemperature = self.__mapper.outdoor_temp(full_system)
             quickMode = self.__mapper.quick_mode(full_system)
 
-            vaillant_system = VaillantSystem()
-            vaillant_system.holidayMode = holiday_mode
-            vaillant_system.boilerStatus = boiler_status
-            vaillant_system.dhw = dhw
-            vaillant_system.outdoorTemperature = outdoorTemperature
-            vaillant_system.zones = zones
-            vaillant_system.quickMode = quickMode
+            vaillant_system = VaillantSystem(holiday_mode, boiler_status, zones, hot_water, circulation,
+                                             outdoorTemperature, quickMode)
 
             return vaillant_system
         finally:
@@ -97,7 +93,7 @@ class VaillantSystemManager:
         if new_mode:
             if dhw.operationMode != new_mode:
                 if quick_mode:
-                    if new_mode != constant.WATER_HEATER_MODE_BOOST:
+                    if new_mode != constant.HOT_WATER_MODE_BOOST:
                         LOGGER.debug("Quick mode %s is running and will get kept, new mode will be set", quick_mode.name)
                         self.__connector.set_dhw_operation_mode(dhw.id, new_mode)
                         return True
@@ -106,7 +102,7 @@ class VaillantSystemManager:
                                      quick_mode.name)
                         return False
                 else:
-                    if new_mode == constant.WATER_HEATER_MODE_BOOST:
+                    if new_mode == constant.HOT_WATER_MODE_BOOST:
                         LOGGER.debug("No quick mode running, "
                                      "new_mode is a quick mode and will be applied for the whole system")
                         self.__connector.set_quick_mode(new_mode)

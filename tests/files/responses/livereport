@@ -52,7 +52,7 @@
                 "timestamp": 1546268600,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/livereport/v1/devices/Control_DHW/reports/DomesticHotWaterTankTemperature"
+                    "resourceLink": "/facilities/1234567890123456789012345678/livereport/v1/devices/Control_DHW/reports/DomesticHotWaterTankTemperature"
                 }
             },
             {
@@ -60,7 +60,7 @@
                 "timestamp": 1546268601,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/livereport/v1/devices/Control_CC1/reports/FlowTemperatureSensor"
+                    "resourceLink": "/facilities/1234567890123456789012345678/livereport/v1/devices/Control_CC1/reports/FlowTemperatureSensor"
                 }
             },
             {
@@ -68,7 +68,7 @@
                 "timestamp": 1546268603,
                 "link": {
                     "rel": "child",
-                    "resourceLink": "/facilities/21174800202529220938008828N8/livereport/v1/devices/Control_SYS_MultiMatic/reports/WaterPressureSensor"
+                    "resourceLink": "/facilities/1234567890123456789012345678/livereport/v1/devices/Control_SYS_MultiMatic/reports/WaterPressureSensor"
                 }
             }
         ]
