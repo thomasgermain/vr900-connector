@@ -55,7 +55,7 @@ The underlying connector is hidden and raw responses are mapped to more useful o
 
 For now, the only function is:
 ```python
-from vaillantsystemmanager import VaillantSystemManager
+from vr900connector.vaillantsystemmanager import VaillantSystemManager
    
 manager = VaillantSystemManager('user', 'pass')
 manager.get_system() 
