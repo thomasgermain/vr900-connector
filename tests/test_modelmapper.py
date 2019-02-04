@@ -17,7 +17,7 @@ class ModelMapperTest(unittest.TestCase):
             system = json.loads(file.read())
 
         quick_mode = self.mapper.quick_mode(system)
-        self.assertEqual(constant.HOT_WATER_MODE_BOOST, quick_mode.boostMode.name)
+        self.assertEqual(constant.QM_HOTWATER_BOOST, quick_mode.boostMode.name)
         self.assertEqual(0, quick_mode.remainingDuration)
 
     def test_map_no_quick_mode(self):

@@ -93,7 +93,7 @@ class VaillantSystemManager:
         if new_mode:
             if dhw.operationMode != new_mode:
                 if quick_mode:
-                    if new_mode != constant.HOT_WATER_MODE_BOOST:
+                    if new_mode != constant.QM_HOTWATER_BOOST:
                         LOGGER.debug("Quick mode %s is running and will get kept, new mode will be set", quick_mode.name)
                         self.__connector.set_dhw_operation_mode(dhw.id, new_mode)
                         return True
@@ -102,7 +102,7 @@ class VaillantSystemManager:
                                      quick_mode.name)
                         return False
                 else:
-                    if new_mode == constant.HOT_WATER_MODE_BOOST:
+                    if new_mode == constant.QM_HOTWATER_BOOST:
                         LOGGER.debug("No quick mode running, "
                                      "new_mode is a quick mode and will be applied for the whole system")
                         self.__connector.set_quick_mode(new_mode)

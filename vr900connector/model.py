@@ -193,7 +193,7 @@ class Room(Component):
         mode = copy.deepcopy(super().get_current_time_program())
         if self.quickVeto is None:
             if self.operationMode == constant.THERMOSTAT_ROOM_MODE_OFF:
-                mode = TimeProgramDaySetting(str(0), constant.THERMOSTAT_MIN_TEMP, constant.THERMOSTAT_ROOM_MODE_OFF)
+                mode = TimeProgramDaySetting(str(0), constant.FROST_PROTECTION_TEMP, constant.THERMOSTAT_ROOM_MODE_OFF)
             elif mode.mode == constant.THERMOSTAT_ROOM_MODE_MANUAL:
                 mode.temperature = self.targetTemperature
             else:
@@ -214,7 +214,7 @@ class Zone(Component):
         mode = copy.deepcopy(super().get_current_time_program())
         if self.quickVeto is None:
             if self.operationMode == constant.THERMOSTAT_ZONE_MODE_OFF:
-                mode = TimeProgramDaySetting(str(0), constant.THERMOSTAT_MIN_TEMP, constant.THERMOSTAT_ZONE_MODE_OFF)
+                mode = TimeProgramDaySetting(str(0), constant.FROST_PROTECTION_TEMP, constant.THERMOSTAT_ZONE_MODE_OFF)
             elif mode.mode == constant.THERMOSTAT_ROOM_MODE_MANUAL:
                 mode.temperature = self.targetTemperature
             elif mode.mode == constant.THERMOSTAT_ZONE_MODE_DAY:
@@ -232,8 +232,8 @@ class DomesticHotWater(Component):
             return TimeProgramDaySetting(str(0), self.targetTemperature, constant.HOT_WATER_MODE_ON)
         elif self.operationMode == constant.HOT_WATER_MODE_OFF:
             return TimeProgramDaySetting(str(0), constant.HOT_WATER_MIN_TEMP, constant.HOT_WATER_MODE_OFF)
-        elif self.operationMode == constant.HOT_WATER_MODE_BOOST:
-            return TimeProgramDaySetting(str(0), self.targetTemperature, constant.HOT_WATER_MODE_BOOST)
+        elif self.operationMode == constant.QM_HOTWATER_BOOST:
+            return TimeProgramDaySetting(str(0), self.targetTemperature, constant.QM_HOTWATER_BOOST)
         else:
             # Mode AUTO
             mode = copy.deepcopy(super().get_current_time_program())
@@ -262,7 +262,7 @@ class VaillantSystem:
     _holidayMode: HolidayMode = HolidayMode()
     _boilerStatus: BoilerStatus = None
     _zones: Dict[str, Zone] = dict()
-    _rooms: Dict[str, Room] = dict()
+    _rooms: Dict[int, Room] = dict()
     _hotWater: DomesticHotWater = None
     _circulation: Circulation = None
     _outdoorTemperature: float = None
@@ -291,21 +291,27 @@ class VaillantSystem:
 
     def get_zones(self):
         return self._zones.values()
+
+    def get_zone(self, zone_id: str):
+        return self._zones[zone_id]
+
+    def get_room(self, room_id: int):
+        return self._rooms[room_id]
             
     def get_active_mode(self, component_id: str):
         zone = self._zones[component_id]
         if zone:
-            return self._get_active_mode_zone(zone)
+            return self.get_active_mode_zone(zone)
 
         room = self._rooms[component_id]
         if room:
-            return self._get_active_mode_room(room)
+            return self.get_active_mode_room(room)
 
         if self._hotWater.id == component_id:
-            return self._get_active_mode_hot_water(self._hotWater)
+            return self.get_active_mode_hot_water(self._hotWater)
 
         if self._circulation.id == component_id:
-            return self._get_active_mode_circulation(self._circulation)
+            return self.get_active_mode_circulation(self._circulation)
 
         return None
 
@@ -317,13 +323,13 @@ class VaillantSystem:
         """Global system quick mode takes over zone settings"""
         if self._quickMode and self._quickMode.boostMode.forZone:
             if self._quickMode.boostMode == BoostModes.QM_VENTILATION_BOOST:
-                return ActiveMode(constant.THERMOSTAT_MIN_TEMP, self._quickMode.boostMode.name)
+                return ActiveMode(constant.FROST_PROTECTION_TEMP, self._quickMode.boostMode.name)
 
             if self._quickMode.boostMode == BoostModes.QM_ONE_DAY_AWAY:
                 return ActiveMode(zone.targetMinTemperature, self._quickMode.boostMode.name)
 
             if self._quickMode.boostMode == BoostModes.QM_SYSTEM_OFF:
-                return ActiveMode(constant.THERMOSTAT_MIN_TEMP, self._quickMode.boostMode.name)
+                return ActiveMode(constant.FROST_PROTECTION_TEMP, self._quickMode.boostMode.name)
 
             if self._quickMode.boostMode == BoostModes.QM_ONE_DAY_AT_HOME:
                 return ActiveMode(zone.targetTemperature, self._quickMode.boostMode.name)
@@ -334,6 +340,9 @@ class VaillantSystem:
             return None
 
         time_program = zone.get_current_time_program()
+        if zone.quickVeto:
+            return ActiveMode(time_program.temperature, time_program.mode)
+
         return ActiveMode(time_program.temperature, zone.operationMode, time_program.mode)
 
     def get_active_mode_room(self, room: Room):
@@ -344,17 +353,20 @@ class VaillantSystem:
         """Global system quick mode takes over zone settings"""
         if self._quickMode and self._quickMode.boostMode.forRoom:
             if self._quickMode.boostMode == BoostModes.QM_VENTILATION_BOOST:
-                return ActiveMode(constant.THERMOSTAT_MIN_TEMP, self._quickMode.boostMode.name)
+                return ActiveMode(constant.FROST_PROTECTION_TEMP, self._quickMode.boostMode.name)
 
             if self._quickMode.boostMode == BoostModes.QM_ONE_DAY_AWAY:
                 return ActiveMode(room.zone.targetMinTemperature, self._quickMode.boostMode.name)
 
             if self._quickMode.boostMode == BoostModes.QM_SYSTEM_OFF:
-                return ActiveMode(constant.THERMOSTAT_MIN_TEMP, self._quickMode.boostMode.name)
+                return ActiveMode(constant.FROST_PROTECTION_TEMP, self._quickMode.boostMode.name)
 
             return None
 
         time_program = room.get_current_time_program()
+        if room.quickVeto:
+            return ActiveMode(time_program.temperature, time_program.mode)
+
         return ActiveMode(time_program.temperature, room.operationMode, time_program.mode)
 
     def get_active_mode_circulation(self, circulation: Circulation = None):
@@ -381,6 +393,9 @@ class VaillantSystem:
         if self._quickMode and self._quickMode.boostMode.forWaterHeater:
             if self._quickMode.boostMode == BoostModes.QM_HOTWATER_BOOST:
                 return ActiveMode(hot_water.targetTemperature, self._quickMode.boostMode.name)
+
+            if self._quickMode.boostMode == BoostModes.QM_SYSTEM_OFF:
+                return ActiveMode(constant.FROST_PROTECTION_TEMP, self._quickMode.boostMode.name)
 
         time_program = hot_water.get_current_time_program()
         return ActiveMode(time_program.temperature, hot_water.operationMode, time_program.mode)
