@@ -57,46 +57,43 @@ class ApiConnector:
         return self.get(constant.REPEATERS_URL)
 
     def get_facilities(self):
-        return self.__secure_call('GET', constant.FACILITIES_URL)
+        return self.get(constant.FACILITIES_URL)
 
     def get_live_report(self):
-        return self.__secure_call('GET', constant.LIVE_REPORT_URL)
+        return self.get(constant.LIVE_REPORT_URL)
 
     def get_system_status(self):
-        return self.__secure_call('GET', constant.SYSTEM_STATUS_URL)
+        return self.get(constant.SYSTEM_STATUS_URL)
 
     def get_hvac_state(self):
-        return self.__secure_call('GET', constant.HVAC_STATE_URL)
+        return self.get(constant.HVAC_STATE_URL)
 
     def get_rooms(self):
-        return self.__secure_call('GET', constant.ROOMS_URL)
+        return self.get(constant.ROOMS_URL)
 
     def get_system_control(self):
-        return self.__secure_call('GET', constant.SYSTEM_CONTROL_URL)
+        return self.get(constant.SYSTEM_CONTROL_URL)
 
     def get_zones(self):
-        return self.__secure_call('GET', constant.ZONES_URL)
+        return self.get(constant.ZONES_URL)
 
     def get_room(self, index):
-        return self.__secure_call('GET', constant.ROOMS_URL + "/" + str(index))
+        return self.get(constant.ROOMS_URL + "/" + str(index))
 
     def get_zone(self, zone_id):
-        return self.__secure_call('GET', constant.ZONES_URL + "/" + str(zone_id))
+        return self.get(constant.ZONES_URL + "/" + str(zone_id))
 
     def get_dhw(self, dhw_id):
-        return self.__secure_call('GET', self.__baseUrl + constant.DHW_URL.replace("{id}", str(dhw_id)))
+        return self.get(self.__baseUrl + constant.DHW_URL.replace("{id}", str(dhw_id)))
 
     def get_circulation(self, dhw_id):
-        return self.__secure_call('GET', self.__baseUrl + constant.CIRCULATION_URL.replace("{id}", str(dhw_id)))
+        return self.get(self.__baseUrl + constant.CIRCULATION_URL.replace("{id}", str(dhw_id)))
 
-    # def update_time_program_room(self, index, time_program):
-    #   return self.__secure_call('POST', self.__baseUrl + constant.ROOM_TIMEPROGRAM_URL.replace("{index}", str(index)))
-
-    def set_dhw_setpoint_temperature(self, dhw_id, temperature):
-        return self.__secure_call('PUT', constant.DHW_SETPOINT_TEMPERATURE_URL.replace("{id}", str(dhw_id)),
+    def set_hot_water_setpoint_temperature(self, hot_water_id, temperature):
+        return self.__secure_call('PUT', constant.DHW_SETPOINT_TEMPERATURE_URL.replace("{id}", str(hot_water_id)),
                                   {"temperature_setpoint": temperature})
 
-    def set_dhw_operation_mode(self, dhw_id, mode):
+    def set_hot_water_operation_mode(self, dhw_id, mode):
         return self.__secure_call('PUT', constant.DHW_SET_OPERATION_MODE_URL.replace("{id}", str(dhw_id)),
                                   {"operation_mode": mode})
 

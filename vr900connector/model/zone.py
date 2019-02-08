@@ -3,7 +3,7 @@ from typing import List
 
 from .constant import THERMOSTAT_ZONE_MODE_OFF, THERMOSTAT_ROOM_MODE_MANUAL, FROST_PROTECTION_TEMP, \
     THERMOSTAT_ZONE_MODE_DAY
-from . import Component, Room
+from . import Component, Room, TimeProgramDaySetting
 
 
 class Zone(Component):

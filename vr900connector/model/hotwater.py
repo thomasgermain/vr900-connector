@@ -2,7 +2,7 @@ import copy
 
 from .constant import HOT_WATER_MODE_OFF, QM_HOTWATER_BOOST, HOT_WATER_MODE_ON, \
     HOT_WATER_MODE_AUTO_OFF, HOT_WATER_MIN_TEMP, HOT_WATER_MODE_AUTO_ON
-from . import Component
+from . import Component, TimeProgramDaySetting
 
 
 class HotWater(Component):
