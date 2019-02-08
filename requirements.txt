@@ -1,2 +1,3 @@
 responses
 requests
+jsonpickle

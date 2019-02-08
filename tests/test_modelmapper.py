@@ -3,8 +3,7 @@ import unittest
 from datetime import date
 
 from .testutil import TestUtil
-from vr900connector.modelmapper import Mapper
-from vr900connector import constant
+from vr900connector.model import Mapper, constant
 
 
 class ModelMapperTest(unittest.TestCase):

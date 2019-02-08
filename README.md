@@ -2,6 +2,12 @@
 
 For now, the connector is ony able to read data from the system, it only handles only one heating system (one serial number). I cannot test more than that since I only have heating system at home
 
+## Tests
+You can run tests with
+```bash
+python3 setup.py pytest
+```
+
 ## Layers
 
 The connector is separate in two main layers:
@@ -58,7 +64,7 @@ For now, the only function is:
 from vr900connector.vaillantsystemmanager import VaillantSystemManager
    
 manager = VaillantSystemManager('user', 'pass')
-manager.get_system() 
+system = manager.get_system() 
 ```
 Basically, the connector is returning quite the same information as the android mobile app can display
 

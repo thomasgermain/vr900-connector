@@ -4,8 +4,8 @@ import unittest
 import responses
 
 from .testutil import TestUtil
-from vr900connector.apiconnector import ApiConnector
-from vr900connector.apierror import ApiError
+from vr900connector.api.apiconnector import ApiConnector
+from vr900connector.api.apierror import ApiError
 
 
 class ApiConnectorTest(unittest.TestCase):

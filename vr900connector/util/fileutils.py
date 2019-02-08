@@ -2,8 +2,6 @@ import os
 import pickle
 import logging
 
-from . import constant
-
 logger = logging.getLogger('FileUtils')
 
 
@@ -21,7 +19,7 @@ class FileUtils:
             return None
 
     @staticmethod
-    def save_to_file(data, filename, path=constant.DEFAULT_FILES_DIR):
+    def save_to_file(data, filename, path):
         try:
             os.makedirs(path, exist_ok=True)
             with open(path + "/" + filename, "wb+") as f:
@@ -32,3 +30,7 @@ class FileUtils:
     @staticmethod
     def delete_file(path):
         os.remove(path)
+
+    @staticmethod
+    def delete_dir(path):
+        os.rmdir(path)

@@ -1,18 +1,20 @@
 import logging
 from datetime import date
 
-from .model import VaillantSystem, Room, Zone, DomesticHotWater
-from .modelmapper import Mapper
-from .apiconnector import ApiConnector
-from . import constant
+from .model.constant import QM_HOTWATER_BOOST
+from .model import Room, Zone
+from .model import Mapper
+from .api import ApiConnector
+from .api.constant import DEFAULT_SMARTPHONE_ID, DEFAULT_BASE_URL, DEFAULT_FILES_DIR
+from .model import System, HotWater
 
 LOGGER = logging.getLogger('VaillantSystemManager')
 
 
 class VaillantSystemManager:
 
-    def __init__(self, user, password, smartphone_id=constant.DEFAULT_SMARTPHONE_ID,
-                 base_url=constant.DEFAULT_BASE_URL, file_dir=constant.DEFAULT_FILES_DIR):
+    def __init__(self, user, password, smartphone_id=DEFAULT_SMARTPHONE_ID,
+                 base_url=DEFAULT_BASE_URL, file_dir=DEFAULT_FILES_DIR):
         self.__connector = ApiConnector(user, password, smartphone_id, base_url, file_dir)
         self.__mapper = Mapper()
 
@@ -41,8 +43,8 @@ class VaillantSystemManager:
             outdoorTemperature = self.__mapper.outdoor_temp(full_system)
             quickMode = self.__mapper.quick_mode(full_system)
 
-            vaillant_system = VaillantSystem(holiday_mode, boiler_status, zones, hot_water, circulation,
-                                             outdoorTemperature, quickMode)
+            vaillant_system = System(holiday_mode, boiler_status, zones, hot_water, circulation,
+                                     outdoorTemperature, quickMode)
 
             return vaillant_system
         finally:
@@ -72,10 +74,10 @@ class VaillantSystemManager:
         """TODO """
         pass
 
-    def set_dhw_setpoint_temperature(self, dhw: DomesticHotWater, temperature):
+    def set_dhw_setpoint_temperature(self, hot_water: HotWater, temperature):
         LOGGER.info("Will try to set dhw target temperature to %s", temperature)
         if temperature:
-            self.__connector.set_dhw_setpoint_temperature(dhw.id, round(float(temperature)))
+            self.__connector.set_dhw_setpoint_temperature(hot_water.id, round(float(temperature)))
             return True
         else:
             LOGGER.debug("No temperature provided, nothing to do")
@@ -85,24 +87,26 @@ class VaillantSystemManager:
         Returns True/False whether new_mode has been set or not.
         Throw an error if something went wrong while setting new_mode
     """
-    def set_dhw_operation_mode(self, sys: VaillantSystem, new_mode):
+
+    def set_dhw_operation_mode(self, sys: System, new_mode):
         LOGGER.info("Will try to set dhw mode to %s", new_mode)
 
-        dhw = sys.dhw
+        dhw = sys.hotWater
         quick_mode = sys.quickMode
         if new_mode:
             if dhw.operationMode != new_mode:
                 if quick_mode:
-                    if new_mode != constant.QM_HOTWATER_BOOST:
-                        LOGGER.debug("Quick mode %s is running and will get kept, new mode will be set", quick_mode.name)
+                    if new_mode != QM_HOTWATER_BOOST:
+                        LOGGER.debug("Quick mode %s is running and will get kept, new mode will be set",
+                                     quick_mode.boostMode.name)
                         self.__connector.set_dhw_operation_mode(dhw.id, new_mode)
                         return True
                     else:
                         LOGGER.debug("Quick mode %s is running and new_mode is also quick mode, won't change",
-                                     quick_mode.name)
+                                     quick_mode.boostMode.name)
                         return False
                 else:
-                    if new_mode == constant.QM_HOTWATER_BOOST:
+                    if new_mode == QM_HOTWATER_BOOST:
                         LOGGER.debug("No quick mode running, "
                                      "new_mode is a quick mode and will be applied for the whole system")
                         self.__connector.set_quick_mode(new_mode)
@@ -117,3 +121,6 @@ class VaillantSystemManager:
         else:
             LOGGER.debug("No new mode provided, nothing to do")
             return False
+
+    def logout(self):
+        self.__connector.close_session(True)

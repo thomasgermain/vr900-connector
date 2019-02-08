@@ -1,11 +1,11 @@
 import requests
 import logging
 
-from .fileutils import FileUtils
+from ..util.fileutils import FileUtils
+from . import ApiError
 from . import constant
-from .apierror import ApiError
 
-LOGGER = logging.getLogger('ApiConnector')
+LOGGER = logging.getLogger('Connector')
 
 """
 This is the low level smart.vaillant.com API connector.
@@ -47,6 +47,15 @@ class ApiConnector:
     def delete(self, url):
         return self.query(url, 'DELETE')
 
+    def get_current_pv_metering_inf(self):
+        return self.get(constant.CURRENT_PV_METERING_INFO_URL)
+
+    def get_emf(self):
+        return self.get(constant.EMF_URL)
+
+    def get_repeaters(self):
+        return self.get(constant.REPEATERS_URL)
+
     def get_facilities(self):
         return self.__secure_call('GET', constant.FACILITIES_URL)
 
@@ -60,7 +69,7 @@ class ApiConnector:
         return self.__secure_call('GET', constant.HVAC_STATE_URL)
 
     def get_rooms(self):
-        return self.__secure_call('GET', constant.ROOMS_URl)
+        return self.__secure_call('GET', constant.ROOMS_URL)
 
     def get_system_control(self):
         return self.__secure_call('GET', constant.SYSTEM_CONTROL_URL)
@@ -69,7 +78,7 @@ class ApiConnector:
         return self.__secure_call('GET', constant.ZONES_URL)
 
     def get_room(self, index):
-        return self.__secure_call('GET', constant.ROOMS_URl + "/" + str(index))
+        return self.__secure_call('GET', constant.ROOMS_URL + "/" + str(index))
 
     def get_zone(self, zone_id):
         return self.__secure_call('GET', constant.ZONES_URL + "/" + str(zone_id))
@@ -99,9 +108,12 @@ class ApiConnector:
                                   {"quickmode": {"quickmode": str(mode),
                                                  "duration": duration if duration is not None else 0}})
 
-    def close_session(self):
+    def close_session(self, clear=False):
         LOGGER.debug("Closing session")
         self.__session.close()
+        if clear:
+            self.__clear_session()
+            FileUtils.delete_dir(self.__fileDir)
 
     def __secure_call(self, method, url, payload=None):
         response = None
