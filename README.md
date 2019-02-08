@@ -23,7 +23,7 @@ but it can be overridden. File are named .vr900-vaillant.cookies and .vr900-vail
 
 Here is an example how to use it:
 ```python
-from vr900connector.apiconnector import ApiConnector
+from vr900connector.api import ApiConnector
    
 connector = ApiConnector('user', 'pass')
 connector.get_facilities() 
