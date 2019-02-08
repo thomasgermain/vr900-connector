@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='vr900-connector',
-      version='0.0.23',
+      version='0.0.24',
       description='Connector to handle vaillant vr900/vr920 data',
       long_description='Connector to handle vaillant vr900/vr920 data',
       url='https://github.com/thomasgermain/vr900-connector.git',
