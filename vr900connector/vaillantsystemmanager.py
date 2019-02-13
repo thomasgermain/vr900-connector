@@ -83,7 +83,7 @@ class VaillantSystemManager:
     def set_hot_water_setpoint_temperature(self, hot_water: HotWater, temperature):
         LOGGER.info("Will try to set dhw target temperature to %s", temperature)
         if temperature:
-            self.__connector.set_hot_water_operation_mode(hot_water.id, round(float(temperature)))
+            self.__connector.set_hotwater_operation_mode(hot_water.id, round(float(temperature)))
             return True
         else:
             LOGGER.debug("No temperature provided, nothing to do")
@@ -105,7 +105,7 @@ class VaillantSystemManager:
                     if new_mode != QM_HOTWATER_BOOST:
                         LOGGER.debug("Quick mode %s is running and will get kept, new mode will be set",
                                      quick_mode.boostMode.name)
-                        self.__connector.set_hot_water_operation_mode(hot_water.id, new_mode)
+                        self.__connector.set_hotwater_operation_mode(hot_water.id, new_mode)
                         return True
                     else:
                         LOGGER.debug("Quick mode %s is running and new_mode is also quick mode, won't change",
@@ -119,7 +119,7 @@ class VaillantSystemManager:
                         return True
                     else:
                         LOGGER.debug("No quick mode running, new_mode is a classic mode")
-                        self.__connector.set_hot_water_operation_mode(hot_water.id, new_mode)
+                        self.__connector.set_hotwater_operation_mode(hot_water.id, new_mode)
                         return True
             else:
                 LOGGER.debug("Mode %s is the same as previous mode %s", new_mode, hot_water.operationMode)
