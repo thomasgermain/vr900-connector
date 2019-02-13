@@ -1,5 +1,7 @@
 # vr900-connector
 
+<b>Please note that the project is still in beta state, it means  I may do some (un)intentional breaking changes</b>
+
 For now, the connector is ony able to read data from the system, it only handles only one heating system (one serial number). I cannot test more than that since I only have heating system at home
 
 ## Tests
@@ -68,3 +70,10 @@ system = manager.get_system()
 ```
 Basically, the connector is returning quite the same information as the android mobile app can display
 
+## Todos
+* Add model / manager classes documentation
+* Add some doc for pypi
+* Travis CI build
+* Proper way to deploy to pypi and create tag
+* Add updates method (alter system config)
+* find a more fancy name

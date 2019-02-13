@@ -209,11 +209,11 @@ class Mapper:
                 if hot_water_list[0].get("controlled_by"):
                     hotWater.operationMode = Mapper.quick_mode(full_system).boostMode.name
 
-            dhw_report = Mapper.__find_dhw_temperature_report(live_report)
+                dhw_report = Mapper.__find_dhw_temperature_report(live_report)
 
-            if dhw_report:
-                hotWater.currentTemperature = dhw_report.get("value")
-                hotWater.name = dhw_report.get("name")
+                if dhw_report:
+                    hotWater.currentTemperature = dhw_report.get("value")
+                    hotWater.name = dhw_report.get("name")
 
         return hotWater
 

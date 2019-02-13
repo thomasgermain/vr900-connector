@@ -2,7 +2,7 @@ import json
 import unittest
 from datetime import date
 
-from .testutil import TestUtil
+from tests.testutil import TestUtil
 from vr900connector.model import Mapper, constant
 
 

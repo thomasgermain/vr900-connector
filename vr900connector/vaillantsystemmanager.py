@@ -13,10 +13,11 @@ LOGGER = logging.getLogger('VaillantSystemManager')
 
 class VaillantSystemManager:
 
+    __connector: ApiConnector = None
+
     def __init__(self, user, password, smartphone_id=DEFAULT_SMARTPHONE_ID,
                  base_url=DEFAULT_BASE_URL, file_dir=DEFAULT_FILES_DIR):
         self.__connector = ApiConnector(user, password, smartphone_id, base_url, file_dir)
-        self.__mapper = Mapper()
 
     def get_system(self):
         try:
@@ -25,23 +26,23 @@ class VaillantSystemManager:
             live_report = self.__connector.get_live_report()
             hvac_state = self.__connector.get_hvac_state()
 
-            holiday_mode = self.__mapper.holiday_mode(full_system)
-            boiler_status = self.__mapper.boiler_status(hvac_state, live_report)
+            holiday_mode = Mapper.holiday_mode(full_system)
+            boiler_status = Mapper.boiler_status(hvac_state, live_report)
 
-            zones = self.__mapper.zones(full_system)
+            zones = Mapper.zones(full_system)
 
             for zone in zones:
                 if zone.rbr:
                     raw_rooms = self.__connector.get_rooms()
-                    rooms = self.__mapper.rooms(raw_rooms)
+                    rooms = Mapper.rooms(raw_rooms)
                     zone.rooms = rooms
                     break
 
-            hot_water = self.__mapper.domestic_hot_water(full_system, live_report)
-            circulation = self.__mapper.circulation(full_system)
+            hot_water = Mapper.domestic_hot_water(full_system, live_report)
+            circulation = Mapper.circulation(full_system)
 
-            outdoorTemperature = self.__mapper.outdoor_temp(full_system)
-            quickMode = self.__mapper.quick_mode(full_system)
+            outdoorTemperature = Mapper.outdoor_temp(full_system)
+            quickMode = Mapper.quick_mode(full_system)
 
             vaillant_system = System(holiday_mode, boiler_status, zones, hot_water, circulation,
                                      outdoorTemperature, quickMode)
@@ -50,21 +51,26 @@ class VaillantSystemManager:
         finally:
             self.__connector.close_session()
 
+    def get_hot_water(self):
+        full_system = self.__connector.get_system_control()
+        live_report = self.__connector.get_live_report()
+        return Mapper.domestic_hot_water(full_system, live_report)
+
     def refresh_room(self, room: Room):
         self.__connector.autoCloseSession = True
-        return self.__mapper.room(self.__connector.get_room(room.id))
+        return Mapper.room(self.__connector.get_room(room.id))
 
     def refresh_rooms(self):
         self.__connector.autoCloseSession = True
-        return self.__mapper.rooms(self.__connector.get_rooms())
+        return Mapper.rooms(self.__connector.get_rooms())
 
     def refresh_zones(self):
         self.__connector.autoCloseSession = True
-        return self.__mapper.zones(self.__connector.get_zones())
+        return Mapper.zones(self.__connector.get_zones())
 
     def refresh_zone(self, zone: Zone):
         self.__connector.autoCloseSession = True
-        return self.__mapper.zones(self.__connector.get_zone(zone.id))
+        return Mapper.zones(self.__connector.get_zone(zone.id))
 
     def set_away(self, start_date: date, end_date: date):
         """TODO if not provided, default date, one day ?"""
@@ -74,10 +80,10 @@ class VaillantSystemManager:
         """TODO """
         pass
 
-    def set_dhw_setpoint_temperature(self, hot_water: HotWater, temperature):
+    def set_hot_water_setpoint_temperature(self, hot_water: HotWater, temperature):
         LOGGER.info("Will try to set dhw target temperature to %s", temperature)
         if temperature:
-            self.__connector.set_dhw_setpoint_temperature(hot_water.id, round(float(temperature)))
+            self.__connector.set_hot_water_operation_mode(hot_water.id, round(float(temperature)))
             return True
         else:
             LOGGER.debug("No temperature provided, nothing to do")
@@ -88,11 +94,11 @@ class VaillantSystemManager:
         Throw an error if something went wrong while setting new_mode
     """
 
-    def set_dhw_operation_mode(self, sys: System, new_mode):
+    def set_hot_water_operation_mode(self, system: System, new_mode):
         LOGGER.info("Will try to set hot water mode to %s", new_mode)
 
-        hot_water = sys.hotWater
-        quick_mode = sys.quickMode
+        hot_water = system.hotWater
+        quick_mode = system.quickMode
         if new_mode:
             if hot_water.operationMode != new_mode:
                 if quick_mode:
@@ -123,4 +129,4 @@ class VaillantSystemManager:
             return False
 
     def logout(self):
-        self.__connector.close_session(True)
+        self.__connector.logout()

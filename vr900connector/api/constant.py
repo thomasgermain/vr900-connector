@@ -1,30 +1,70 @@
 import tempfile
 
-DEFAULT_FILES_DIR = tempfile.gettempdir() + "/vaillant_vr900_files"
+DEFAULT_FILES_DIR = tempfile.gettempdir() + '/vaillant_vr900_files'
 
-DEFAULT_COOKIE_FILE_NAME = "/.vr900-vaillant.cookies"
-DEFAULT_SERIAL_NUMBER_FILE_NAME = "/.vr900-vaillant.serial"
+DEFAULT_COOKIE_FILE_NAME = '.vr900-vaillant.cookies'
+DEFAULT_SERIAL_NUMBER_FILE_NAME = '.vr900-vaillant.serial'
 
-DEFAULT_SMARTPHONE_ID = "vr900-connector"
+DEFAULT_SMART_PHONE_ID = 'vr900-connector'
+DEFAULT_SMARTPHONE_ID = 'DEFAULT_SMART_PHONE_ID'
 
-DEFAULT_BASE_URL = "https://smart.vaillant.com/mobile/api/v4"
-TEST_LOGIN_URL = "/account/user/v1/details"
-REQUEST_NEW_TOKEN_URL = "/account/authentication/v1/token/new"
-AUTHENTICATE_URL = "/account/authentication/v1/authenticate"
+DEFAULT_BASE_URL = 'https://smart.vaillant.com/mobile/api/v4'
 
-FACILITIES_URL = "/facilities"
-ROOMS_URL = "/facilities/{serialNumber}/rbr/v1/rooms"
-ROOM_TIMEPROGRAM_URL = "/facilities/{serialNumber}/rbr/v1/rooms/{index}/timeprogram"
-ZONES_URL = "/facilities/{serialNumber}/systemcontrol/v1/zones"
-DHW_URL = "/facilities/{serialNumber}/systemcontrol/v1/dhw/{id}/hotwater"
-DHW_SETPOINT_TEMPERATURE_URL = DHW_URL + '/configuration/temperature_setpoint'
-DHW_SET_OPERATION_MODE_URL = DHW_URL + '/configuration/operation_mode'
-CIRCULATION_URL = "/facilities/{serialNumber}/systemcontrol/v1/dhw/{id}/circulation"
-HVAC_STATE_URL = "/facilities/{serialNumber}/hvacstate/v1/overview"
-SYSTEM_STATUS_URL = "/facilities/{serialNumber}/system/v1/status"
-SYSTEM_CONTROL_URL = "/facilities/{serialNumber}/systemcontrol/v1"
-LIVE_REPORT_URL = "/facilities/{serialNumber}/livereport/v1"
-QUICK_MODE_URL = SYSTEM_CONTROL_URL + "/configuration/quickmode"
-CURRENT_PV_METERING_INFO_URL = '/facilities/{serialNumber}/spine/v1/currentPVMeteringInfo'
-EMF_URL = '/facilities/{serialNumber}/emf/v1/devices'
-REPEATERS_URL = '/facilities/{serialNumber}/rbr/v1/repeaters'
+FACILITIES_URL = '/facilities'
+FACILITIES_SERIAL_URL = '/facilities/$serialNumber'
+
+TEST_LOGIN_URL = FACILITIES_URL
+REQUEST_NEW_TOKEN_URL = '/account/authentication/v1/token/new'
+AUTHENTICATE_URL = '/account/authentication/v1/authenticate'
+LOGOUT_URL = '/account/authentication/v1/logout'
+
+ROOMS_BASE_URL = FACILITIES_SERIAL_URL + '/rbr/v1'
+ROOMS_URL = ROOMS_BASE_URL + '/rooms'
+ROOM_URL = ROOMS_URL + '/$roomIndex'
+ROOM_TIMEPROGRAM_URL = ROOM_URL + '/timeprogram'
+REPEATERS_URL = ROOMS_BASE_URL + '/repeaters'
+
+SYSTEM_CONTROL_URL = FACILITIES_SERIAL_URL + '/systemcontrol/v1'
+SYSTEM_QUICK_MODE_URL = SYSTEM_CONTROL_URL + '/configuration/quickmode'
+
+ZONES_URL = SYSTEM_CONTROL_URL + '/zones'
+ZONE_URL = ZONES_URL + '/$zoneIdentifier'
+ZONE_HEATING_URL = ZONE_URL + '/heating'
+ZONE_COOLING_URL = ZONE_URL + '/cooling'
+ZONE_CONFIGURATION_URL = ZONE_URL + '/configuration'
+ZONE_NAME_URL = ZONE_URL + '/configuration/name'
+ZONE_COOLING_CONFIGURATION_URL = ZONE_HEATING_URL + '/configuration'
+ZONE_HEATING_CONFIGURATION_URL = ZONE_HEATING_URL + '/configuration'
+ZONE_HEATING_MODE_URL = ZONE_HEATING_CONFIGURATION_URL + '/mode'
+ZONE_HEATING_SET_BACK_TEMPERATURE_URL = ZONE_HEATING_CONFIGURATION_URL + '/setback_temperature'
+ZONE_HEATING_SET_POINT_TEMPERATURE_URL = ZONE_HEATING_CONFIGURATION_URL + '/setpoint_temperature'
+ZONE_HEATING_TIMEPROGRAM_URL = ZONE_HEATING_URL + '/timeprogram'
+ZONE_QUICK_VETO_URL = ZONE_CONFIGURATION_URL + '/quick_veto'
+
+DHW_URL = SYSTEM_CONTROL_URL + '/dhw'
+DHW_BY_ID_URL = DHW_URL + '/$dhwIdentifier'
+DHW_HOTWATER_URL = DHW_BY_ID_URL + '/hotwater'
+DHW_HOTWATER_TIMEPROGRAM_URL = DHW_HOTWATER_URL + '/timeprogram'
+DHW_HOTWATER_CONFIGURATION_URL = DHW_HOTWATER_URL + '/configuration'
+DHW_HOTWATER_OPERATION_MODE_URL = DHW_HOTWATER_CONFIGURATION_URL + '/operation_mode'
+DHW_HOTWATER_SET_POINT_TEMPERATURE_URL = DHW_HOTWATER_CONFIGURATION_URL + '/temperature_setpoint'
+
+DHW_CIRCULATION_URL = DHW_BY_ID_URL + '/circulation'
+DHW_CIRCULATION_TIMEPROGRAM_URL = DHW_CIRCULATION_URL + '/timeprogram'
+DHW_CIRCULATION_CONFIGURATION_URL = DHW_CIRCULATION_URL + '/configuration'
+DHW_CIRCULATION_OPERATION_MODE_URL = DHW_CIRCULATION_CONFIGURATION_URL + '/operation_mode'
+
+"""Ventilation"""
+
+HVAC_STATE_URL = FACILITIES_SERIAL_URL + '/hvacstate/v1/overview'
+UPDATE_HVAC_STATE_URL = FACILITIES_SERIAL_URL + '/hvacstate/v1/hvacMessages/update'
+
+SYSTEM_URL = FACILITIES_SERIAL_URL + '/system/v1'
+SYSTEM_STATUS_URL = SYSTEM_URL + '/status'
+SYSTEM_DETAILS_URL = SYSTEM_URL + '/details'
+SYSTEM_INSTALLER_INFO_URL = SYSTEM_URL + '/installerinfo'
+
+LIVE_REPORT_URL = FACILITIES_SERIAL_URL + '/livereport/v1'
+CURRENT_PV_METERING_INFO_URL = FACILITIES_SERIAL_URL + '/spine/v1/currentPVMeteringInfo'
+EMF_URL = FACILITIES_SERIAL_URL + '/emf/v1/devices'
+EMF_BY_ID_URL = EMF_URL + '/$deviceId'
