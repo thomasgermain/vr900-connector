@@ -179,8 +179,8 @@ class ApiConnector:
         except ApiError:
             raise
         except Exception as e:
-            LOGGER.error('Error during logging', e)
-            raise ApiError('Error during logging ' + str(e), None)
+            LOGGER.error('Error during login', e)
+            raise ApiError('Error during login ' + str(e), None)
 
     def __request_token(self):
         params = {
