@@ -1,3 +1,4 @@
 responses
 requests
 jsonpickle
+pathlib2
