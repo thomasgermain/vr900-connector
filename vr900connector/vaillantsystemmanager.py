@@ -1,23 +1,21 @@
 import logging
-from datetime import date
 
-from .model.constant import QM_HOTWATER_BOOST
-from .model import Room, Zone
-from .model import Mapper
 from .api import ApiConnector
-from .api.constant import DEFAULT_SMARTPHONE_ID, DEFAULT_BASE_URL, DEFAULT_FILES_DIR
-from .model import System, HotWater
+from .api.constant import DEFAULT_SMART_PHONE_ID, DEFAULT_BASE_URL, DEFAULT_FILES_DIR
+from .model import Mapper
+from .model import System
+from .model.constant import QM_HOTWATER_BOOST
 
 LOGGER = logging.getLogger('VaillantSystemManager')
 
 
 class VaillantSystemManager:
 
-    __connector: ApiConnector = None
+    __connector = None
 
-    def __init__(self, user, password, smartphone_id=DEFAULT_SMARTPHONE_ID,
+    def __init__(self, user, password, smart_phone_id=DEFAULT_SMART_PHONE_ID,
                  base_url=DEFAULT_BASE_URL, file_dir=DEFAULT_FILES_DIR):
-        self.__connector = ApiConnector(user, password, smartphone_id, base_url, file_dir)
+        self.__connector = ApiConnector(user, password, smart_phone_id, base_url, file_dir)
 
     def get_system(self):
         try:
@@ -56,7 +54,7 @@ class VaillantSystemManager:
         live_report = self.__connector.get_live_report()
         return Mapper.domestic_hot_water(full_system, live_report)
 
-    def refresh_room(self, room: Room):
+    def refresh_room(self, room):
         self.__connector.autoCloseSession = True
         return Mapper.room(self.__connector.get_room(room.id))
 
@@ -68,11 +66,11 @@ class VaillantSystemManager:
         self.__connector.autoCloseSession = True
         return Mapper.zones(self.__connector.get_zones())
 
-    def refresh_zone(self, zone: Zone):
+    def refresh_zone(self, zone):
         self.__connector.autoCloseSession = True
         return Mapper.zones(self.__connector.get_zone(zone.id))
 
-    def set_away(self, start_date: date, end_date: date):
+    def set_away(self, start_date, end_date):
         """TODO if not provided, default date, one day ?"""
         pass
 
@@ -80,7 +78,7 @@ class VaillantSystemManager:
         """TODO """
         pass
 
-    def set_hot_water_setpoint_temperature(self, hot_water: HotWater, temperature):
+    def set_hot_water_setpoint_temperature(self, hot_water, temperature):
         LOGGER.info("Will try to set dhw target temperature to %s", temperature)
         if temperature:
             self.__connector.set_hotwater_operation_mode(hot_water.id, round(float(temperature)))
@@ -94,7 +92,7 @@ class VaillantSystemManager:
         Throw an error if something went wrong while setting new_mode
     """
 
-    def set_hot_water_operation_mode(self, system: System, new_mode):
+    def set_hot_water_operation_mode(self, system, new_mode):
         LOGGER.info("Will try to set hot water mode to %s", new_mode)
 
         hot_water = system.hotWater

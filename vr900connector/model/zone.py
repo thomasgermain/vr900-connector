@@ -1,19 +1,19 @@
 import copy
-from typing import List
 
+from . import Component
+from .timeprogram import TimeProgramDaySetting
 from .constant import THERMOSTAT_ZONE_MODE_OFF, THERMOSTAT_ROOM_MODE_MANUAL, FROST_PROTECTION_TEMP, \
     THERMOSTAT_ZONE_MODE_DAY
-from . import Component, Room, TimeProgramDaySetting
 
 
 class Zone(Component):
-    targetMinTemperature: float = None
-    activeFunction: str = None
-    rooms: List[Room] = []
-    rbr: bool = False
+    targetMinTemperature = None
+    activeFunction = None
+    rooms = []
+    rbr = False
 
     def get_current_time_program(self):
-        mode = copy.deepcopy(super().get_current_time_program())
+        mode = copy.deepcopy(Component.get_current_time_program(self))
         if self.quickVeto is None:
             if self.operationMode == THERMOSTAT_ZONE_MODE_OFF:
                 mode = TimeProgramDaySetting(str(0), FROST_PROTECTION_TEMP, THERMOSTAT_ZONE_MODE_OFF)

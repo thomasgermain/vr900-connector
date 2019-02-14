@@ -1,9 +1,9 @@
 class ActiveMode:
-    targetTemperature: float = None
-    name: str = None
-    sub_mode: str = None
+    targetTemperature = None
+    name = None
+    sub_mode = None
 
-    def __init__(self, target_temperature: float, name: str, sub_mode: str = None):
+    def __init__(self, target_temperature, name, sub_mode=None):
         self.targetTemperature = target_temperature
         self.name = name
         self.sub_mode = sub_mode

@@ -1,6 +1,6 @@
 class QuickVeto:
-    remainingTime: int = 0
-    targetTemperature: float = None
+    remainingTime = 0
+    targetTemperature = None
 
     def __init__(self, remaining_time, target_temperature):
         self.remainingTime = remaining_time

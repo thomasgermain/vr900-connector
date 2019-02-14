@@ -1,13 +1,10 @@
-from datetime import datetime
-
-
 class BoilerStatus:
-    deviceName: str = None
-    code: str = None
-    title: str = None
-    description: str = None
-    hint: str = None
-    lastUpdate: datetime = None
-    currentTemperature: float = None
-    waterPressure: float = None
-    waterPressureUnit: str = None
+    deviceName = None
+    code = None
+    title = None
+    description = None
+    hint = None
+    lastUpdate = None
+    currentTemperature = None
+    waterPressure = None
+    waterPressureUnit = None

@@ -1,17 +1,17 @@
 from datetime import datetime
 
+from .timeprogram import TimeProgramDaySetting
 from .constant import THERMOSTAT_QUICK_VETO
-from . import TimeProgram, TimeProgramDaySetting, QuickVeto
 
 
 class Component:
-    id: str = None
-    name: str = None
-    timeProgram: TimeProgram = None
-    currentTemperature: float = None
-    targetTemperature: float = None
-    operationMode: str = None
-    quickVeto: QuickVeto = None
+    id = None
+    name = None
+    timeProgram = None
+    currentTemperature = None
+    targetTemperature = None
+    operationMode = None
+    quickVeto = None
 
     def get_current_time_program(self):
         if self.quickVeto:

@@ -1,9 +1,9 @@
 class BoostMode:
-    name: str = None
-    forZone: bool = False
-    forRoom: bool = False
-    forWaterHeater: bool = False
-    forCirculation: bool = False
+    name = None
+    forZone = False
+    forRoom = False
+    forWaterHeater = False
+    forCirculation = False
 
     def __init__(self, name, for_zone, for_room, for_water_heater, for_circulation):
         self.name = name
@@ -13,7 +13,7 @@ class BoostMode:
         self.forCirculation = for_circulation
 
     @staticmethod
-    def from_name(name: str):
+    def from_name(name):
         return _VALUES[name]
 
 

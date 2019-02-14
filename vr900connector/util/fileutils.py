@@ -1,6 +1,6 @@
+import logging
 import os
 import pickle
-import logging
 
 LOGGER = logging.getLogger('FileUtils')
 
@@ -11,7 +11,7 @@ class FileUtils:
         try:
             with open(path, "rb") as f:
                 return pickle.load(f)
-        except FileNotFoundError:
+        except IOError:
             LOGGER.debug("File %s not found", path)
             return None
         except Exception as e:
@@ -21,11 +21,17 @@ class FileUtils:
     @staticmethod
     def save_to_file(data, filename, path):
         try:
-            os.makedirs(path, exist_ok=True)
+            try:
+                from pathlib import Path
+            except ImportError:
+                from pathlib2 import Path
+
+            Path(path).mkdir(exist_ok=True)
             with open(path + "/" + filename, "wb+") as f:
                 pickle.dump(data, f)
         except Exception as e:
-            LOGGER.error("Cannot save data: %s file: %s, error: ", path + filename, data, str(e))
+            LOGGER.error("Cannot save data: %s file: %s, error: %s", path + filename, data, str(e))
+            raise e
 
     @staticmethod
     def delete_file(path):

@@ -1,22 +1,25 @@
 import json
 import os
 import shutil
+import sys
+import tempfile
+import traceback
+import uuid
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
+
+sys.path.insert(0, '../')
 
 from vr900connector.api import ApiConnector, ApiError, constant
 
 
 def print_responses(user, password, result_dir):
-    connector = ApiConnector(user, password)
+    connector = ApiConnector(user, password, file_dir=tempfile.gettempdir() + "/" + str(uuid.uuid4()))
 
     shutil.rmtree(result_dir, ignore_errors=True)
     os.mkdir(result_dir)
 
     with open(result_dir + '/facilities', 'w+') as file:
         secure_call(connector, constant.FACILITIES_URL, file)
-
-    # with open(dir + '/zones', 'w+') as file:
-    #     secure_call(connector, constant.ZONES_URL, file)
 
     with open(result_dir + '/rooms', 'w+') as file:
         secure_call(connector, constant.ROOMS_URL, file)
@@ -42,17 +45,20 @@ def print_responses(user, password, result_dir):
     with open(result_dir + '/repeaters', 'w+') as file:
         secure_call(connector, constant.REPEATERS_URL, file)
 
-    connector.close_session(True)
+    connector.logout()
 
 
 def secure_call(connector, url, file):
     try:
         file.write(json.dumps(connector.get(url), indent=4))
     except ApiError as e:
-        # if e.response:
-        file.write(json.dumps(e.response.json(), indent=4))
-        # else:
-        # file.write(str(e))
+        if e.response is not None:
+            file.write(e.response.text)
+        else:
+            file.write(e.message + '\n')
+            traceback.print_exc(file=file)
+    except Exception as e:
+        traceback.print_exc(file=file)
 
 
 if __name__ == '__main__':

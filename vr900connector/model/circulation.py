@@ -1,7 +1,7 @@
 import copy
 
+from .component import Component
 from .constant import CIRCULATION_MODE_ON, CIRCULATION_MODE_AUTO_ON, CIRCULATION_MODE_AUTO_OFF
-from . import Component
 
 
 class Circulation(Component):

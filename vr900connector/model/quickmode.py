@@ -2,9 +2,9 @@ from . import BoostMode
 
 
 class QuickMode:
-    boostMode: BoostMode = None
-    remainingDuration: int = 0
+    boostMode = None
+    remainingDuration = 0
 
-    def __init__(self, name: str, remaining_duration: int):
+    def __init__(self, name, remaining_duration):
         self.boostMode = BoostMode.from_name(name)
         self.remainingDuration = remaining_duration

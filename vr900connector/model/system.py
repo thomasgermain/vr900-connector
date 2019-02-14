@@ -1,19 +1,17 @@
-from typing import Dict
-
-from . import constant, ActiveMode, BoilerStatus, Circulation, HolidayMode, HotWater, QuickMode, Room, Zone
+from . import constant, ActiveMode, HolidayMode
 from .boostmode import QM_SYSTEM_OFF, QM_HOTWATER_BOOST, QM_PARTY, QM_ONE_DAY_AT_HOME, QM_ONE_DAY_AWAY, \
     QM_VENTILATION_BOOST
 
 
 class System:
-    holidayMode: HolidayMode = HolidayMode()
-    boilerStatus: BoilerStatus = None
-    _zones: Dict[str, Zone] = dict()
-    _rooms: Dict[int, Room] = dict()
-    hotWater: HotWater = None
-    circulation: Circulation = None
-    outdoorTemperature: float = None
-    quickMode: QuickMode = None
+    holidayMode = HolidayMode()
+    boilerStatus = None
+    _zones = dict()
+    _rooms = dict()
+    hotWater = None
+    circulation = None
+    outdoorTemperature = None
+    quickMode = None
 
     def __init__(self, holiday_mode, boiler_status, zones, hot_water, circulation, outdoor_temp, quick_mode):
         if holiday_mode:
@@ -39,13 +37,13 @@ class System:
     def get_zones(self):
         return self._zones.values()
 
-    def get_zone(self, zone_id: str):
-        return self._zones[zone_id]
+    def get_zone(self, zone_id):
+        return self._zones[str(zone_id)]
 
-    def get_room(self, room_id: int):
-        return self._rooms[room_id]
+    def get_room(self, room_id):
+        return self._rooms[int(room_id)]
 
-    def get_active_mode_zone(self, zone: Zone):
+    def get_active_mode_zone(self, zone):
         """Holiday mode takes precedence over everything"""
         if self.holidayMode.active:
             return ActiveMode(self.holidayMode.targetTemperature, constant.HOLIDAY_MODE)
@@ -75,7 +73,7 @@ class System:
 
         return ActiveMode(time_program.temperature, zone.operationMode, time_program.mode)
 
-    def get_active_mode_room(self, room: Room):
+    def get_active_mode_room(self, room):
         """Holiday mode takes precedence over everything"""
         if self.holidayMode.active:
             return ActiveMode(self.holidayMode.targetTemperature, constant.HOLIDAY_MODE)
@@ -99,7 +97,7 @@ class System:
 
         return ActiveMode(time_program.temperature, room.operationMode, time_program.mode)
 
-    def get_active_mode_circulation(self, circulation: Circulation = None):
+    def get_active_mode_circulation(self, circulation=None):
         if not circulation:
             circulation = self.circulation
 
@@ -113,7 +111,7 @@ class System:
         time_program = circulation.get_current_time_program()
         return ActiveMode(0, circulation.operationMode, time_program.mode)
 
-    def get_active_mode_hot_water(self, hot_water: HotWater = None):
+    def get_active_mode_hot_water(self, hot_water=None):
         if not hot_water:
             hot_water = self.hotWater
 

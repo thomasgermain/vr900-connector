@@ -1,14 +1,13 @@
-from datetime import datetime, timedelta
-from typing import Dict, List
+from datetime import timedelta
 
 
 class TimeProgramDaySetting:
-    startTime: str = None
-    temperature: float = None
-    mode: str = None
-    absoluteMinutes: int = None
+    startTime = None
+    temperature = None
+    mode = None
+    absoluteMinutes = None
 
-    def __init__(self, start_time: str, temperature: float, mode: str):
+    def __init__(self, start_time, temperature, mode):
         self.startTime = start_time
         self.temperature = temperature
         self.mode = mode
@@ -25,25 +24,19 @@ class TimeProgramDaySetting:
 
 
 class TimeProgramDay:
-    timeProgramDaySettings: List[TimeProgramDaySetting] = []
+    timeProgramDaySettings = []
 
-    def __init__(self):
-        self.timeProgramDaySettings = list()
-
-    def add_setting(self, start_time: str, temperature: float, mode: str):
+    def add_setting(self, start_time, temperature, mode):
         self.timeProgramDaySettings.append(TimeProgramDaySetting(start_time, temperature, mode))
 
 
 class TimeProgram:
-    timeProgramDays: Dict[str, TimeProgramDay] = dict()
+    timeProgramDays = dict()
 
-    def __init__(self):
-        self.timeProgramDays = dict()
-
-    def add_day(self, day: str, time_program_day: TimeProgramDay):
+    def add_day(self, day, time_program_day):
         self.timeProgramDays[day] = time_program_day
 
-    def get_current_time_program(self, search_date: datetime):
+    def get_current_time_program(self, search_date):
         day = search_date.strftime("%A").lower()
         day_before = (search_date - timedelta(days=1)).strftime("%A").lower()
         time = str(search_date.hour) + ":" + str(search_date.minute)

@@ -4,7 +4,7 @@ from string import Template
 class UrlFormatter:
 
     @classmethod
-    def format(cls, url: str, serial=None, zone=None, room=None, dhw=None, device=None, safe=True):
+    def format(cls, url, serial=None, zone=None, room=None, dhw=None, device=None, safe=True):
         template = Template(url)
         params = dict()
 
@@ -20,4 +20,3 @@ class UrlFormatter:
     def __add_if_not_none(cls, params, key, value):
         if value:
             params[key] = value
-

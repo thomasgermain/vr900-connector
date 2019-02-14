@@ -1,6 +1,15 @@
 import datetime
 
-from . import *
+from .boilerstatus import BoilerStatus
+from .circulation import Circulation
+from .device import Device
+from .holidaymode import HolidayMode
+from .hotwater import HotWater
+from .quickmode import QuickMode
+from .quickveto import QuickVeto
+from .room import Room
+from .timeprogram import TimeProgram, TimeProgramDay
+from .zone import Zone
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -83,7 +92,7 @@ class Mapper:
 
     @staticmethod
     def time_program_day(raw_time_program_day, mode_key_name=""):
-        timeProgramDay: TimeProgramDay = TimeProgramDay()
+        timeProgramDay = TimeProgramDay()
         if raw_time_program_day:
             for time_setting in raw_time_program_day:
                 timeProgramDay.add_setting(time_setting.get("startTime"), time_setting.get("temperatureSetpoint"),

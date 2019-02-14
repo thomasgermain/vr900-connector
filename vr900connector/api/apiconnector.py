@@ -1,9 +1,10 @@
-import requests
 import logging
 
-from ..util import FileUtils, UrlFormatter
-from . import ApiError
+import requests
+
+from .apierror import ApiError
 from . import constant
+from ..util import FileUtils, UrlFormatter
 
 LOGGER = logging.getLogger('Connector')
 
@@ -23,9 +24,9 @@ class ApiConnector:
         self.__baseUrl = base_url
         self.__fileDir = file_dir
         self.__headers = {'content-type': 'application/json'}
-        self.autoCloseSession = auto_close_session
         self.__serialNumber = self.__load_serial_number_from_file()
         self.__session = self.__create_session()
+        self.autoCloseSession = auto_close_session
 
     def query(self, url, method='GET', payload=None):
         """
@@ -119,7 +120,7 @@ class ApiConnector:
         return self.__secure_call('PUT', constant.SYSTEM_QUICK_MODE_URL, payload=payload)
 
     def logout(self):
-        self.__session.request('POST', constant.LOGOUT_URL)
+        self.__session.request('POST', self.__baseUrl + constant.LOGOUT_URL)
         self.close_session(True)
 
     def close_session(self, clear=False):
@@ -246,10 +247,10 @@ class ApiConnector:
         FileUtils.save_to_file(self.__serialNumber, constant.DEFAULT_SERIAL_NUMBER_FILE_NAME, self.__fileDir)
 
     def __load_cookies_from_file(self):
-        return FileUtils.load_from_file(self.__fileDir + constant.DEFAULT_COOKIE_FILE_NAME)
+        return FileUtils.load_from_file(self.__fileDir + '/' + constant.DEFAULT_COOKIE_FILE_NAME)
 
     def __load_serial_number_from_file(self):
-        return FileUtils.load_from_file(self.__fileDir + constant.DEFAULT_SERIAL_NUMBER_FILE_NAME)
+        return FileUtils.load_from_file(self.__fileDir + '/' + constant.DEFAULT_SERIAL_NUMBER_FILE_NAME)
 
     def __clear_cookie(self):
         FileUtils.delete_file(self.__fileDir + '/' + constant.DEFAULT_COOKIE_FILE_NAME)
