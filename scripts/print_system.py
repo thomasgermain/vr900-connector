@@ -11,7 +11,7 @@ from vr900connector.vaillantsystemmanager import VaillantSystemManager
 
 
 def print_system(user, password, file):
-    manager = VaillantSystemManager(user, password, file_dir=tempfile.gettempdir() + "/" + str(uuid.uuid4()))
+    manager = VaillantSystemManager(user, password, file_path=tempfile.gettempdir() + "/" + str(uuid.uuid4()))
     system = manager.get_system()
 
     jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)

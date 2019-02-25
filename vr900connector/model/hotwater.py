@@ -1,28 +1,36 @@
-import copy
-
 from .component import Component
 from .timeprogram import TimeProgramDaySetting
-from .constant import HOT_WATER_MODE_OFF, QM_HOTWATER_BOOST, HOT_WATER_MODE_ON, \
-    HOT_WATER_MODE_AUTO_OFF, HOT_WATER_MIN_TEMP, HOT_WATER_MODE_AUTO_ON
+from .constants import MODE_ON, MODE_AUTO, MODE_OFF, QM_HOTWATER_BOOST
 
 
 class HotWater(Component):
+    """
+    This class represents the hot water of your system
+    """
+
+    MODES = [MODE_ON, MODE_OFF, MODE_AUTO, QM_HOTWATER_BOOST]
+    """
+    List of modes available for hot water
+    """
+
+    MIN_TEMP = 35
+    """
+    Minimum temperature in celsius for the hot water, this is coming from documentation
+    """
+
+    MAX_TEMP = 70
+    """
+    Maximum temperature celsius for the hot water, this is coming from my tests with android application, 
+    cannot go above 70
+    """
+
+    def __init__(self, component_id, name, time_program, current_temperature, target_temperature, operation_mode):
+        super().__init__(component_id, name, time_program, current_temperature, target_temperature, operation_mode,
+                         None)
 
     def get_current_time_program(self):
-        """There is no quick veto for hot water"""
-        if self.operationMode == HOT_WATER_MODE_ON:
-            return TimeProgramDaySetting(str(0), self.targetTemperature, HOT_WATER_MODE_ON)
-        elif self.operationMode == HOT_WATER_MODE_OFF:
-            return TimeProgramDaySetting(str(0), HOT_WATER_MIN_TEMP, HOT_WATER_MODE_OFF)
-        elif self.operationMode == QM_HOTWATER_BOOST:
-            return TimeProgramDaySetting(str(0), self.targetTemperature, QM_HOTWATER_BOOST)
+        # There is no quick veto for hot water, and quick mode is taking precedence over timeprogram
+        if self.operation_mode == QM_HOTWATER_BOOST:
+            return TimeProgramDaySetting(str(0), self.target_temperature, QM_HOTWATER_BOOST)
         else:
-            # Mode AUTO
-            mode = copy.deepcopy(super().get_current_time_program())
-            if mode.mode == HOT_WATER_MODE_ON:
-                mode.mode = HOT_WATER_MODE_AUTO_ON
-                mode.temperature = self.targetTemperature
-            else:
-                mode.mode = HOT_WATER_MODE_AUTO_OFF
-                mode.temperature = HOT_WATER_MIN_TEMP
-            return mode
+            return super().get_current_time_program()

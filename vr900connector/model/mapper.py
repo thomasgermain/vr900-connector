@@ -1,6 +1,6 @@
 import datetime
 
-from .boilerstatus import BoilerStatus
+from . import BoilerStatus
 from .circulation import Circulation
 from .device import Device
 from .holidaymode import HolidayMode
@@ -8,7 +8,7 @@ from .hotwater import HotWater
 from .quickmode import QuickMode
 from .quickveto import QuickVeto
 from .room import Room
-from .timeprogram import TimeProgram, TimeProgramDay
+from .timeprogram import TimeProgram, TimeProgramDay, TimeProgramDaySetting
 from .zone import Zone
 
 DATE_FORMAT = "%Y-%m-%d"
@@ -20,7 +20,7 @@ class Mapper:
     def quick_mode(full_system):
         quick_mode = full_system.get("body").get("configuration", dict()).get("quickmode")
         if quick_mode:
-            return QuickMode(quick_mode.get("quickmode"), quick_mode.get("duration"))
+            return QuickMode.from_name(quick_mode.get("quickmode"))
 
     @staticmethod
     def outdoor_temp(full_system):
@@ -41,130 +41,97 @@ class Mapper:
 
     @staticmethod
     def room(raw_room):
-        room = Room()
         raw_room = raw_room.get("body") if raw_room.get("body") is not None else raw_room
         config = raw_room.get("configuration", dict())
 
-        room.id = raw_room.get("roomIndex")
-        room.childLock = config.get("childLock")
-        room.targetTemperature = config.get("temperatureSetpoint")
-        room.currentTemperature = config.get("currentTemperature")
-        room.devices = Mapper.devices(config.get("devices"))
-        room.isWindowOpen = config.get("isWindowOpen")
-        room.name = config.get("name")
-        room.operationMode = config.get("operationMode")
+        component_id = raw_room.get("roomIndex")
+        child_lock = config.get("childLock")
+        target_temp = config.get("temperatureSetpoint")
+        current_temp = config.get("currentTemperature")
+        devices = Mapper.devices(config.get("devices"))
+        window_open = config.get("isWindowOpen")
+        name = config.get("name")
+        operation_mode = config.get("operationMode")
 
         raw_quickVeto = config.get("quickVeto")
+        quick_veto = None
         if raw_quickVeto:
-            room.quickVeto = QuickVeto(raw_quickVeto.get("remainingDuration"), config.get("temperatureSetpoint"))
+            quick_veto = QuickVeto(raw_quickVeto.get("remainingDuration"), config.get("temperatureSetpoint"))
 
-        room.timeProgram = Mapper.time_program(raw_room.get("timeprogram"))
-        return room
+        time_program = Mapper.time_program(raw_room.get("timeprogram"))
+
+        return Room(component_id, name, time_program, current_temp, target_temp, operation_mode, quick_veto, child_lock,
+                    window_open, devices)
 
     @staticmethod
     def devices(raw_devices):
         devices = list()
         if raw_devices:
             for raw_device in raw_devices:
-                device = Device()
-                device.name = raw_device["name"]
-                device.deviceType = raw_device["deviceType"]
-                device.isBatteryLow = raw_device["isBatteryLow"]
-                device.isRadioOutOfReach = raw_device["isRadioOutOfReach"]
-                device.sgtin = raw_device["sgtin"]
-                devices.append(device)
+                name = raw_device["name"]
+                device_type = raw_device["deviceType"]
+                battery_low = raw_device["isBatteryLow"]
+                radio_out_of_reach = raw_device["isRadioOutOfReach"]
+                sgtin = raw_device["sgtin"]
+                devices.append(Device(name, sgtin, device_type, battery_low, radio_out_of_reach))
 
         return devices
 
     @staticmethod
     def time_program(raw_time_program, mode_key_name=""):
-        timeProgram = TimeProgram()
+        result = dict()
         if raw_time_program:
-            timeProgram.add_day("monday", Mapper.time_program_day(raw_time_program.get("monday"), mode_key_name))
-            timeProgram.add_day("tuesday", Mapper.time_program_day(raw_time_program.get("tuesday"), mode_key_name))
-            timeProgram.add_day("wednesday", Mapper.time_program_day(raw_time_program.get("wednesday"), mode_key_name))
-            timeProgram.add_day("thursday", Mapper.time_program_day(raw_time_program.get("thursday"), mode_key_name))
-            timeProgram.add_day("friday", Mapper.time_program_day(raw_time_program.get("friday"), mode_key_name))
-            timeProgram.add_day("saturday", Mapper.time_program_day(raw_time_program.get("saturday"), mode_key_name))
-            timeProgram.add_day("sunday", Mapper.time_program_day(raw_time_program.get("sunday"), mode_key_name))
+            result["monday"] = Mapper.time_program_day(raw_time_program.get("monday"), mode_key_name)
+            result["tuesday"] = Mapper.time_program_day(raw_time_program.get("tuesday"), mode_key_name)
+            result["wednesday"] = Mapper.time_program_day(raw_time_program.get("wednesday"), mode_key_name)
+            result["thursday"] = Mapper.time_program_day(raw_time_program.get("thursday"), mode_key_name)
+            result["friday"] = Mapper.time_program_day(raw_time_program.get("friday"), mode_key_name)
+            result["saturday"] = Mapper.time_program_day(raw_time_program.get("saturday"), mode_key_name)
+            result["sunday"] = Mapper.time_program_day(raw_time_program.get("sunday"), mode_key_name)
 
-        return timeProgram
+        return TimeProgram(result)
 
     @staticmethod
     def time_program_day(raw_time_program_day, mode_key_name=""):
-        timeProgramDay = TimeProgramDay()
+        time_program_day_settings = list()
         if raw_time_program_day:
             for time_setting in raw_time_program_day:
-                timeProgramDay.add_setting(time_setting.get("startTime"), time_setting.get("temperatureSetpoint"),
-                                           time_setting.get(mode_key_name))
+                start_time = time_setting.get("startTime")
+                target_temp = time_setting.get("temperatureSetpoint")
+                mode = time_setting.get(mode_key_name)
+                time_program_day_settings.append(TimeProgramDaySetting(start_time, target_temp, mode))
 
-        return timeProgramDay
+        return TimeProgramDay(time_program_day_settings)
 
     @staticmethod
     def holiday_mode(full_system):
-        holidayMode = HolidayMode()
-        holidayMode.active = False
+        holidayMode = HolidayMode(False, None, None, None)
 
         raw_holiday_mode = full_system.get("body", dict()).get("configuration", dict()).get("holidaymode")
         if raw_holiday_mode and raw_holiday_mode.get("active"):
-            holidayMode.targetTemperature = raw_holiday_mode.get("temperature_setpoint")
             holidayMode.active = True
+            holidayMode.targetTemperature = raw_holiday_mode.get("temperature_setpoint")
             holidayMode.startDate = datetime.datetime.strptime(raw_holiday_mode.get("start_date"), DATE_FORMAT).date()
             holidayMode.endDate = datetime.datetime.strptime(raw_holiday_mode.get("end_date"), DATE_FORMAT).date()
 
         return holidayMode
 
     @staticmethod
-    def boiler_status(hvac_state, live_report):
-        boilerStatus = BoilerStatus()
-
+    def boiler_status(hvac_state):
         hvac_state_info = Mapper.__find_hvac_message_status(hvac_state)
         if hvac_state_info:
             timestamp = hvac_state_info.get("timestamp")
+            last_update = None
             if timestamp:
-                boilerStatus.lastUpdate = datetime.datetime.fromtimestamp(timestamp / 1000)
+                last_update = datetime.datetime.fromtimestamp(timestamp / 1000)
 
-            boilerStatus.deviceName = hvac_state_info.get("deviceName")
-            boilerStatus.code = hvac_state_info.get("statusCode")
-            boilerStatus.title = hvac_state_info.get("title")
-            boilerStatus.description = hvac_state_info.get("description")
-            boilerStatus.hint = hvac_state_info.get("hint")
+            device_name = hvac_state_info.get("deviceName")
+            code = hvac_state_info.get("statusCode")
+            title = hvac_state_info.get("title")
+            description = hvac_state_info.get("description")
+            hint = hvac_state_info.get("hint")
 
-        water_pressure_report = Mapper.__find_water_pressure_report(live_report)
-        if water_pressure_report:
-            boilerStatus.waterPressure = water_pressure_report.get("value")
-            boilerStatus.waterPressureUnit = water_pressure_report.get("unit")
-
-        boiler_temp_report = Mapper.__find_boiler_temperature_report(live_report)
-        if boiler_temp_report:
-            boilerStatus.currentTemperature = boiler_temp_report.get("value")
-
-        return boilerStatus
-
-    @staticmethod
-    def box_detail(facilities, system_status):
-        pass
-        # boxDetails = None
-        #
-        # facilityList = facilities.get("body", dict()).get("facilitiesList", list())
-        #
-        # if facilityList:
-        #     boxDetails = BoxDetails()
-        #
-        #     details = facilityList[0]
-        #     boxDetails.serialNumber = details.get("serialNumber")
-        #     boxDetails.firmwareVersion = details.get("firmwareVersion")
-        #
-        #     network = details.get("networkInformation", dict())
-        #     boxDetails.ethernetMac = network.get("macAddressEthernet")
-        #     boxDetails.wifiMac = network.get("macAddressWifiClient")
-        #     boxDetails.wifiAPMac = network.get("macAddressWifiAccessPoint")
-        #
-        #     boxDetails.onlineStatus = system_status.get("body", dict()).get("onlineStatus", dict()).get("status")
-        #     boxDetails.updateStatus = system_status.get("body", dict()).
-        #     get("firmwareUpdateStatus", dict()).get("status")
-        #
-        # return boxDetails
+            return BoilerStatus(device_name, description, title, code, hint, last_update)
 
     @staticmethod
     def zones(full_system):
@@ -176,73 +143,70 @@ class Mapper:
 
     @staticmethod
     def zone(raw_zone):
-        zone = Zone()
-
         # meta = meta if meta is not None else raw_zone.get("meta", dict())
-        zone.id = raw_zone.get("_id")
 
         heating = raw_zone.get("heating", dict())
         configuration = raw_zone.get("configuration", dict())
         heating_configuration = heating.get("configuration", dict())
-        zone.operationMode = heating_configuration.get("mode")
-        zone.targetTemperature = heating_configuration.get("setpoint_temperature")
-        zone.targetMinTemperature = heating_configuration.get("setback_temperature")
-        zone.timeProgram = Mapper.time_program(heating.get("timeprogram"), "setting")
 
-        zone.name = configuration.get("name").strip()
-        zone.currentTemperature = configuration.get("inside_temperature")
-        zone.activeFunction = configuration.get("active_function")
+        zone_id = raw_zone.get("_id")
+        operation_mode = heating_configuration.get("mode")
+        target_temp = heating_configuration.get("setpoint_temperature")
+        target_min_temp = heating_configuration.get("setback_temperature")
+        time_program = Mapper.time_program(heating.get("timeprogram"), "setting")
 
-        quickVeto = configuration.get("quick_veto")
-        if quickVeto and quickVeto.get("active"):
-            """No way to find start_date Quick veto on zone lasts 6 hours"""
-            zone.quickVeto = QuickVeto(-1, quickVeto.get("setpoint_temperature"))
+        name = configuration.get("name").strip()
+        current_temperature = configuration.get("inside_temperature")
+        active_function = configuration.get("active_function")
 
-        zone.rbr = raw_zone.get("currently_controlled_by", dict()).get("name", "") == "RBR"
+        raw_quick_veto = configuration.get("quick_veto")
+        quick_veto = None
+        if raw_quick_veto and raw_quick_veto.get("active"):
+            # No way to find start_date Quick veto on zone lasts 6 hours
+            quick_veto = QuickVeto(-1, raw_quick_veto.get("setpoint_temperature"))
 
-        return zone
+        rbr = raw_zone.get("currently_controlled_by", dict()).get("name", "") == "RBR"
+
+        return Zone(zone_id, name, time_program, current_temperature, target_temp, operation_mode, quick_veto,
+                    target_min_temp, active_function, rbr)
 
     @staticmethod
     def domestic_hot_water(full_system, live_report):
-        hotWater = None
         hot_water_list = full_system.get("body", dict()).get("dhw", list())
 
         if hot_water_list:
             raw_hot_water = hot_water_list[0].get("hotwater")
             if raw_hot_water:
-                hotWater = HotWater()
-                hotWater.targetTemperature = raw_hot_water.get("configuration", dict()).get("temperature_setpoint")
-                hotWater.operationMode = raw_hot_water.get("configuration", dict()).get("operation_mode")
-                hotWater.timeProgram = Mapper.time_program(raw_hot_water.get("timeprogram", dict()), "mode")
-                hotWater.id = hot_water_list[0].get("_id")
+                target_temp = raw_hot_water.get("configuration", dict()).get("temperature_setpoint")
+                operation_mode = raw_hot_water.get("configuration", dict()).get("operation_mode")
+                time_program = Mapper.time_program(raw_hot_water.get("timeprogram", dict()), "mode")
+                dwh_id = hot_water_list[0].get("_id")
                 if hot_water_list[0].get("controlled_by"):
-                    hotWater.operationMode = Mapper.quick_mode(full_system).boostMode.name
+                    operation_mode = Mapper.quick_mode(full_system).name
 
                 dhw_report = Mapper.__find_dhw_temperature_report(live_report)
 
+                current_temp = None
+                name = None
                 if dhw_report:
-                    hotWater.currentTemperature = dhw_report.get("value")
-                    hotWater.name = dhw_report.get("name")
+                    current_temp = dhw_report.get("value")
+                    name = dhw_report.get("name")
 
-        return hotWater
+                return HotWater(dwh_id, name, time_program, current_temp, target_temp, operation_mode)
 
     @staticmethod
     def circulation(full_system):
-        circulation = None
         hot_water_list = full_system.get("body", dict()).get("dhw", list())
 
         if hot_water_list:
             raw_circulation = hot_water_list[0].get("circulation")
             if raw_circulation:
-                circulation = Circulation()
-                circulation.name = "Circulation"
-                circulation.timeProgram = Mapper.time_program(raw_circulation.get("timeprogram", "setting"))
-                circulation.operationMode = raw_circulation.get("configuration", dict()).get("operationMode")
-                circulation.id = hot_water_list[0].get("_id")
-                circulation.targetTemperature = 0
-                circulation.currentTemperature = 0
+                name = "Circulation"
+                time_program = Mapper.time_program(raw_circulation.get("timeprogram", "setting"))
+                operation_mode = raw_circulation.get("configuration", dict()).get("operationMode")
+                dhw_id = hot_water_list[0].get("_id")
 
-        return circulation
+                return Circulation(dhw_id, name, time_program, operation_mode)
 
     @staticmethod
     def __find_hvac_message_status(hvac_state):

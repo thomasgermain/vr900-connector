@@ -3,7 +3,7 @@ import unittest
 from datetime import date
 
 from tests.testutil import TestUtil
-from vr900connector.model import Mapper, constant
+from vr900connector.model import Mapper, constants
 
 
 class ModelMapperTest(unittest.TestCase):
@@ -16,8 +16,7 @@ class ModelMapperTest(unittest.TestCase):
             system = json.loads(file.read())
 
         quick_mode = self.mapper.quick_mode(system)
-        self.assertEqual(constant.QM_HOTWATER_BOOST, quick_mode.boostMode.name)
-        self.assertEqual(0, quick_mode.remainingDuration)
+        self.assertEqual(constants.QM_HOTWATER_BOOST, quick_mode.name)
 
     def test_map_no_quick_mode(self):
         with open(TestUtil.path('files/responses/systemcontrol'), 'r') as file:
@@ -69,12 +68,12 @@ class ModelMapperTest(unittest.TestCase):
 
         self.assertEqual(0, room0.id)
         self.assertEqual("Room 1", room0.name)
-        self.assertEqual(constant.THERMOSTAT_ROOM_MODE_AUTO, room0.operationMode)
-        self.assertEqual(False, room0.isWindowOpen)
-        self.assertEqual(17.5, room0.targetTemperature)
-        self.assertEqual(17.9, room0.currentTemperature)
-        self.assertIsNone(room0.quickVeto)
-        self.assertEqual(False, room0.childLock)
+        self.assertEqual(constants.MODE_AUTO, room0.operation_mode)
+        self.assertEqual(False, room0.window_open)
+        self.assertEqual(17.5, room0.target_temperature)
+        self.assertEqual(17.9, room0.current_temperature)
+        self.assertIsNone(room0.quick_veto)
+        self.assertEqual(False, room0.child_lock)
 
     def test_room_quick_veto(self):
         with open(TestUtil.path('files/responses/rooms_quick_veto'), 'r') as file:
@@ -88,14 +87,13 @@ class ModelMapperTest(unittest.TestCase):
 
         self.assertEqual(0, room0.id)
         self.assertEqual("Room 1", room0.name)
-        self.assertEqual(constant.THERMOSTAT_ROOM_MODE_AUTO, room0.operationMode)
-        self.assertEqual(False, room0.isWindowOpen)
-        self.assertEqual(20.0, room0.targetTemperature)
-        self.assertEqual(17.9, room0.currentTemperature)
-        self.assertIsNotNone(room0.quickVeto)
-        self.assertEqual(20.0, room0.quickVeto.targetTemperature)
-        self.assertEqual(180, room0.quickVeto.remainingTime)
-        self.assertEqual(False, room0.childLock)
+        self.assertEqual(constants.MODE_AUTO, room0.operation_mode)
+        self.assertEqual(False, room0.window_open)
+        self.assertEqual(20.0, room0.target_temperature)
+        self.assertEqual(17.9, room0.current_temperature)
+        self.assertIsNotNone(room0.quick_veto)
+        self.assertEqual(20.0, room0.quick_veto.target_temperature)
+        self.assertEqual(False, room0.child_lock)
 
     def test_devices(self):
         with open(TestUtil.path('files/responses/rooms'), 'r') as file:
@@ -115,21 +113,21 @@ class ModelMapperTest(unittest.TestCase):
 
         self.assertEqual("Device 1", devices_room0[0].name)
         self.assertEqual("R13456789012345678901234", devices_room0[0].sgtin)
-        self.assertEqual("VALVE", devices_room0[0].deviceType)
-        self.assertEqual(True, devices_room0[0].isRadioOutOfReach)
-        self.assertEqual(True, devices_room0[0].isRadioOutOfReach)
+        self.assertEqual("VALVE", devices_room0[0].device_type)
+        self.assertEqual(True, devices_room0[0].radio_out_of_reach)
+        self.assertEqual(True, devices_room0[0].radio_out_of_reach)
 
         self.assertEqual("Device 1", devices_room1[0].name)
         self.assertEqual("R20123456789012345678900", devices_room1[0].sgtin)
-        self.assertEqual("VALVE", devices_room1[0].deviceType)
-        self.assertEqual(False, devices_room1[0].isRadioOutOfReach)
-        self.assertEqual(False, devices_room1[0].isRadioOutOfReach)
+        self.assertEqual("VALVE", devices_room1[0].device_type)
+        self.assertEqual(False, devices_room1[0].radio_out_of_reach)
+        self.assertEqual(False, devices_room1[0].radio_out_of_reach)
 
         self.assertEqual("Device 2", devices_room1[1].name)
         self.assertEqual("R20123456789012345678999", devices_room1[1].sgtin)
-        self.assertEqual("VALVE", devices_room1[1].deviceType)
-        self.assertEqual(False, devices_room1[1].isRadioOutOfReach)
-        self.assertEqual(False, devices_room1[1].isRadioOutOfReach)
+        self.assertEqual("VALVE", devices_room1[1].device_type)
+        self.assertEqual(False, devices_room1[1].radio_out_of_reach)
+        self.assertEqual(False, devices_room1[1].radio_out_of_reach)
 
     def test_holiday_mode_none(self):
         with open(TestUtil.path('files/responses/systemcontrol'), 'r') as file:
@@ -138,9 +136,9 @@ class ModelMapperTest(unittest.TestCase):
         holiday_mode = self.mapper.holiday_mode(raw_system)
         self.assertIsNotNone(holiday_mode)
         self.assertFalse(holiday_mode.active)
-        self.assertIsNone(holiday_mode.startDate)
-        self.assertIsNone(holiday_mode.endDate)
-        self.assertIsNone(holiday_mode.targetTemperature)
+        self.assertIsNone(holiday_mode.start_date)
+        self.assertIsNone(holiday_mode.end_date)
+        self.assertIsNone(holiday_mode.target_temperature)
 
     def test_holiday_mode(self):
         with open(TestUtil.path('files/responses/systemcontrol_holiday'), 'r') as file:
@@ -158,10 +156,10 @@ class ModelMapperTest(unittest.TestCase):
             raw_system = json.loads(file.read())
 
         circulation = self.mapper.circulation(raw_system)
-        self.assertEqual(constant.CIRCULATION_MODE_AUTO, circulation.operationMode)
+        self.assertEqual(constants.MODE_AUTO, circulation.operation_mode)
         self.assertEqual("Control_DHW", circulation.id)
-        self.assertEqual(0, circulation.currentTemperature)
-        self.assertEqual(0, circulation.targetTemperature)
+        self.assertIsNone(circulation.current_temperature)
+        self.assertIsNone(circulation.target_temperature)
 
     def test_hot_water(self):
         with open(TestUtil.path('files/responses/systemcontrol'), 'r') as file:
@@ -170,9 +168,9 @@ class ModelMapperTest(unittest.TestCase):
             raw_livereport = json.loads(file.read())
 
         hot_water = self.mapper.domestic_hot_water(raw_system, raw_livereport)
-        self.assertEqual(44.5, hot_water.currentTemperature)
-        self.assertEqual(51, hot_water.targetTemperature)
-        self.assertEqual(constant.HOT_WATER_MODE_AUTO, hot_water.operationMode)
+        self.assertEqual(44.5, hot_water.current_temperature)
+        self.assertEqual(51, hot_water.target_temperature)
+        self.assertEqual(constants.MODE_AUTO, hot_water.operation_mode)
         self.assertEqual("Control_DHW", hot_water.id)
 
 

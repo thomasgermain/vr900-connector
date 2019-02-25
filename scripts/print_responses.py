@@ -7,48 +7,50 @@ import traceback
 import uuid
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
+
 sys.path.insert(0, '../')
 
-from vr900connector.api import ApiConnector, ApiError, constant
+from vr900connector.api import ApiConnector, ApiError, urls
 
 
 def print_responses(user, password, result_dir):
-    connector = ApiConnector(user, password, file_dir=tempfile.gettempdir() + "/" + str(uuid.uuid4()))
+    # connector = ApiConnector(user, password, file_path=tempfile.gettempdir() + "/" + str(uuid.uuid4()))
+    connector = ApiConnector(user, password)
 
     shutil.rmtree(result_dir, ignore_errors=True)
     os.mkdir(result_dir)
 
     with open(result_dir + '/facilities', 'w+') as file:
-        secure_call(connector, constant.FACILITIES_URL, file)
+        __secure_call(connector, urls.facilities_list(), file)
 
     with open(result_dir + '/rooms', 'w+') as file:
-        secure_call(connector, constant.ROOMS_URL, file)
+        __secure_call(connector, urls.rooms(), file)
 
     with open(result_dir + '/system_status', 'w+') as file:
-        secure_call(connector, constant.SYSTEM_STATUS_URL, file)
+        __secure_call(connector, urls.system_status(), file)
 
     with open(result_dir + '/live_report', 'w+') as file:
-        secure_call(connector, constant.LIVE_REPORT_URL, file)
+        __secure_call(connector, urls.live_report(), file)
 
     with open(result_dir + '/system_control', 'w+') as file:
-        secure_call(connector, constant.SYSTEM_CONTROL_URL, file)
+        __secure_call(connector, urls.system(), file)
 
     with open(result_dir + '/hvac_state', 'w+') as file:
-        secure_call(connector, constant.HVAC_STATE_URL, file)
+        __secure_call(connector, urls.hvac(), file)
 
     with open(result_dir + '/current_pv_metering', 'w+') as file:
-        secure_call(connector, constant.CURRENT_PV_METERING_INFO_URL, file)
+        __secure_call(connector, urls.photovoltaics(), file)
 
     with open(result_dir + '/emf', 'w+') as file:
-        secure_call(connector, constant.EMF_URL, file)
+        __secure_call(connector, urls.emf_report(), file)
 
     with open(result_dir + '/repeaters', 'w+') as file:
-        secure_call(connector, constant.REPEATERS_URL, file)
+        __secure_call(connector, urls.repeaters(), file)
 
     connector.logout()
 
 
-def secure_call(connector, url, file):
+def __secure_call(connector, url, file):
     try:
         file.write(json.dumps(connector.get(url), indent=4))
     except ApiError as e:

@@ -1,48 +1,57 @@
 import logging
 import os
 import pickle
+from pathlib import Path
 
-LOGGER = logging.getLogger('FileUtils')
+_LOGGER = logging.getLogger('FileUtils')
 
 
 class FileUtils:
-    @staticmethod
-    def load_from_file(path):
+
+    @classmethod
+    def load_from_file(cls, path, filename):
+        join_path = cls._join_path(path, filename)
         try:
-            with open(path, "rb") as f:
+            with join_path.open("rb") as f:
                 return pickle.load(f)
+
         except IOError:
-            LOGGER.debug("File %s not found", path)
+            _LOGGER.debug("File %s not found", join_path)
             return None
         except Exception as e:
-            LOGGER.error("Cannot open file: %s, error: %s", path, str(e))
-            return None
-
-    @staticmethod
-    def save_to_file(data, filename, path):
-        try:
-            try:
-                from pathlib import Path
-            except ImportError:
-                from pathlib2 import Path
-
-            Path(path).mkdir(exist_ok=True)
-            with open(path + "/" + filename, "wb+") as f:
-                pickle.dump(data, f)
-        except Exception as e:
-            LOGGER.error("Cannot save data: %s file: %s, error: %s", path + filename, data, str(e))
+            _LOGGER.exception("Cannot open file: %s", join_path)
             raise e
 
-    @staticmethod
-    def delete_file(path):
+    @classmethod
+    def save_to_file(cls, data, path, filename):
+        join_path = cls._join_path(path, filename)
+        _LOGGER.debug("Will save data to %s", join_path)
         try:
-            os.remove(path)
-        except Exception as e:
-            LOGGER.debug("Cannot delete file %s, error: %s", path, str(e))
 
-    @staticmethod
-    def delete_dir(path):
+            with join_path.open("wb+") as f:
+                pickle.dump(data, f)
+
+        except Exception as e:
+            _LOGGER.exception("Cannot save data: %s to %s", str(data), join_path)
+            raise e
+
+    @classmethod
+    def delete_file(cls, path, filename):
+        join_path = cls._join_path(path, filename)
+        try:
+            os.remove(join_path)
+        except Exception as e:
+            _LOGGER.debug("Cannot delete file %s", join_path)
+
+    @classmethod
+    def delete_dir(cls, path):
         try:
             os.rmdir(path)
         except Exception as e:
-            LOGGER.debug("Cannot delete dir %s, error: %s", path, str(e))
+            _LOGGER.debug("Cannot delete dir %s", path)
+
+    @classmethod
+    def _join_path(cls, path, filename):
+        file_path = Path(path)
+        file_path.mkdir(exist_ok=True)
+        return file_path.joinpath(filename)

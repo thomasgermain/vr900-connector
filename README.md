@@ -6,10 +6,15 @@
 
 For now, the connector is ony able to read data from the system, it only handles only one heating system (one serial number). I cannot test more than that since I only have heating system at home
 
+## Install
+```bash
+[sudo] pip install vr900-connector 
+```
+
 ## Tests
 You can run tests with
 ```bash
-python3 setup.py pytest
+pytest
 ```
 
 ## Layers
@@ -59,6 +64,18 @@ to get some information about your installation, this returns the raw response, 
 }
 ```
 
+Basically, you can use 
+```python
+from vr900connector.api import ApiConnector
+   
+connector = ApiConnector('user', 'pass')
+connector.get('') 
+```
+with constants from
+```python
+vr900connector.api.constant
+``` 
+
 ### 2. VaillantSystemManager
 This layer allows you to interact in a more friendly way with the system.
 The underlying connector is hidden and raw responses are mapped to more useful object.
@@ -70,12 +87,17 @@ from vr900connector.vaillantsystemmanager import VaillantSystemManager
 manager = VaillantSystemManager('user', 'pass')
 system = manager.get_system() 
 ```
-Basically, the connector is returning quite the same information as the android mobile app can display
+Basically, the connector is returning quite the same information as the android mobile app can display.
+
+The main object to manipulate is 
+ ```python
+ vr900connector.model.system
+ ```
 
 ## Todos
-* Add model / manager classes documentation
+* Create scripts to get specific data, something like "python vaillant.py username password rooms" to get all rooms
 * Add some doc for pypi
-* Travis CI build
 * Proper way to deploy to pypi and create tag
 * Add updates method (alter system config)
 * find a more fancy name
+* only compatible python 3.5+
