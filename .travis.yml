@@ -1,18 +1,37 @@
 language: python
 
+os:
+- linux
+-
 python:
-  - "2.7"
-  - "3.5"
-  - "3.6"
-
+- '3.5'
+- '3.6'
 matrix:
   include:
-    - python: "3.7"
-      dist: xenial
-      sudo: true
+  - python: '3.7'
+    dist: xenial
+    sudo: true
 
 install:
-  - pip install -r requirements.txt
-
+- pip install -r requirements.txt
 script:
-  - pytest
+- coverage run --source=vr900connector setup.py pytest
+after_success:
+- coveralls
+-
+deploy:
+  provider: pypi
+  user:
+    secure: cm6HpWJoEdG56AbHunIuGb89x+DsuUSHRp5S957AAQJgoYoegEMPRxJOHYw0FyV9Ul43I37hBmf14HG+DSvaOjOddbi37CEq3L+jn6i2rEDt2Eiuet2KetqwIZPmyVXbXDbP+i9D6X50T1bXtCw2Gkl9K6MnQ8PhybhxgDPrdVSKOf4S/z/njIOSBzgtJWTj7zHr/MMpL4mOC9pDpwMqGeGwAY5OQKPN+CBIosHhALDo460U8U4hDaQLdJ5NOMrny/L8ZpNIclaUvNeTdaQbAB8Ki5iN9+kYf5eXR0qYw6qlCT57ecScmTFmXSyz4JJXnQovljBP84+UdHG667yrOOJ2irAnhmAUKzFK+HblO62bBWkW9tDJeY6a2E+73w5zMFmmUk05QTo1yOWmoxrAL7BlmsfaL93wX6a7eHEZUPQYPWCBZ8lNc10XYo2zJ7FXHbYjDBc30pYng/QGaETsecbHazL5UBscmtsacLwfVJaBrt7fypU/YdgR4KK+vDkb1X11nNEJ7yD/0ubiTyeefWC6nw4pNaYS/23m5htYsvnU595BT51+cZskPaVl9o3sIVTQFrrr1c2YSCqR9I6lal1IYjiqeRJJsyNo06SnO0qYD13neuP/Q+2/P5GMZrfHSlch2gPyDNlW6q854nZZAu4/TMG/81f1q8Codztm7WU=
+  password:
+    secure: OS8LVo5W4apS1F3SRYe5C8lw2duIIOFBHA4BKW+eeQQm3mdg1WOCGACBY8S4rHQ+zTKuRBgSs66NdwOe/5IXOBhYV+eBz85UDu2/RrS70j/8vPy0fl3y0v1DWOl0uT54hyUhF1cs8yFbTuz28C7FrUMLgWV8wrK1U/Av7nlfLQLEgxQCpp409np70ge6PfhMtDpjDJ38YZ5L+rh9kPNw5N0GjjUOJ9vF1tXdFgOUu0gpWCgJqpOOdOiuphyan31kg7P6GRFJ6s8SNT4waXUDYyroLbYfQHYS6ASu/Y/rg3/wo2LZPiYwRwmX3P7VPn+N52BH9qnyXBfA637nS44l55WmC9wCiyQR2qAro/5ArA1oKvU0WuzxHzjruC3wYAM8zosFDaSMahVAiU13CEzO9pn4voZ8O88oezBhGk8cbFyr8A8omOx5FvM7Es3cs37nSAF2wlnpcl7BmdR91spGzAgU8bHRRdGXMMugyILUnuV3zitPFAJX6WqhjH6TX5A7mAlEOH8sCHLNWu2r/OC6CHv2VhxaIoiDCTABxErmb51bg1KbNfWzEpK1ftunMytOgt+zFt5XH9tevIcDBqgnWBO/OMkMVeiX81Y5W1VV/JlXzIo6MOfzU8QdDEj1tuoHTyE7xdb7839EgBZJ72ep9WvZS9yeBCMqq/X+6Mxr50Q=
+  distributions: "sdist"
+  skip_existing: true
+  on:
+    tags: true
+    branch: master
+
+notifications:
+  email:
+    on_failure: change
+    on_success: change

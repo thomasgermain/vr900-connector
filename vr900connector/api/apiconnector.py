@@ -2,149 +2,137 @@ import logging
 
 import requests
 
-from .apierror import ApiError
-from . import constant
-from ..util import FileUtils, UrlFormatter
+from . import Urls, ApiError, Defaults
+from ..util import FileUtils
 
-LOGGER = logging.getLogger('Connector')
+_LOGGER = logging.getLogger('Connector')
+
+_JSON_CONTENT_TYPE_HEADER = {'content-type': 'application/json'}
 
 
 class ApiConnector:
     """
-    This is the low level smart.vaillant.com API connector.
-    This connector is handling some part of the API as well as the login.
-    For now, only some GET part of the API are handled. It means you cannot alter data with this connector
+    This is the low level smart.vaillant.com API connector. This is returning the raw JSON from responses or
+    :exc:`vr900connector.api.ApiError` if something goes wrong (basically, when response error code > 399).
+
+    On the first call, the connector will login automatically. If login don't succeed the first time, it will try to
+    login a second time (only if response error code is 401) before raising an :exc:`vr900connector.api.ApiError`
+
+    On Other calls, if session is running, the connector will assume the session is ok. If response error code is 401,
+    the connector will clear the session and retry to login. This implementation allows the connector to reconnect
+    automatically when cookies are outdated.
+
+    All GET against the API works, PUT/POST  are not yet implemented.
+
+    Please use :mod:`vr900connector.api.urls` in order to generate URL to be passed to the connector.
+
+    Args:
+        user: User for login
+        password: Password for login
+        smart_phone_id: Smart phone id required by the API
+        file_path: Where to store files created by this connector. Cookies and serial number are saved to avoid doing
+        re-login between sessions
     """
 
-    def __init__(self, user, password, smart_phone_id=constant.DEFAULT_SMART_PHONE_ID,
-                 base_url=constant.DEFAULT_BASE_URL, file_dir=constant.DEFAULT_FILES_DIR, auto_close_session=True):
-        self.__user = user
-        self.__password = password
-        self.__smart_phone_Id = smart_phone_id
-        self.__baseUrl = base_url
-        self.__fileDir = file_dir
-        self.__headers = {'content-type': 'application/json'}
-        self.__serialNumber = self.__load_serial_number_from_file()
-        self.__session = self.__create_session()
-        self.autoCloseSession = auto_close_session
-
-    def query(self, url, method='GET', payload=None):
-        """
-        url must be relative to base_url.
-        Serial number can be provided if you put $serialNumber in url.
-        """
-
-        safe_url = url if url.startswith('/') else '/' + url
-        return self.__secure_call(method, safe_url, payload)
-
-    def get(self, url):
-        return self.query(url)
-
-    def put(self, url, payload=None):
-        return self.query(url, 'PUT', payload)
-
-    def post(self, url, payload=None):
-        return self.query(url, 'POST', payload)
-
-    def delete(self, url):
-        return self.query(url, 'DELETE')
-
-    def get_current_pv_metering_inf(self):
-        return self.get(constant.CURRENT_PV_METERING_INFO_URL)
-
-    def get_emf(self):
-        return self.get(constant.EMF_URL)
-
-    def get_repeaters(self):
-        return self.get(constant.REPEATERS_URL)
-
-    def get_facilities(self):
-        return self.get(constant.FACILITIES_URL)
-
-    def get_live_report(self):
-        return self.get(constant.LIVE_REPORT_URL)
-
-    def get_system_status(self):
-        return self.get(constant.SYSTEM_STATUS_URL)
-
-    def get_hvac_state(self):
-        return self.get(constant.HVAC_STATE_URL)
-
-    def get_rooms(self):
-        return self.get(constant.ROOMS_URL)
-
-    def get_system_control(self):
-        return self.get(constant.SYSTEM_CONTROL_URL)
-
-    def get_zones(self):
-        return self.get(constant.ZONES_URL)
-
-    def get_room(self, index):
-        return self.get(UrlFormatter.format(constant.ROOM_URL, room=str(index)))
-
-    def get_zone(self, zone_id):
-        return self.get(UrlFormatter.format(constant.ZONE_URL, zone=str(zone_id)))
-
-    def get_dhw(self):
-        return self.get(self.__baseUrl + constant.DHW_URL)
-
-    def get_circulation(self, dhw_id):
-        return self.get(UrlFormatter.format(constant.DHW_CIRCULATION_URL, dhw=str(dhw_id)))
-
-    def get_hotwater(self, dhw_id):
-        return self.get(UrlFormatter.format(constant.DHW_HOTWATER_URL, dhw=str(dhw_id)))
-
-    def set_hotwater_setpoint_temperature(self, dhw_id, temperature):
-        return self.__secure_call('PUT',
-                                  UrlFormatter.format(constant.DHW_HOTWATER_SET_POINT_TEMPERATURE_URL, dhw=str(dhw_id)),
-                                  {'temperature_setpoint': temperature})
-
-    def set_hotwater_operation_mode(self, dhw_id, mode):
-        return self.__secure_call('PUT',
-                                  UrlFormatter.format(constant.DHW_HOTWATER_OPERATION_MODE_URL, dhw=str(dhw_id)),
-                                  {"operation_mode": mode})
-
-    def remove_quick_mode(self):
-        return self.__secure_call('DELETE', constant.SYSTEM_QUICK_MODE_URL)
-
-    def set_quick_mode(self, mode, duration=None):
-        """Duration in minutes, most of the time, the duration will be overridden by vaillant"""
-
-        payload = {
-            "quickmode":
-                {
-                    "quickmode": str(mode),
-                    "duration": duration if duration is not None else 0
-                }
-        }
-        return self.__secure_call('PUT', constant.SYSTEM_QUICK_MODE_URL, payload=payload)
+    def __init__(self, user: str, password: str, smart_phone_id: str = Defaults.SMART_PHONE_ID,
+                 file_path: str = Defaults.FILES_PATH):
+        self._user = user
+        self._password = password
+        self._smart_phone_Id = smart_phone_id
+        self._file_path = file_path
+        self._serial_number = self._load_serial_number_from_file()
+        self._session = self._create_or_load_session()
 
     def logout(self):
-        self.__session.request('POST', self.__baseUrl + constant.LOGOUT_URL)
-        self.close_session(True)
+        """
+        To get logged out of the API. It means, the connector will have to request a new token and ask for cookies.
+        Files generated by the connector are also deleted
+        """
+        response = None
+        try:
+            response = self._session.request('POST', Urls.logout())
+        except Exception as e:
+            raise ApiError("Error during logout", response) from e
+        finally:
+            self._clear_session()
 
-    def close_session(self, clear=False):
-        LOGGER.debug('Closing session')
-        self.__session.close()
-        if clear:
-            self.__clear_session()
-            FileUtils.delete_dir(self.__fileDir)
+    def query(self, url: str, method: str = 'GET', payload=None):
+        """
+        Call the vaillant API url with the chosen method, please use :mod:`vr900connector.api.urls` in order to generate
+        URL to be passed to the connector
+        """
 
-    def __secure_call(self, method, url, payload=None, re_login=False):
+        return self._secure_call(method, url, payload)
+
+    def get(self, url: str):
+        """
+        GET call to a vaillant API url please use :mod:`vr900connector.api.urls` in order to generate  URL to be passed
+        to the connector
+        """
+        return self.query(url)
+
+    def put(self, url: str, payload=None):
+        """
+        PUT call to a vaillant API url please use :mod:`vr900connector.api.urls` in order to generate  URL to be passed
+        to the connector
+        """
+        return self.query(url, 'PUT', payload)
+
+    def post(self, url: str, payload=None):
+        """
+        POST call to a vaillant API url please use :mod:`vr900connector.api.urls` in order to generate  URL to be passed
+        to the connector.
+        """
+        return self.query(url, 'POST', payload)
+
+    def delete(self, url: str):
+        """
+        DELETE call to a vaillant API url please use :mod:`vr900connector.api.urls` in order to generate  URL to be
+        passed to the connector
+        """
+        return self.query(url, 'DELETE')
+
+    # def set_hotwater_setpoint_temperature(self, dhw_id, temperature):
+    #     return self._secure_call('PUT',
+    #                            UrlFormatter.format(Defaults.DHW_HOTWATER_SET_POINT_TEMPERATURE_URL, dhw=str(dhw_id)),
+    #                               {'temperature_setpoint': temperature})
+    #
+    # def set_hotwater_operation_mode(self, dhw_id, mode):
+    #     return self._secure_call('PUT',
+    #                               UrlFormatter.format(Defaults.DHW_HOTWATER_OPERATION_MODE_URL, dhw=str(dhw_id)),
+    #                               {"operation_mode": mode})
+    #
+    # def remove_quick_mode(self):
+    #     return self._secure_call('DELETE', Defaults.SYSTEM_CONTROL_QUICK_MODE_URL)
+    #
+    # def set_quick_mode(self, mode, duration=None):
+    #     """Duration in minutes, most of the time, the duration will be overridden by vaillant"""
+    #
+    #     payload = {
+    #         "quickmode":
+    #             {
+    #                 "quickmode": str(mode),
+    #                 "duration": duration if duration is not None else 0
+    #             }
+    #     }
+    #     return self._secure_call('PUT', Defaults.SYSTEM_CONTROL_QUICK_MODE_URL, payload=payload)
+
+    def _secure_call(self, method: str, url: str, payload=None, re_login: bool = False):
         response = None
         safe_url = None
         try:
-            self.__login(re_login)
+            self._login(re_login)
 
-            safe_url = self.__baseUrl + UrlFormatter.format(url, serial=self.__serialNumber)
-            response = self.__session.request(method, safe_url, json=payload,
-                                              headers=None if payload is None else self.__headers)
+            safe_url = url.format(serial_number=self._serial_number)
+            response = self._session.request(method,
+                                             safe_url,
+                                             json=payload,
+                                             headers=None if payload is None else _JSON_CONTENT_TYPE_HEADER)
 
             if response.status_code > 399:
                 if not re_login and response.status_code == 401:
-                    LOGGER.debug('Call to %s failed with HTTP 401, will try to re-login')
-                    """Try to re-login"""
-                    self.__secure_call(method, url, payload, True)
+                    _LOGGER.debug('Call to %s failed with HTTP 401, will try to re-login', safe_url)
+                    return self._secure_call(method, url, payload, True)
                 else:
                     raise ApiError('Received error from server url: ' + safe_url + ' and method ' + method, response)
             if response.text:
@@ -152,108 +140,119 @@ class ApiConnector:
             else:
                 return {"ok": "ok"}
         except ApiError:
-            LOGGER.error('Cannot %s url: %s', method, safe_url if safe_url else url)
             raise
         except Exception as e:
-            LOGGER.exception('Cannot %s url: %s', method, safe_url if safe_url else url)
-            raise ApiError(str(e), response)
-        finally:
-            if self.autoCloseSession:
-                self.close_session()
+            raise ApiError('Cannot {} url: {}'.format(method, safe_url if safe_url else url), response) from e
 
-    def __login(self, re_login=False):
+    def _login(self, force_login: bool = False):
         try:
-            if re_login:
-                self.__clear_session()
-            if not self.__session.cookies:
-                self.__session = self.__create_session()
+            if force_login:
+                self._clear_session()
+            if not self._session.cookies:
+                self._session = self._create_or_load_session()
+                self._serial_number = self._load_serial_number_from_file()
 
-                if not self.__session.cookies:
-                    LOGGER.info(
-                        'No previous session found, will try to logging with username: %s and smartphoneId: %s to %s',
-                        self.__user, self.__smart_phone_Id, self.__baseUrl)
+                if not self._session.cookies:
+                    _LOGGER.info(
+                        'No previous session found, will try to logging with username: %s and smartphoneId: %s',
+                        self._user, self._smart_phone_Id)
 
-                    authtoken = self.__request_token()
-                    self.__get_cookies(authtoken)
-                    self.__get_serial_number()
+                    authtoken = self._request_token()
+                    self._get_cookies(authtoken)
+
+            if not self._serial_number:
+                self._get_serial_number()
         except ApiError:
             raise
         except Exception as e:
-            LOGGER.error('Error during login', e)
-            raise ApiError('Error during login ' + str(e), None)
+            raise ApiError('Error during login', None) from e
 
-    def __request_token(self):
+    def _request_token(self):
         params = {
-            "smartphoneId": self.__smart_phone_Id,
-            "username": self.__user,
-            "password": self.__password
+            "smartphoneId": self._smart_phone_Id,
+            "username": self._user,
+            "password": self._password
         }
 
-        response = self.__session.post(self.__baseUrl + constant.REQUEST_NEW_TOKEN_URL,
-                                       json=params, headers=self.__headers)
-        if response.status_code == 200:
-            LOGGER.debug('Token generation successful')
-            auth_token = response.json()['body']['authToken']
-            if not auth_token:
-                raise ApiError('Generated token is empty', response)
-            return auth_token
-        else:
-            raise ApiError('Authentication failed', response)
+        try:
+            response = self._session.post(Urls.new_token(), json=params, headers=_JSON_CONTENT_TYPE_HEADER)
+            if response.status_code == 200:
+                _LOGGER.debug('Token generation successful')
+                return response.json()['body']['authToken']
+            else:
+                raise ApiError('Authentication failed', response)
 
-    def __get_cookies(self, authtoken):
+        except ApiError:
+            raise
+        except Exception as e:
+            raise ApiError('Error during authentication', None) from e
+
+    def _get_cookies(self, auth_token: str):
         params = {
-            "smartphoneId": self.__smart_phone_Id,
-            "username": self.__user,
-            "authToken": authtoken
+            "smartphoneId": self._smart_phone_Id,
+            "username": self._user,
+            "authToken": auth_token
         }
-        response = self.__session.post(self.__baseUrl + constant.AUTHENTICATE_URL, json=params, headers=self.__headers)
 
-        if response.status_code == 200:
-            LOGGER.debug('Cookie successfully retrieved')
-            self.__save_cookies_to_file()
-        else:
-            raise ApiError('Cannot get cookies', response)
+        try:
+            response = self._session.post(Urls.authenticate(), json=params, headers=_JSON_CONTENT_TYPE_HEADER)
 
-    def __get_serial_number(self):
-        response = self.__session.get(self.__baseUrl + constant.FACILITIES_URL)
+            if response.status_code == 200:
+                self._session.cookies = response.cookies
+                _LOGGER.debug('Cookie successfully retrieved %s', self._session.cookies)
+                self._save_cookies_to_file()
+            else:
+                raise ApiError('Cannot get cookies', response)
+        except ApiError:
+            raise
+        except Exception as e:
+            raise ApiError('Error while getting cookies', None) from e
 
-        if response.status_code == 200:
-            LOGGER.debug('Serial number successfully retrieved')
-            self.__serialNumber = response.json()['body']['facilitiesList'][0]['serialNumber']
-            self.__save_serial_number_to_file()
-        else:
-            raise ApiError('Cannot get serial number', response)
+    def _get_serial_number(self):
+        try:
+            response = self._session.get(Urls.facilities_list())
 
-    def __test_login(self):
-        return self.__session.get(self.__baseUrl + constant.TEST_LOGIN_URL)
+            if response.status_code == 200:
+                _LOGGER.debug('Serial number successfully retrieved')
+                self._serial_number = response.json()['body']['facilitiesList'][0]['serialNumber']
+                self._save_serial_number_to_file()
+            else:
+                raise ApiError('Cannot get serial number', response)
+        except ApiError:
+            raise
+        except Exception as e:
+            raise ApiError('Cannot get serial number', None) from e
 
-    def __create_session(self):
+    def _create_or_load_session(self):
         session = requests.session()
-        cookies = self.__load_cookies_from_file()
-        LOGGER.debug('Found cookies %s', cookies)
+        cookies = self._load_cookies_from_file()
+        _LOGGER.debug('Found cookies %s', cookies)
         if cookies is not None:
             session.cookies = cookies
         return session
 
-    def __clear_session(self):
-        self.__clear_cookie()
-        self.__clear_serial_number()
-        self.__session = requests.session()
+    def _clear_session(self):
+        self._clear_cookie()
+        self._clear_serial_number()
+        self._session.close()
+        self._session = requests.session()
+        FileUtils.delete_dir(self._file_path)
 
-    def __save_cookies_to_file(self):
-        FileUtils.save_to_file(self.__session.cookies, constant.DEFAULT_COOKIE_FILE_NAME, self.__fileDir)
+    def _save_cookies_to_file(self):
+        FileUtils.save_to_file(self._session.cookies, self._file_path, Defaults.COOKIE_FILE_NAME)
 
-    def __save_serial_number_to_file(self):
-        FileUtils.save_to_file(self.__serialNumber, constant.DEFAULT_SERIAL_NUMBER_FILE_NAME, self.__fileDir)
+    def _save_serial_number_to_file(self):
+        FileUtils.save_to_file(self._serial_number, self._file_path, Defaults.SERIAL_NUMBER_FILE_NAME)
 
-    def __load_cookies_from_file(self):
-        return FileUtils.load_from_file(self.__fileDir + '/' + constant.DEFAULT_COOKIE_FILE_NAME)
+    def _load_cookies_from_file(self):
+        return FileUtils.load_from_file(self._file_path, Defaults.COOKIE_FILE_NAME)
 
-    def __load_serial_number_from_file(self):
-        return FileUtils.load_from_file(self.__fileDir + '/' + constant.DEFAULT_SERIAL_NUMBER_FILE_NAME)
+    def _load_serial_number_from_file(self):
+        return FileUtils.load_from_file(self._file_path, Defaults.SERIAL_NUMBER_FILE_NAME)
 
-    def __clear_cookie(self):
-        FileUtils.delete_file(self.__fileDir + '/' + constant.DEFAULT_COOKIE_FILE_NAME)
+    def _clear_cookie(self):
+        FileUtils.delete_file(self._file_path, Defaults.COOKIE_FILE_NAME)
 
-    def __clear_serial_number(self):
-        FileUtils.delete_file(self.__fileDir + '/' + constant.DEFAULT_SERIAL_NUMBER_FILE_NAME)
+    def _clear_serial_number(self):
+        FileUtils.delete_file(self._file_path, Defaults.SERIAL_NUMBER_FILE_NAME)
+        self._serial_number = None
