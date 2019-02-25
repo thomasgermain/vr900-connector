@@ -1,6 +1,6 @@
 from datetime import datetime
 from .constants import QUICK_VETO
-from .timeprogram import TimeProgramDaySetting
+from . import TimeProgram, TimeProgramDaySetting, QuickVeto
 
 
 class Component:
@@ -19,8 +19,8 @@ class Component:
         quick_veto: it there is a quick veto running on
     """
 
-    def __init__(self, component_id, name, time_program, current_temperature, target_temperature, operation_mode,
-                 quick_veto):
+    def __init__(self, component_id: any, name: str, time_program: TimeProgram, current_temperature: float,
+                 target_temperature: float, operation_mode: str, quick_veto: QuickVeto):
         self.id = component_id
         self.name = name
         self.time_program = time_program
@@ -29,12 +29,13 @@ class Component:
         self.operation_mode = operation_mode
         self.quick_veto = quick_veto
 
-    def get_current_time_program(self):
+    def get_current_time_program(self) -> TimeProgramDaySetting:
         """
         :return: The :class:`vr900connector.model.TimeProgramDaySetting` based on datetime.now() or quick veto
         if quick veto is running on
         """
         if self.quick_veto:
-            return TimeProgramDaySetting(str(self.quick_veto.remaining_time), self.quick_veto.target_temperature, QUICK_VETO)
+            return TimeProgramDaySetting(str(self.quick_veto.remaining_time), self.quick_veto.target_temperature,
+                                         QUICK_VETO)
 
         return self.time_program.get_time_program_for(datetime.now())

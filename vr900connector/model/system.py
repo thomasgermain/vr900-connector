@@ -1,6 +1,7 @@
 import datetime
+from typing import List
 
-from . import ActiveMode, HolidayMode, constants,  HotWater, Room, Zone
+from . import ActiveMode, HolidayMode, constants,  HotWater, Room, Zone, BoilerStatus, Circulation, QuickMode
 from .quickmode import SYSTEM_OFF, HOTWATER_BOOST, PARTY, ONE_DAY_AT_HOME, ONE_DAY_AWAY, VENTILATION_BOOST
 
 
@@ -22,7 +23,8 @@ class System:
         quick_mode: A :class:`vr900connector.QuickMode` if any is running on
     """
 
-    def __init__(self, holiday_mode, boiler_status, zones, rooms, hot_water, circulation, outdoor_temperature, quick_mode):
+    def __init__(self, holiday_mode: HolidayMode, boiler_status: BoilerStatus, zones: List[Zone], rooms: List[Room],
+                 hot_water: HotWater, circulation: Circulation, outdoor_temperature: float, quick_mode: QuickMode):
         if holiday_mode:
             self.holiday_mode = holiday_mode
         else:
@@ -44,13 +46,13 @@ class System:
         self.outdoor_temperature = outdoor_temperature
         self.quick_mode = quick_mode
 
-    def get_zone(self, zone_id):
+    def get_zone(self, zone_id) -> Zone:
         return self._zones_dict[str(zone_id)]
 
-    def get_room(self, room_id):
+    def get_room(self, room_id) -> Room:
         return self._rooms_dict[int(room_id)]
 
-    def get_active_mode_zone(self, zone):
+    def get_active_mode_zone(self, zone) -> ActiveMode:
         # Holiday mode takes precedence over everything
         if self.holiday_mode.active:
             return ActiveMode(self.holiday_mode.target_temperature, constants.HOLIDAY_MODE)
@@ -76,12 +78,10 @@ class System:
             if self.quick_mode == PARTY:
                 return ActiveMode(zone.target_temperature, self.quick_mode.name)
 
-            return None
-
         time_program = zone.get_current_time_program()
         return ActiveMode(time_program.target_temperature, time_program.mode)
 
-    def get_active_mode_room(self, room):
+    def get_active_mode_room(self, room) -> ActiveMode:
         # Holiday mode takes precedence over everything
         if self.holiday_mode.active:
             return ActiveMode(self.holiday_mode.target_temperature, constants.HOLIDAY_MODE)
@@ -101,7 +101,7 @@ class System:
         time_program = room.get_current_time_program()
         return ActiveMode(time_program.target_temperature, time_program.mode)
 
-    def get_active_mode_circulation(self, circulation=None):
+    def get_active_mode_circulation(self, circulation=None) -> ActiveMode:
         if not circulation:
             circulation = self.circulation
 
@@ -115,7 +115,7 @@ class System:
         time_program = circulation.get_current_time_program()
         return ActiveMode(time_program.target_temperature, time_program.mode)
 
-    def get_active_mode_hot_water(self, hot_water=None):
+    def get_active_mode_hot_water(self, hot_water=None) -> ActiveMode:
         if not hot_water:
             hot_water = self.hot_water
 

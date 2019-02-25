@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 class BoilerStatus:
     """
     Represents the status of the boiler
@@ -11,7 +14,7 @@ class BoilerStatus:
         last_update: last update of the status (provided by the API)
     """
 
-    def __init__(self, device_name, description, title, code, hint, last_update):
+    def __init__(self, device_name: str, description: str, title: str, code: str, hint: str, last_update: datetime):
         self.device_name = device_name
         self.description = description
         self.title = title

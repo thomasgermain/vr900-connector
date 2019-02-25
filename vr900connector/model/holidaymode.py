@@ -1,3 +1,6 @@
+from datetime import date
+
+
 class HolidayMode:
     """
     Represents system's holiday mode
@@ -9,7 +12,7 @@ class HolidayMode:
         target_temperature: Target temperature during holiday mode
     """
 
-    def __init__(self, active, start_date, end_date, target_temperature):
+    def __init__(self, active: bool, start_date: date, end_date: date, target_temperature: float):
         self.active = active
         self.start_date = start_date
         self.end_date = end_date

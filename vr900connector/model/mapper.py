@@ -1,17 +1,9 @@
 import datetime
 
-from . import BoilerStatus
-from .circulation import Circulation
-from .device import Device
-from .holidaymode import HolidayMode
-from .hotwater import HotWater
-from .quickmode import QuickMode
-from .quickveto import QuickVeto
-from .room import Room
-from .timeprogram import TimeProgram, TimeProgramDay, TimeProgramDaySetting
-from .zone import Zone
+from . import BoilerStatus, Circulation, Device, HolidayMode, HotWater, QuickMode, QuickVeto, Room, TimeProgram, \
+    TimeProgramDay, TimeProgramDaySetting, Zone
 
-DATE_FORMAT = "%Y-%m-%d"
+_DATE_FORMAT = "%Y-%m-%d"
 
 
 class Mapper:
@@ -111,8 +103,8 @@ class Mapper:
         if raw_holiday_mode and raw_holiday_mode.get("active"):
             holidayMode.active = True
             holidayMode.targetTemperature = raw_holiday_mode.get("temperature_setpoint")
-            holidayMode.startDate = datetime.datetime.strptime(raw_holiday_mode.get("start_date"), DATE_FORMAT).date()
-            holidayMode.endDate = datetime.datetime.strptime(raw_holiday_mode.get("end_date"), DATE_FORMAT).date()
+            holidayMode.startDate = datetime.datetime.strptime(raw_holiday_mode.get("start_date"), _DATE_FORMAT).date()
+            holidayMode.endDate = datetime.datetime.strptime(raw_holiday_mode.get("end_date"), _DATE_FORMAT).date()
 
         return holidayMode
 

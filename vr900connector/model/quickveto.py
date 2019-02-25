@@ -12,6 +12,6 @@ class QuickVeto:
         target_temperature: Target temperature of the quick veto
     """
 
-    def __init__(self, remaining_time, target_temperature):
+    def __init__(self, remaining_time: int, target_temperature: float):
         self.remaining_time = remaining_time
         self.target_temperature = target_temperature

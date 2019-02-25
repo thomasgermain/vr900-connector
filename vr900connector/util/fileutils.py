@@ -9,7 +9,7 @@ _LOGGER = logging.getLogger('FileUtils')
 class FileUtils:
 
     @classmethod
-    def load_from_file(cls, path, filename):
+    def load_from_file(cls, path: str, filename: str):
         join_path = cls._join_path(path, filename)
         try:
             with join_path.open("rb") as f:
@@ -19,11 +19,11 @@ class FileUtils:
             _LOGGER.debug("File %s not found", join_path)
             return None
         except Exception as e:
-            _LOGGER.exception("Cannot open file: %s", join_path)
+            _LOGGER.error("Cannot open file: %s", join_path)
             raise e
 
     @classmethod
-    def save_to_file(cls, data, path, filename):
+    def save_to_file(cls, data: any, path: str, filename:str):
         join_path = cls._join_path(path, filename)
         _LOGGER.debug("Will save data to %s", join_path)
         try:
@@ -32,26 +32,26 @@ class FileUtils:
                 pickle.dump(data, f)
 
         except Exception as e:
-            _LOGGER.exception("Cannot save data: %s to %s", str(data), join_path)
+            _LOGGER.error("Cannot save data: %s to %s", str(data), join_path)
             raise e
 
     @classmethod
-    def delete_file(cls, path, filename):
+    def delete_file(cls, path: str, filename: str):
         join_path = cls._join_path(path, filename)
         try:
             os.remove(join_path)
         except Exception as e:
-            _LOGGER.debug("Cannot delete file %s", join_path)
+            _LOGGER.exception("Cannot delete file %s", join_path, e)
 
     @classmethod
-    def delete_dir(cls, path):
+    def delete_dir(cls, path: str):
         try:
             os.rmdir(path)
         except Exception as e:
-            _LOGGER.debug("Cannot delete dir %s", path)
+            _LOGGER.exception("Cannot delete dir %s", path, e)
 
     @classmethod
-    def _join_path(cls, path, filename):
+    def _join_path(cls, path: str, filename: str):
         file_path = Path(path)
         file_path.mkdir(exist_ok=True)
         return file_path.joinpath(filename)

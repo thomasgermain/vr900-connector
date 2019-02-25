@@ -10,7 +10,7 @@ class Device:
         radio_out_of_reach: is device out of reach
     """
 
-    def __init__(self, name, sgtin, device_type, battery_low, radio_out_of_reach):
+    def __init__(self, name: str, sgtin: str, device_type: str, battery_low: bool, radio_out_of_reach: bool):
         self.name = name
         self.sgtin = sgtin
         self.device_type = device_type

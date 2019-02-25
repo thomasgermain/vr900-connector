@@ -1,5 +1,6 @@
 import copy
-from datetime import timedelta
+from datetime import timedelta, datetime
+from typing import List, Dict
 
 
 class TimeProgramDaySetting:
@@ -11,14 +12,14 @@ class TimeProgramDaySetting:
         target_temperature: Target temperature of the setting
         mode: The mode that will be applied to the component (always None for a :class: `vr900connector.Room`)
     """
-    def __init__(self, start_time, target_temperature, mode):
+    def __init__(self, start_time: str, target_temperature: float, mode: str):
         self.start_time = start_time
         self.target_temperature = target_temperature
         self.mode = mode
         self.absolute_minutes = TimeProgramDaySetting.to_absolute_minute(start_time)
 
     @classmethod
-    def to_absolute_minute(cls, start_time):
+    def to_absolute_minute(cls, start_time) -> int:
         split = start_time.split(":")
         if len(split) > 1:
             hour = int(split[0]) * 60
@@ -35,7 +36,7 @@ class TimeProgramDay:
         time_program_day_settings: list of settings (:class: `vr900connector.TimeProgramDaySetting`)
     """
 
-    def __init__(self, time_program_day_settings):
+    def __init__(self, time_program_day_settings: List[TimeProgramDaySetting]):
         self.time_program_day_settings = time_program_day_settings
 
 
@@ -47,19 +48,19 @@ class TimeProgram:
         time_program_days: List of time program day (:class: `vr900connector.TimeProgramDay`)
     """
 
-    def __init__(self, time_program_days):
+    def __init__(self, time_program_days: Dict[str, TimeProgramDay]):
         self.time_program_days = time_program_days
 
-    def get_time_program_for(self, search_date):
+    def get_time_program_for(self, search_date: datetime) -> TimeProgramDaySetting:
         """
         This return the corresponding time program day setting for a given date
 
         :param search_date: The date for which you want to get the :class:`vr900connector.TimeProgramDaySetting`
         :return: The time program day setting corresponding to the date
         """
-        day = search_date.strftime("%A").lower()
-        day_before = (search_date - timedelta(days=1)).strftime("%A").lower()
-        time = str(search_date.hour) + ":" + str(search_date.minute)
+        day: str = search_date.strftime("%A").lower()
+        day_before: str = (search_date - timedelta(days=1)).strftime("%A").lower()
+        time = str(search_date.hour) + ':' + str(search_date.minute)
 
         absolute_minute = TimeProgramDaySetting.to_absolute_minute(time)
         timeProgramDay = self.time_program_days[day]

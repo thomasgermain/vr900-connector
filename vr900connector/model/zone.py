@@ -1,7 +1,6 @@
 import copy
 
-from . import Component
-from .timeprogram import TimeProgramDaySetting
+from . import Component, TimeProgram, TimeProgramDaySetting, QuickVeto
 from .constants import FROST_PROTECTION_TEMP, MODE_OFF, MODE_AUTO, QUICK_VETO, THERMOSTAT_MAX_TEMP, MODE_DAY, MODE_NIGHT
 
 
@@ -17,30 +16,31 @@ class Zone(Component):
         rbr: Set to True if the zone is controlled by rooms
     """
 
-    MODES = [MODE_AUTO, MODE_OFF, MODE_DAY, MODE_NIGHT, QUICK_VETO]
+    MODES: list = [MODE_AUTO, MODE_OFF, MODE_DAY, MODE_NIGHT, QUICK_VETO]
     """
     List of available modes for a zone
     """
 
-    MIN_TEMP = FROST_PROTECTION_TEMP
+    MIN_TEMP: float = FROST_PROTECTION_TEMP
     """
     Minimum temperature in celsius for a room, this is coming from documentation
     """
 
-    MAX_TEMP = THERMOSTAT_MAX_TEMP
+    MAX_TEMP: float = THERMOSTAT_MAX_TEMP
     """
     Maximum temperature celsius for a room, this is coming from my tests with android application, cannot go above 30
     """
 
-    def __init__(self, component_id, name, time_program, current_temperature, target_temperature, operation_mode,
-                 quick_veto, target_min_temperature, active_function, rbr):
+    def __init__(self, component_id: any, name: str, time_program: TimeProgram, current_temperature: float,
+                 target_temperature: float, operation_mode: str, quick_veto: QuickVeto, target_min_temperature: float,
+                 active_function: str, rbr: bool):
         super().__init__(component_id, name, time_program, current_temperature, target_temperature, operation_mode,
                          quick_veto)
         self.target_min_temperature = target_min_temperature
         self.active_function = active_function
         self.rbr = rbr
 
-    def get_current_time_program(self):
+    def get_current_time_program(self) -> TimeProgramDaySetting:
         mode = copy.deepcopy(Component.get_current_time_program(self))
         if self.quick_veto is None:
             if self.operation_mode == MODE_OFF:

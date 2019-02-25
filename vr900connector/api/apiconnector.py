@@ -34,8 +34,8 @@ class ApiConnector:
         re-login between sessions
     """
 
-    def __init__(self, user, password, smart_phone_id=constants.DEFAULT_SMART_PHONE_ID,
-                 file_path=constants.DEFAULT_FILES_PATH):
+    def __init__(self, user: str, password: str, smart_phone_id: str = constants.DEFAULT_SMART_PHONE_ID,
+                 file_path: str = constants.DEFAULT_FILES_PATH):
         self._user = user
         self._password = password
         self._smart_phone_Id = smart_phone_id
@@ -51,7 +51,7 @@ class ApiConnector:
         self._session.request('POST', urls.logout())
         self._clear_session()
 
-    def query(self, url, method='GET', payload=None):
+    def query(self, url: str, method: str = 'GET', payload=None):
         """
         Call the vaillant API url with the chosen method, please use :mod:`vr900connector.api.urls` in order to generate
         URL to be passed to the connector
@@ -59,28 +59,28 @@ class ApiConnector:
 
         return self._secure_call(method, url, payload)
 
-    def get(self, url):
+    def get(self, url: str):
         """
         GET call to a vaillant API url please use :mod:`vr900connector.api.urls` in order to generate  URL to be passed
         to the connector
         """
         return self.query(url)
 
-    def put(self, url, payload=None):
+    def put(self, url: str, payload=None):
         """
         PUT call to a vaillant API url please use :mod:`vr900connector.api.urls` in order to generate  URL to be passed
         to the connector
         """
         return self.query(url, 'PUT', payload)
 
-    def post(self, url, payload=None):
+    def post(self, url: str, payload=None):
         """
         POST call to a vaillant API url please use :mod:`vr900connector.api.urls` in order to generate  URL to be passed
         to the connector.
         """
         return self.query(url, 'POST', payload)
 
-    def delete(self, url):
+    def delete(self, url: str):
         """
         DELETE call to a vaillant API url please use :mod:`vr900connector.api.urls` in order to generate  URL to be
         passed to the connector
@@ -112,7 +112,7 @@ class ApiConnector:
     #     }
     #     return self._secure_call('PUT', constants.SYSTEM_CONTROL_QUICK_MODE_URL, payload=payload)
 
-    def _secure_call(self, method, url, payload=None, re_login=False):
+    def _secure_call(self, method: str, url: str, payload=None, re_login: bool = False):
         response = None
         safe_url = None
         try:
@@ -140,7 +140,7 @@ class ApiConnector:
             _LOGGER.exception('Cannot %s url: %s', method, safe_url if safe_url else url)
             raise ApiError(str(e), response)
 
-    def _login(self, force_login=False):
+    def _login(self, force_login: bool = False):
         try:
             if force_login:
                 self._clear_session()
@@ -178,11 +178,11 @@ class ApiConnector:
         else:
             raise ApiError('Authentication failed', response)
 
-    def _get_cookies(self, authtoken):
+    def _get_cookies(self, auth_token: str):
         params = {
             "smartphoneId": self._smart_phone_Id,
             "username": self._user,
-            "authToken": authtoken
+            "authToken": auth_token
         }
         response = self._session.post(urls.authenticate(), json=params, headers=_JSON_CONTENT_TYPE_HEADER)
 

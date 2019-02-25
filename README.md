@@ -73,7 +73,7 @@ connector.get('')
 ```
 with constants from
 ```python
-vr900connector.api.constant
+vr900connector.api.constants
 ``` 
 
 ### 2. VaillantSystemManager
@@ -82,9 +82,9 @@ The underlying connector is hidden and raw responses are mapped to more useful o
 
 For now, the only function is:
 ```python
-from vr900connector.vaillantsystemmanager import VaillantSystemManager
+from vr900connector.systemmanager import SystemManager
    
-manager = VaillantSystemManager('user', 'pass')
+manager = SystemManager('user', 'pass')
 system = manager.get_system() 
 ```
 Basically, the connector is returning quite the same information as the android mobile app can display.
@@ -100,4 +100,3 @@ The main object to manipulate is
 * Proper way to deploy to pypi and create tag
 * Add updates method (alter system config)
 * find a more fancy name
-* only compatible python 3.5+

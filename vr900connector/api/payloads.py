@@ -6,21 +6,21 @@ Payload are always json formatted
 import json
 
 
-def set_temperature_setpoint(temperature):
+def set_temperature_setpoint(temperature: float):
     """
     Payload used to set target temperature for a component
     """
-    return json.dumps({'temperature_setpoint': temperature})
+    return json.dumps({'temperature_setpoint': str(temperature)})
 
 
-def set_operation_mode(mode):
+def set_operation_mode(mode: str):
     """
     Payload to set operation mode for a component
     """
     return json.dumps({'operation_mode': mode})
 
 
-def quickmode(quick_mode, duration=None):
+def quickmode(quick_mode: str, duration: int = None):
     """
     Payload to set quick mode for the system
     """

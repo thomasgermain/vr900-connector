@@ -2,8 +2,7 @@ import logging
 
 from .api import ApiConnector, urls, payloads
 from .api.constants import DEFAULT_SMART_PHONE_ID, DEFAULT_FILES_PATH
-from .model import Mapper
-from .model import System
+from .model import Mapper, System, HotWater
 from .model.constants import QM_HOTWATER_BOOST
 
 LOGGER = logging.getLogger('SystemManager')
@@ -23,7 +22,8 @@ class SystemManager:
         file_path: Where to store files created by the underlying connector.
     """
 
-    def __init__(self, user, password, smart_phone_id=DEFAULT_SMART_PHONE_ID, file_path=DEFAULT_FILES_PATH):
+    def __init__(self, user: str, password: str, smart_phone_id: str = DEFAULT_SMART_PHONE_ID,
+                 file_path: str = DEFAULT_FILES_PATH):
         self._connector = ApiConnector(user, password, smart_phone_id, file_path)
 
     def get_system(self):
@@ -56,7 +56,7 @@ class SystemManager:
         live_report = self._connector.get(urls.live_report())
         return Mapper.domestic_hot_water(full_system, live_report)
 
-    def set_hot_water_setpoint_temperature(self, hot_water, temperature):
+    def set_hot_water_setpoint_temperature(self, hot_water: HotWater, temperature: float):
         LOGGER.info("Will try to set dhw target temperature to %s", temperature)
         if temperature:
             self._connector.put(urls.set_hot_water_temperature_setpoint(hot_water.id),
@@ -66,7 +66,7 @@ class SystemManager:
             LOGGER.debug("No temperature provided, nothing to do")
             return False
 
-    def set_hot_water_operation_mode(self, system, new_mode):
+    def set_hot_water_operation_mode(self, system: System, new_mode: str):
         """
         Set new operation mode for the hot water system.
 
@@ -105,7 +105,7 @@ class SystemManager:
             LOGGER.debug("No new mode provided, nothing to do")
             return False
 
-    def set_quick_mode(self, quick_mode):
+    def set_quick_mode(self, quick_mode: str):
         """
         Set quick mode system wise
         :return: True if everything is ok
@@ -119,7 +119,7 @@ class SystemManager:
         """
         self._connector.logout()
 
-    def _set_hot_water_operation_mode(self, hot_water, new_mode):
+    def _set_hot_water_operation_mode(self, hot_water: HotWater, new_mode: str):
         self._connector.put(urls.set_hot_water_operation_mode(hot_water.id),
                             payloads.set_operation_mode(new_mode))
         return True

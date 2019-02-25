@@ -27,7 +27,7 @@ class QuickMode:
         for_circulation: does the quick mode apply to the circulation ?
     """
 
-    def __init__(self, name, for_zone, for_room, for_hot_water, for_circulation):
+    def __init__(self, name: str, for_zone: bool, for_room: bool, for_hot_water: bool, for_circulation: bool):
         self.name = name
         self.for_zone = for_zone
         self.for_room = for_room
@@ -44,14 +44,14 @@ class QuickMode:
         return _VALUES[name]
 
 
-HOTWATER_BOOST = QuickMode(QM_HOTWATER_BOOST, False, False, True, True)
+HOTWATER_BOOST: QuickMode = QuickMode(QM_HOTWATER_BOOST, False, False, True, True)
 """
 The advanced function heats the water in the domestic hot water cylinder once until the desired DHW circuit 
 temperature set is reached or until you cancel the advanced function early. The heating installation will then return to 
 the pre-set mode
 """
 
-VENTILATION_BOOST = QuickMode(QM_VENTILATION_BOOST, True, True, False, False)
+VENTILATION_BOOST: QuickMode = QuickMode(QM_VENTILATION_BOOST, True, True, False, False)
 """
 This advanced function switches the zone off for 30 minutes. The frost protection function is activated, and hot water 
 generation and circulation remain active. Ventilation is activated and works at the highest ventilation level.
@@ -59,34 +59,34 @@ The advanced function is automatically deactivated after 30 minutes or if you ca
 heating installation will then return to the pre-set mode
 """
 
-ONE_DAY_AWAY = QuickMode(QM_ONE_DAY_AWAY, True, True, True, False)
+ONE_DAY_AWAY: QuickMode = QuickMode(QM_ONE_DAY_AWAY, True, True, True, False)
 """
 Hot water generation and circulation are switched off and the frost protection is activated. The advanced function is 
 automatically deactivated after 24:00 hours or if you cancel the advanced function first. The heating installation will
 then return to the pre-set mode. Ventilation is activated and works at the lowest ventilation level.
 """
 
-SYSTEM_OFF = QuickMode(QM_SYSTEM_OFF, True, True, True, True)
+SYSTEM_OFF: QuickMode = QuickMode(QM_SYSTEM_OFF, True, True, True, True)
 """
 The heating function, hot water circuit and cooling are switched off. The frost protection function is activated.
 The circulation is switched off. Ventilation is activated and works at the lowest ventilation level.
 """
 
-ONE_DAY_AT_HOME = QuickMode(QM_ONE_DAY_AT_HOME, True, False, False, False)
+ONE_DAY_AT_HOME: QuickMode = QuickMode(QM_ONE_DAY_AT_HOME, True, False, False, False)
 """
 This advanced function activates Automatic mode for one day with the settings for Sunday, as set using the Time 
 programmes function. The advanced function is automatically deactivated after 24:00 hours or if you cancel the advanced 
 function first. The heating installation will then return to the pre-set mode.
 """
 
-PARTY = QuickMode(QM_PARTY, True, False, False, False)
+PARTY: QuickMode = QuickMode(QM_PARTY, True, False, False, False)
 """
 The advanced function brings the room temperature to the set desired Day temperature, in accordance with the set time
 periods. The advanced function is deactivated after six hours or if you cancel it before the six hours is up. 
 The heating installation will then return to the pre-set mode.
 """
 
-_VALUES = {
+_VALUES: dict = {
     HOTWATER_BOOST.name: HOTWATER_BOOST,
     VENTILATION_BOOST.name: VENTILATION_BOOST,
     ONE_DAY_AWAY.name: ONE_DAY_AWAY,
