@@ -58,8 +58,8 @@ class TimeProgram:
         :param search_date: The date for which you want to get the :class:`vr900connector.TimeProgramDaySetting`
         :return: The time program day setting corresponding to the date
         """
-        day: str = search_date.strftime("%A").lower()
-        day_before: str = (search_date - timedelta(days=1)).strftime("%A").lower()
+        day = search_date.strftime("%A").lower()
+        day_before = (search_date - timedelta(days=1)).strftime("%A").lower()
         time = str(search_date.hour) + ':' + str(search_date.minute)
 
         absolute_minute = TimeProgramDaySetting.to_absolute_minute(time)
