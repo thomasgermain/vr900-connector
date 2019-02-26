@@ -16,17 +16,17 @@ class Zone(Component):
         rbr: Set to True if the zone is controlled by rooms
     """
 
-    MODES: list = [MODE_AUTO, MODE_OFF, MODE_DAY, MODE_NIGHT, QUICK_VETO]
+    MODES = [MODE_AUTO, MODE_OFF, MODE_DAY, MODE_NIGHT, QUICK_VETO]
     """
     List of available modes for a zone
     """
 
-    MIN_TEMP: float = FROST_PROTECTION_TEMP
+    MIN_TEMP = FROST_PROTECTION_TEMP
     """
     Minimum temperature in celsius for a room, this is coming from documentation
     """
 
-    MAX_TEMP: float = THERMOSTAT_MAX_TEMP
+    MAX_TEMP = THERMOSTAT_MAX_TEMP
     """
     Maximum temperature celsius for a room, this is coming from my tests with android application, cannot go above 30
     """

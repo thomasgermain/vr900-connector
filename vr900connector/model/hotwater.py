@@ -7,17 +7,17 @@ class HotWater(Component):
     This class represents the hot water of your system
     """
 
-    MODES: list = [MODE_ON, MODE_OFF, MODE_AUTO, QM_HOTWATER_BOOST]
+    MODES = [MODE_ON, MODE_OFF, MODE_AUTO, QM_HOTWATER_BOOST]
     """
     List of modes available for hot water
     """
 
-    MIN_TEMP: float = 35
+    MIN_TEMP = 35
     """
     Minimum temperature in celsius for the hot water, this is coming from documentation
     """
 
-    MAX_TEMP: float = 70
+    MAX_TEMP = 70
     """
     Maximum temperature celsius for the hot water, this is coming from my tests with android application, 
     cannot go above 70

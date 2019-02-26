@@ -14,17 +14,17 @@ class Room(Component):
         devices: List of devices in the room, see :class:`vr900connector.Device`
     """
 
-    MODES: list = [MODE_OFF, MODE_MANUAL, MODE_AUTO, QUICK_VETO]
+    MODES = [MODE_OFF, MODE_MANUAL, MODE_AUTO, QUICK_VETO]
     """
     List of available modes for a room
     """
 
-    MIN_TEMP: float = FROST_PROTECTION_TEMP
+    MIN_TEMP = FROST_PROTECTION_TEMP
     """
     Minimum temperature in celsius for a room, this is coming from documentation
     """
 
-    MAX_TEMP: float = THERMOSTAT_MAX_TEMP
+    MAX_TEMP = THERMOSTAT_MAX_TEMP
     """
     Maximum temperature celsius for a room, this is coming from my tests with android application, cannot go above 30
     """

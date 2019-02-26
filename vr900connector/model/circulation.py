@@ -8,7 +8,7 @@ class Circulation(Component):
     This class only exists to have a clean hierarchy
     """
 
-    MODES: list = [MODE_ON, MODE_OFF, MODE_AUTO]
+    MODES = [MODE_ON, MODE_OFF, MODE_AUTO]
     """
     List of mode available for circulation
     """
