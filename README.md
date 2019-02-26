@@ -4,7 +4,9 @@
 
 <b>Please note that the project is still in beta state, it means  I may do some (un)intentional breaking changes</b>
 
-For now, the connector is ony able to read data from the system, it only handles only one heating system (one serial number). I cannot test more than that since I only have heating system at home
+Python 3.5+
+
+For now, the connector is ony able to read data from the system (but it's planned to be able to alter system as well), it only handles only one heating system (one serial number). I cannot test more than that since I only have heating system at home.
 
 ## Install
 ```bash
@@ -17,11 +19,17 @@ You can run tests with
 pytest
 ```
 
-## Layers
+## Usages
 
-The connector is separate in two main layers:
+### Scripts
+TODO
 
-### 1. Vr900Connector
+
+### Programmatically
+ 
+The connector is separate in two layers:
+
+#### 1. ApiConnector
 This is the low level connector using the vaillant API and returning raw data directly coming from the API. The connector is handling the login and session.
 The connector able to reuse an already existing session (cookies). Two files are saved (cookies and serial number of your installation) on the file system. Default location is:
 ```python
@@ -76,7 +84,9 @@ with constants from
 vr900connector.api.constants
 ``` 
 
-### 2. VaillantSystemManager
+I recommend using this layer if you only want to retrieve basic data (outdoor temperature, current temperature, etc.)
+
+#### 2. SystemManager
 This layer allows you to interact in a more friendly way with the system.
 The underlying connector is hidden and raw responses are mapped to more useful object.
 
