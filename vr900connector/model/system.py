@@ -34,25 +34,30 @@ class System:
 
         if zones:
             self.zones = zones
-            self.rooms = rooms
             self._zones_dict = dict((zone.id, zone) for zone in zones)
-            self._rooms_dict = dict((room.id, room) for room in rooms)
         else:
             self._zones_dict = dict()
+            self.zones = []
+
+        if rooms:
+            self.rooms = rooms
+            self._rooms_dict = dict((room.id, room) for room in rooms)
+        else:
             self._rooms_dict = dict()
+            self.rooms = []
 
         self.hot_water = hot_water
         self.circulation = circulation
         self.outdoor_temperature = outdoor_temperature
         self.quick_mode = quick_mode
 
-    def get_zone(self, zone_id) -> Zone:
+    def get_zone(self, zone_id: int) -> Zone:
         return self._zones_dict[str(zone_id)]
 
-    def get_room(self, room_id) -> Room:
+    def get_room(self, room_id: int) -> Room:
         return self._rooms_dict[int(room_id)]
 
-    def get_active_mode_zone(self, zone) -> ActiveMode:
+    def get_active_mode_zone(self, zone: Zone) -> ActiveMode:
         # Holiday mode takes precedence over everything
         if self.holiday_mode.active:
             return ActiveMode(self.holiday_mode.target_temperature, constants.HOLIDAY_MODE)
@@ -73,7 +78,7 @@ class System:
                 sunday = today - datetime.timedelta(days=today.weekday() - 6)
 
                 time_program = zone.time_program.get_time_program_for(sunday)
-                return ActiveMode(time_program.target_temperature, time_program.mode)
+                return ActiveMode(time_program.target_temperature, self.quick_mode.name)
 
             if self.quick_mode == PARTY:
                 return ActiveMode(zone.target_temperature, self.quick_mode.name)
@@ -81,7 +86,7 @@ class System:
         time_program = zone.get_current_time_program()
         return ActiveMode(time_program.target_temperature, time_program.mode)
 
-    def get_active_mode_room(self, room) -> ActiveMode:
+    def get_active_mode_room(self, room: Room) -> ActiveMode:
         # Holiday mode takes precedence over everything
         if self.holiday_mode.active:
             return ActiveMode(self.holiday_mode.target_temperature, constants.HOLIDAY_MODE)
@@ -101,26 +106,29 @@ class System:
         time_program = room.get_current_time_program()
         return ActiveMode(time_program.target_temperature, time_program.mode)
 
-    def get_active_mode_circulation(self, circulation=None) -> ActiveMode:
+    def get_active_mode_circulation(self, circulation: Circulation = None) -> ActiveMode:
         if not circulation:
             circulation = self.circulation
 
         if self.holiday_mode.active:
-            return ActiveMode(0, constants.HOLIDAY_MODE)
+            return ActiveMode(None, constants.HOLIDAY_MODE)
 
         if self.quick_mode and self.quick_mode.for_circulation:
             if self.quick_mode == SYSTEM_OFF:
-                return ActiveMode(0, self.quick_mode.name)
+                return ActiveMode(None, self.quick_mode.name)
+
+            if self.quick_mode == HOTWATER_BOOST:
+                return ActiveMode(None, self.quick_mode.name)
 
         time_program = circulation.get_current_time_program()
         return ActiveMode(time_program.target_temperature, time_program.mode)
 
-    def get_active_mode_hot_water(self, hot_water=None) -> ActiveMode:
+    def get_active_mode_hot_water(self, hot_water: HotWater = None) -> ActiveMode:
         if not hot_water:
             hot_water = self.hot_water
 
         if self.holiday_mode.active:
-            return ActiveMode(self.holiday_mode.target_temperature, constants.HOLIDAY_MODE)
+            return ActiveMode(HotWater.MIN_TEMP, constants.HOLIDAY_MODE)
 
         if self.quick_mode and self.quick_mode.for_hot_water:
             if self.quick_mode == HOTWATER_BOOST:
