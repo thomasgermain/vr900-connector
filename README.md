@@ -21,7 +21,7 @@ pytest
 
 ## Usages
 
-### Scripts
+### Command line
 TODO
 
 
