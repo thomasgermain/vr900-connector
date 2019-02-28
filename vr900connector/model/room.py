@@ -1,6 +1,6 @@
 from typing import List
 
-from . import Component, TimeProgram, TimeProgramDaySetting, QuickVeto, Device
+from . import Component, TimeProgram, QuickVeto, Device, ActiveMode
 from .constants import FROST_PROTECTION_TEMP, MODE_OFF, MODE_MANUAL, MODE_AUTO, QUICK_VETO, THERMOSTAT_MAX_TEMP
 
 
@@ -38,18 +38,10 @@ class Room(Component):
         self.window_open = window_open
         self.devices = devices
 
-    def get_current_time_program(self) -> TimeProgramDaySetting:
-        mode = None
-        if not self.quick_veto:
-            if self.operation_mode == MODE_OFF:
-                mode = TimeProgramDaySetting(str(0), self.MIN_TEMP, MODE_OFF)
-            elif self.operation_mode == MODE_MANUAL:
-                mode = TimeProgramDaySetting(str(0), self.target_temperature, MODE_MANUAL)
-
-        # Auto or quick veto, handled by parent
-        if not mode:
-            mode = super().get_current_time_program()
-            if not mode.mode:
-                mode.mode = MODE_AUTO
+    def _get_specific_active_mode(self) -> ActiveMode:
+        if self.operation_mode == MODE_OFF:
+            mode = ActiveMode(MODE_OFF, self.MIN_TEMP)
+        else:  # MODE_MANUAL
+            mode = ActiveMode(MODE_MANUAL, self.target_temperature)
 
         return mode

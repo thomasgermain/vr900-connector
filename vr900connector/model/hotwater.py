@@ -1,5 +1,5 @@
-from . import TimeProgram, TimeProgramDaySetting, Component
-from .constants import MODE_ON, MODE_AUTO, MODE_OFF, QM_HOTWATER_BOOST
+from . import TimeProgram, Component, ActiveMode
+from .constants import MODE_ON, MODE_AUTO, MODE_OFF
 
 
 class HotWater(Component):
@@ -7,7 +7,7 @@ class HotWater(Component):
     This class represents the hot water of your system
     """
 
-    MODES = [MODE_ON, MODE_OFF, MODE_AUTO, QM_HOTWATER_BOOST]
+    MODES = [MODE_ON, MODE_OFF, MODE_AUTO]
     """
     List of modes available for hot water
     """
@@ -28,9 +28,10 @@ class HotWater(Component):
         super().__init__(component_id, name, time_program, current_temperature, target_temperature, operation_mode,
                          None)
 
-    def get_current_time_program(self) -> TimeProgramDaySetting:
-        # There is no quick veto for hot water, and quick mode is taking precedence over timeprogram
-        if self.operation_mode == QM_HOTWATER_BOOST:
-            return TimeProgramDaySetting(str(0), self.target_temperature, QM_HOTWATER_BOOST)
-        else:
-            return super().get_current_time_program()
+    def _get_specific_active_mode(self) -> ActiveMode:
+        if self.operation_mode == MODE_ON:
+            mode = ActiveMode(self.target_temperature, MODE_ON)
+        else:  # MODE_OFF
+            mode = ActiveMode(HotWater.MIN_TEMP, MODE_OFF)
+
+        return mode

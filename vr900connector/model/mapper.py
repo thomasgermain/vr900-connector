@@ -173,9 +173,6 @@ class Mapper:
                 operation_mode = raw_hot_water.get("configuration", dict()).get("operation_mode")
                 time_program = Mapper.time_program(raw_hot_water.get("timeprogram", dict()), "mode")
                 dwh_id = hot_water_list[0].get("_id")
-                if hot_water_list[0].get("controlled_by"):
-                    operation_mode = Mapper.quick_mode(full_system).name
-
                 dhw_report = Mapper.__find_dhw_temperature_report(live_report)
 
                 current_temp = None

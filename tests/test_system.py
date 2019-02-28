@@ -27,7 +27,8 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_zone(zone)
 
-        self.assertEqual(active_mode.name, timeprogram_day_setting.mode)
+        self.assertEqual(active_mode.current_mode, constants.MODE_AUTO)
+        self.assertEqual(active_mode.sub_mode, timeprogram_day_setting.mode)
         self.assertEqual(active_mode.target_temperature, timeprogram_day_setting.target_temperature)
 
     def test_get_active_mode_zone_quick_veto(self):
@@ -50,7 +51,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_zone(zone)
 
-        self.assertEqual(active_mode.name, constants.QUICK_VETO)
+        self.assertEqual(active_mode.current_mode, constants.QUICK_VETO)
         self.assertEqual(active_mode.target_temperature, quickveto.target_temperature)
 
     def test_get_active_mode_zone_holiday_mode(self):
@@ -73,7 +74,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_zone(zone)
 
-        self.assertEqual(active_mode.name, constants.HOLIDAY_MODE)
+        self.assertEqual(active_mode.current_mode, constants.HOLIDAY_MODE)
         self.assertEqual(active_mode.target_temperature, holiday_mode.target_temperature)
 
     def test_get_active_mode_zone_quick_mode_water_boost(self):
@@ -95,7 +96,8 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_zone(zone)
 
-        self.assertEqual(active_mode.name, timeprogram_day_setting.mode)
+        self.assertEqual(active_mode.current_mode, constants.MODE_AUTO)
+        self.assertEqual(active_mode.sub_mode, timeprogram_day_setting.mode)
         self.assertEqual(active_mode.target_temperature, timeprogram_day_setting.target_temperature)
 
     def test_get_active_mode_zone_quick_mode_system_off(self):
@@ -117,7 +119,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_zone(zone)
 
-        self.assertEqual(active_mode.name, SYSTEM_OFF.name)
+        self.assertEqual(active_mode.current_mode, SYSTEM_OFF.name)
         self.assertEqual(active_mode.target_temperature, Zone.MIN_TEMP)
 
     def test_get_active_mode_zone_quick_mode_one_day_home(self):
@@ -140,7 +142,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_zone(zone)
 
-        self.assertEqual(active_mode.name, ONE_DAY_AT_HOME.name)
+        self.assertEqual(active_mode.current_mode, ONE_DAY_AT_HOME.name)
         self.assertEqual(active_mode.target_temperature, timeprogram_day_setting_sunday.target_temperature)
 
     def test_get_active_mode_room(self):
@@ -162,7 +164,8 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_room(room)
 
-        self.assertEqual(active_mode.name, timeprogram_day_setting.mode)
+        self.assertEqual(active_mode.current_mode, constants.MODE_AUTO)
+        self.assertIsNone(active_mode.sub_mode)
         self.assertEqual(active_mode.target_temperature, timeprogram_day_setting.target_temperature)
 
     def test_get_active_mode_room_quick_veto(self):
@@ -185,7 +188,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_room(room)
 
-        self.assertEqual(active_mode.name, constants.QUICK_VETO)
+        self.assertEqual(active_mode.current_mode, constants.QUICK_VETO)
         self.assertEqual(active_mode.target_temperature, quick_veto.target_temperature)
 
     def test_get_active_mode_room_holiday_mode(self):
@@ -208,7 +211,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_room(room)
 
-        self.assertEqual(active_mode.name, constants.HOLIDAY_MODE)
+        self.assertEqual(active_mode.current_mode, constants.HOLIDAY_MODE)
         self.assertEqual(active_mode.target_temperature, holiday_mode.target_temperature)
 
     def test_get_active_mode_room_system_off(self):
@@ -230,7 +233,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_room(room)
 
-        self.assertEqual(active_mode.name, SYSTEM_OFF.name)
+        self.assertEqual(active_mode.current_mode, SYSTEM_OFF.name)
         self.assertEqual(active_mode.target_temperature, Room.MIN_TEMP)
 
     def test_get_active_mode_hot_water(self):
@@ -252,7 +255,8 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_hot_water()
 
-        self.assertEqual(active_mode.name, constants.MODE_ON)
+        self.assertEqual(active_mode.current_mode, constants.MODE_AUTO)
+        self.assertEqual(active_mode.sub_mode, constants.MODE_ON)
         self.assertEqual(active_mode.target_temperature, 55)
 
     def test_get_active_mode_hot_water_system_off(self):
@@ -274,7 +278,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_hot_water()
 
-        self.assertEqual(active_mode.name, SYSTEM_OFF.name)
+        self.assertEqual(active_mode.current_mode, SYSTEM_OFF.name)
         self.assertEqual(active_mode.target_temperature, HotWater.MIN_TEMP)
 
     def test_get_active_mode_hot_water_hot_water_boost(self):
@@ -296,7 +300,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_hot_water()
 
-        self.assertEqual(active_mode.name, HOTWATER_BOOST.name)
+        self.assertEqual(active_mode.current_mode, HOTWATER_BOOST.name)
         self.assertEqual(active_mode.target_temperature, 55)
 
     def test_get_active_mode_hot_water_hot_holiday_mode(self):
@@ -319,7 +323,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_hot_water()
 
-        self.assertEqual(active_mode.name, constants.HOLIDAY_MODE)
+        self.assertEqual(active_mode.current_mode, constants.HOLIDAY_MODE)
         self.assertEqual(active_mode.target_temperature, HotWater.MIN_TEMP)
 
     def test_get_active_mode_circulation(self):
@@ -341,5 +345,6 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_circulation()
 
-        self.assertEqual(active_mode.name, constants.MODE_ON)
+        self.assertEqual(active_mode.current_mode, constants.MODE_AUTO)
+        self.assertEqual(active_mode.sub_mode, constants.MODE_ON)
         self.assertIsNone(active_mode.target_temperature)

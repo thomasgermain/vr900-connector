@@ -1,6 +1,8 @@
 from datetime import datetime
-from .constants import QUICK_VETO
-from . import TimeProgram, TimeProgramDaySetting, QuickVeto
+import abc
+
+from .constants import QUICK_VETO, MODE_AUTO
+from . import TimeProgram, QuickVeto, ActiveMode
 
 
 class Component:
@@ -29,13 +31,26 @@ class Component:
         self.operation_mode = operation_mode
         self.quick_veto = quick_veto
 
-    def get_current_time_program(self) -> TimeProgramDaySetting:
+    def get_active_mode(self) -> ActiveMode:
         """
-        :return: The :class:`vr900connector.model.TimeProgramDaySetting` based on datetime.now() or quick veto
-        if quick veto is running on
-        """
-        if self.quick_veto:
-            return TimeProgramDaySetting(str(self.quick_veto.remaining_time), self.quick_veto.target_temperature,
-                                         QUICK_VETO)
+        Get the active mode for a component. Please note that a component is not aware of quick mode or holiday mode
 
-        return self.time_program.get_time_program_for(datetime.now())
+        :return: ActiveMode
+        """
+
+        if self.quick_veto:
+            return ActiveMode(self.quick_veto.target_temperature, QUICK_VETO)
+
+        if self.operation_mode == MODE_AUTO:
+            setting = self.time_program.get_time_program_for(datetime.now())
+            return ActiveMode(setting.target_temperature, MODE_AUTO, setting.mode)
+        else:
+            return self._get_specific_active_mode()
+
+    @abc.abstractmethod
+    def _get_specific_active_mode(self) -> ActiveMode:
+        """
+        Get active mode for specific mode other than 'AUTO'
+
+        :return: ActiveMode
+        """

@@ -1,4 +1,4 @@
-from . import Component, TimeProgram
+from . import Component, TimeProgram, ActiveMode
 from .constants import MODE_ON, MODE_OFF, MODE_AUTO
 
 
@@ -15,3 +15,6 @@ class Circulation(Component):
 
     def __init__(self, component_id: any, name: str, time_program: TimeProgram, operation_mode: str):
         super().__init__(component_id, name, time_program, None, None, operation_mode, None)
+
+    def _get_specific_active_mode(self) -> ActiveMode:
+        return ActiveMode(None, self.operation_mode)

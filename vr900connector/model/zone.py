@@ -1,6 +1,4 @@
-import copy
-
-from . import Component, TimeProgram, TimeProgramDaySetting, QuickVeto
+from . import Component, TimeProgram, QuickVeto, ActiveMode
 from .constants import FROST_PROTECTION_TEMP, MODE_OFF, MODE_AUTO, QUICK_VETO, THERMOSTAT_MAX_TEMP, MODE_DAY, MODE_NIGHT
 
 
@@ -40,17 +38,12 @@ class Zone(Component):
         self.active_function = active_function
         self.rbr = rbr
 
-    def get_current_time_program(self) -> TimeProgramDaySetting:
-        mode = copy.deepcopy(Component.get_current_time_program(self))
-        if self.quick_veto is None:
-            if self.operation_mode == MODE_OFF:
-                mode = TimeProgramDaySetting(str(0), self.MIN_TEMP, MODE_OFF)
-            elif self.operation_mode == MODE_DAY:
-                mode = TimeProgramDaySetting(str(0), self.target_temperature, MODE_DAY)
-            elif self.operation_mode == MODE_NIGHT:
-                mode = TimeProgramDaySetting(str(0), self.target_min_temperature, MODE_NIGHT)
-            else:
-                # Auto or quick veto is handled by parent
-                mode = super().get_current_time_program()
+    def _get_specific_active_mode(self) -> ActiveMode:
+        if self.operation_mode == MODE_OFF:
+            mode = ActiveMode(self.MIN_TEMP, MODE_OFF)
+        elif self.operation_mode == MODE_DAY:
+            mode = ActiveMode(self.target_temperature, MODE_DAY)
+        else:  # MODE_NIGHT
+            mode = ActiveMode(self.target_min_temperature, MODE_NIGHT)
 
         return mode
