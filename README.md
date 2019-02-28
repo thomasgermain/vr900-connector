@@ -8,6 +8,9 @@ Python 3.5+
 
 For now, the connector is ony able to read data from the system (but it's planned to be able to alter system as well), it only handles only one heating system (one serial number). I cannot test more than that since I only have heating system at home.
 
+## Legal Disclaimer
+This software is not affiliated with Vaillant and the developers take no legal responsibility for the functionality or security of your vaillant devices
+
 ## Install
 ```bash
 [sudo] pip install vr900-connector 
@@ -21,11 +24,112 @@ pytest
 
 ## Usages
 
-### Command line
-TODO
+### Command line usage
+
+```python
+python3 vaillant.py username password method command [command parameters]
+```
+List of commands are the name of functions in api.urls module.
+
+Example:
+```python
+python3 vaillant.py username password GET room 0
+```
+
+Output:
+```json
+{
+    "body": {
+        "roomIndex": 0,
+        "configuration": {
+            "name": "Room name",
+            "temperatureSetpoint": 17.5,
+            "operationMode": "AUTO",
+            "currentTemperature": 19.4,
+            "childLock": false,
+            "isWindowOpen": false,
+            "devices": [
+                {
+                    "name": "Device name",
+                    "sgtin": "000000000000000000000000",
+                    "deviceType": "VALVE",
+                    "isBatteryLow": false,
+                    "isRadioOutOfReach": false
+                }
+            ],
+            "iconId": "BEDROOM"
+        },
+        "timeprogram": {
+            "monday": [
+                {
+                    "startTime": "00:00",
+                    "temperatureSetpoint": 17.5
+                }
+            ],
+            "tuesday": [
+                {
+                    "startTime": "00:00",
+                    "temperatureSetpoint": 17.5
+                }
+            ],
+            "wednesday": [
+                {
+                    "startTime": "00:00",
+                    "temperatureSetpoint": 17.5
+                }
+            ],
+            "thursday": [
+                {
+                    "startTime": "00:00",
+                    "temperatureSetpoint": 17.5
+                }
+            ],
+            "friday": [
+                {
+                    "startTime": "00:00",
+                    "temperatureSetpoint": 17.5
+                }
+            ],
+            "saturday": [
+                {
+                    "startTime": "00:00",
+                    "temperatureSetpoint": 17.5
+                }
+            ],
+            "sunday": [
+                {
+                    "startTime": "00:00",
+                    "temperatureSetpoint": 17.5
+                }
+            ]
+        }
+    },
+    "meta": {
+        "resourceState": [
+            {
+                "state": "SYNCED",
+                "timestamp": 1551383333000,
+                "link": {
+                    "rel": "child",
+                    "resourceLink": "/facilities/1234567891234567891234567890/rbr/v1/rooms/0/configuration"
+                }
+            },
+            {
+                "state": "SYNCED",
+                "timestamp": 1549054971000,
+                "link": {
+                    "rel": "child",
+                    "resourceLink": "/facilities/1234567891234567891234567890/rbr/v1/rooms/0/timeprogram"
+                }
+            }
+        ]
+    }
+}
+
+```
 
 
-### Programmatically
+### Module usage
  
 The connector is separate in two layers:
 
@@ -33,17 +137,17 @@ The connector is separate in two layers:
 This is the low level connector using the vaillant API and returning raw data directly coming from the API. The connector is handling the login and session.
 The connector able to reuse an already existing session (cookies). Two files are saved (cookies and serial number of your installation) on the file system. Default location is:
 ```python
-tempfile.gettempdir() + "/vaillant_vr900_files"
+tempfile.gettempdir() + "/.vaillant_vr900_files"
 ```
-but it can be overridden. File are named .vr900-vaillant.cookies and .vr900-vaillant.serial.
+but it can be overridden. Files are named .vr900-vaillant.cookies and .vr900-vaillant.serial.
 
 
 Here is an example how to use it:
 ```python
-from vr900connector.api import ApiConnector
+from vr900connector.api import ApiConnector, urls
    
 connector = ApiConnector('user', 'pass')
-connector.get_facilities() 
+connector.get(urls.facilities_list()) 
 ```
 to get some information about your installation, this returns the raw response, something like this:
 ```json
@@ -79,9 +183,9 @@ from vr900connector.api import ApiConnector
 connector = ApiConnector('user', 'pass')
 connector.get('') 
 ```
-with constants from
+with urls from
 ```python
-vr900connector.api.constants
+vr900connector.api.urls
 ``` 
 
 I recommend using this layer if you only want to retrieve basic data (outdoor temperature, current temperature, etc.)
@@ -97,15 +201,19 @@ from vr900connector.systemmanager import SystemManager
 manager = SystemManager('user', 'pass')
 system = manager.get_system() 
 ```
-Basically, the connector is returning quite the same information as the android mobile app can display.
 
 The main object to manipulate is 
  ```python
  vr900connector.model.system
  ```
+ 
+ Which is grouping all the information about the system.
+ 
+ I recommend using this layer if you want to do more complex things, e.g: if you want to get the target temperature for 
+ a room or a zone, it can become a bit complex since you have to deal with holiday mode, quick mode, quick veto, time program, etc.
+ This layer is hiding you  this complexity
 
 ## Todos
-* Create scripts to get specific data, something like "python vaillant.py username password rooms" to get all rooms
 * Add some doc for pypi
 * Proper way to deploy to pypi and create tag
 * Add updates method (alter system config)

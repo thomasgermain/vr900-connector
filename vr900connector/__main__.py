@@ -1,13 +1,14 @@
+import json
 from inspect import getmembers, isfunction, signature
 
-from vr900connector.api import ApiConnector, constants, urls
+from vr900connector.api import ApiConnector, ApiError, constants, urls
 
 import argparse
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Read satates of vaillant API')
+        description='Read states of vaillant API')
     parser.add_argument(
         'username',
         help='username')
@@ -21,14 +22,14 @@ def main():
         dest='file_path')
     parser.add_argument('method', help='HTTP method')
 
-    commandsparser = parser.add_subparsers(
+    commands_parser = parser.add_subparsers(
         help='commands',
         dest='command')
 
     functions_list = [member for member in getmembers(urls) if isfunction(member[1])]
 
     for function in functions_list:
-        function_parser = commandsparser.add_parser(
+        function_parser = commands_parser.add_parser(
             function[0],
             help=function[0])
 
@@ -39,7 +40,12 @@ def main():
 
     connector = ApiConnector(args.username, args.password, constants.DEFAULT_SMART_PHONE_ID, args.file_path)
 
-    print(connector.query(_get_url(args), args.method))
+    try:
+        url = _get_url(args)
+        result = connector.query(url, args.method)
+        print(json.dumps(result, indent=4))
+    except ApiError as e:
+        print(e.response.text)
 
 
 def _get_url(args):
@@ -60,3 +66,7 @@ def _get_args_name(function):
     for item in signature(function).parameters.items():
         names.append(item[0])
     return names
+
+
+if __name__ == "__main__":
+    main()
