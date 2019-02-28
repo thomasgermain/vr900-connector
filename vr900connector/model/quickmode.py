@@ -43,6 +43,42 @@ class QuickMode:
         """
         return _VALUES[name]
 
+    @staticmethod
+    def for_zone() -> list:
+        sub_list = []
+        for v in _VALUES.values():
+            if v.for_zone:
+                sub_list.append(v)
+
+        return sub_list
+
+    @staticmethod
+    def for_room() -> []:
+        sub_list = []
+        for v in _VALUES.values():
+            if v.for_room:
+                sub_list.append(v)
+
+        return sub_list
+
+    @staticmethod
+    def for_hot_water() -> []:
+        sub_list = []
+        for v in _VALUES.values():
+            if v.for_hot_water:
+                sub_list.append(v)
+
+        return sub_list
+
+    @staticmethod
+    def for_circulation() -> []:
+        sub_list = []
+        for v in _VALUES.values():
+            if v.for_circulation:
+                sub_list.append(v)
+
+        return sub_list
+
 
 HOTWATER_BOOST = QuickMode(QM_HOTWATER_BOOST, False, False, True, True)
 """
@@ -59,7 +95,7 @@ The advanced function is automatically deactivated after 30 minutes or if you ca
 heating installation will then return to the pre-set mode
 """
 
-ONE_DAY_AWAY = QuickMode(QM_ONE_DAY_AWAY, True, True, True, False)
+ONE_DAY_AWAY = QuickMode(QM_ONE_DAY_AWAY, True, False, True, True)
 """
 Hot water generation and circulation are switched off and the frost protection is activated. The advanced function is 
 automatically deactivated after 24:00 hours or if you cancel the advanced function first. The heating installation will
