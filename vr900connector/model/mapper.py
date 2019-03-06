@@ -199,9 +199,10 @@ class Mapper:
 
     @staticmethod
     def __find_hvac_message_status(hvac_state):
-        for message in hvac_state.get("body", dict()).get("errorMessages"):
-            if message.get("type") == "STATUS":
-                return message
+        if "errorMessages" in hvac_state.get("body", dict()):
+            for message in hvac_state.get("body", dict()).get("errorMessages"):
+                if message.get("type") == "STATUS":
+                    return message
 
         return None
 
