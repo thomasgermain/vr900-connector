@@ -2,7 +2,7 @@ language: python
 
 os:
 - linux
--
+
 python:
 - '3.5'
 - '3.6'
@@ -18,7 +18,7 @@ script:
 - coverage run --source=vr900connector setup.py pytest
 after_success:
 - coveralls
--
+
 deploy:
   provider: pypi
   user:
