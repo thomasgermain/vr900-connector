@@ -227,6 +227,10 @@
             }
         ],
         "configuration": {
+            "quickmode": {
+                "quickmode": "QM_QUICK_VETO",
+                "duration": 0
+            },
             "eco_mode": false,
             "holidaymode": {
                 "active": false,
