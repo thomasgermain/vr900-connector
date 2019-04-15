@@ -369,6 +369,54 @@ class SystemTest(unittest.TestCase):
         self.assertEqual(QuickMode.QM_PARTY, active_mode.current_mode)
         self.assertEqual(zone.target_temperature, active_mode.target_temperature)
 
+    def test_get_active_mode_zone_quick_mode_quick_veto(self):
+        timeprogram_day_setting = TimeProgramDaySetting('00:00', 20, HeatingMode.DAY)
+        timeprogram_day = TimeProgramDay([timeprogram_day_setting])
+        timeprogram_days = {
+            'monday': timeprogram_day,
+            'tuesday': timeprogram_day,
+            'wednesday': timeprogram_day,
+            'thursday': timeprogram_day,
+            'friday': timeprogram_day,
+            'saturday': timeprogram_day,
+            'sunday': timeprogram_day,
+        }
+        timeprogram = TimeProgram(timeprogram_days)
+
+        quick_veto = QuickVeto(0, 15)
+
+        zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, quick_veto, 18, 'STANDBY', False)
+        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_QUICK_VETO)
+
+        active_mode = system.get_active_mode_zone(zone)
+
+        self.assertEqual(QuickMode.QM_QUICK_VETO, active_mode.current_mode)
+        self.assertEqual(zone.quick_veto.target_temperature, active_mode.target_temperature)
+
+    def test_get_active_mode_zone_quick_mode_quick_veto_other_zone(self):
+        timeprogram_day_setting = TimeProgramDaySetting('00:00', 20, HeatingMode.DAY)
+        timeprogram_day = TimeProgramDay([timeprogram_day_setting])
+        timeprogram_days = {
+            'monday': timeprogram_day,
+            'tuesday': timeprogram_day,
+            'wednesday': timeprogram_day,
+            'thursday': timeprogram_day,
+            'friday': timeprogram_day,
+            'saturday': timeprogram_day,
+            'sunday': timeprogram_day,
+        }
+        timeprogram = TimeProgram(timeprogram_days)
+
+        quick_veto = QuickVeto(0, 15)
+
+        zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, 18, 'STANDBY', False)
+        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_QUICK_VETO)
+
+        active_mode = system.get_active_mode_zone(zone)
+
+        self.assertEqual(HeatingMode.AUTO, active_mode.current_mode)
+        self.assertEqual(zone.target_temperature, active_mode.target_temperature)
+
     def test_get_active_mode_zone_quick_mode_ventilation(self):
         timeprogram_day_setting = TimeProgramDaySetting('00:00', 20, HeatingMode.DAY)
         timeprogram_day_setting_sunday = TimeProgramDaySetting('00:00', 25, HeatingMode.DAY)
