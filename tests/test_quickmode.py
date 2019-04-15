@@ -7,7 +7,7 @@ class QuickModeTest(unittest.TestCase):
 
     def test_for_zone(self):
         values = QuickMode.for_zone()
-        self.assertEqual(6, len(values))
+        self.assertEqual(7, len(values))
 
     def test_for_room(self):
         values = QuickMode.for_room()

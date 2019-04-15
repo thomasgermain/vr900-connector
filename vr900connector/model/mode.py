@@ -120,6 +120,12 @@ class QuickMode(Mode, Enum):
     """
     """
 
+    QM_QUICK_VETO = ('QM_QUICK_VETO', True, False, False, False)
+    """
+    This advanced function activates a quick veto for one specific zone
+    """
+
+
     @classmethod
     def for_zone(cls) -> list:
         sub_list = []
