@@ -211,6 +211,9 @@ class ModelMapperTest(unittest.TestCase):
         self.assertEqual("S.8", boiler_status.code)
         self.assertEqual("Mode chauffage : Arrêt temporaire après une opération de chauffage", boiler_status.title)
         self.assertEqual("VC BE 246/5-3", boiler_status.device_name)
+        self.assertTrue(boiler_status.is_up_to_date)
+        self.assertTrue(boiler_status.is_online)
+        self.assertFalse(boiler_status.is_error)
         self.assertEqual(datetime.fromtimestamp(1545896904282/1000), boiler_status.last_update)
 
     def test_boiler_status_empty(self):

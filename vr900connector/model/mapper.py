@@ -121,6 +121,7 @@ class Mapper:
     def boiler_status(cls, hvac_state):
         if hvac_state:
             hvac_state_info = Mapper._find_hvac_message_status(hvac_state)
+            meta = hvac_state.get('meta', dict())
             if hvac_state_info:
                 timestamp = hvac_state_info.get("timestamp")
                 last_update = None
@@ -132,8 +133,10 @@ class Mapper:
                 title = hvac_state_info.get("title")
                 description = hvac_state_info.get("description")
                 hint = hvac_state_info.get("hint")
+                online = meta.get('onlineStatus', dict()).get('status')
+                update = meta.get('firmwareUpdateStatus', dict()).get('status')
 
-                return BoilerStatus(device_name, description, title, code, hint, last_update)
+                return BoilerStatus(device_name, description, title, code, hint, last_update, online, update)
 
     @classmethod
     def zones(cls, full_system):
