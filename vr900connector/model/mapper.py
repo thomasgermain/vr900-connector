@@ -183,25 +183,36 @@ class Mapper:
 
         if hot_water_list:
             raw_hot_water = hot_water_list[0].get("hotwater")
+            dwh_id = hot_water_list[0].get("_id")
+
             if raw_hot_water:
-                target_temp = raw_hot_water.get("configuration", dict()).get("temperature_setpoint")
-                raw_operation_mode = raw_hot_water.get("configuration", dict()).get("operation_mode")
-                operation_mode = None
-                if raw_operation_mode:
-                    operation_mode = HeatingMode[raw_operation_mode]
-                time_program = Mapper.time_program(raw_hot_water.get("timeprogram", dict()), "mode")
-                dwh_id = hot_water_list[0].get("_id")
+                return cls._map_hot_water(raw_hot_water, dwh_id, live_report)
 
-                current_temp = None
-                name = None
-                if live_report:
-                    dhw_report = Mapper._find_dhw_temperature_report(live_report)
+    @classmethod
+    def domestic_hot_water_alone(cls, raw_hot_water, dhw_id, live_report):
+        if raw_hot_water:
+            raw_hot_water_body = raw_hot_water.get("body", dict())
+            return cls._map_hot_water(raw_hot_water_body, dhw_id, live_report)
 
-                    if dhw_report:
-                        current_temp = dhw_report.get("value")
-                        name = dhw_report.get("name")
+    @classmethod
+    def _map_hot_water(cls, raw_hot_water, dhw_id, live_report):
+        target_temp = raw_hot_water.get("configuration", dict()).get("temperature_setpoint")
+        raw_operation_mode = raw_hot_water.get("configuration", dict()).get("operation_mode")
+        operation_mode = None
+        if raw_operation_mode:
+            operation_mode = HeatingMode[raw_operation_mode]
+        time_program = Mapper.time_program(raw_hot_water.get("timeprogram", dict()), "mode")
 
-                return HotWater(dwh_id, name, time_program, current_temp, target_temp, operation_mode)
+        current_temp = None
+        name = None
+        if live_report:
+            dhw_report = Mapper._find_dhw_temperature_report(live_report)
+
+            if dhw_report:
+                current_temp = dhw_report.get("value")
+                name = dhw_report.get("name")
+
+        return HotWater(dhw_id, name, time_program, current_temp, target_temp, operation_mode)
 
     @classmethod
     def circulation(cls, full_system):
@@ -210,16 +221,28 @@ class Mapper:
 
             if hot_water_list:
                 raw_circulation = hot_water_list[0].get("circulation")
-                if raw_circulation:
-                    name = "Circulation"
-                    time_program = Mapper.time_program(raw_circulation.get("timeprogram", "setting"))
-                    raw_operation_mode = raw_circulation.get("configuration", dict()).get("operationMode")
-                    operation_mode = None
-                    if raw_operation_mode:
-                        operation_mode = HeatingMode[raw_operation_mode]
-                    dhw_id = hot_water_list[0].get("_id")
+                dhw_id = hot_water_list[0].get("_id")
 
-                    return Circulation(dhw_id, name, time_program, operation_mode)
+                if raw_circulation:
+                    return cls._map_circulation(raw_circulation, dhw_id)
+
+    @classmethod
+    def circulation_alone(cls, raw_circulation, dhw_id):
+        if raw_circulation:
+            raw_circulation_body = raw_circulation.get("body", dict())
+            return cls._map_circulation(raw_circulation_body, dhw_id)
+
+    @classmethod
+    def _map_circulation(cls, raw_circulation, circulation_id):
+        name = "Circulation"
+        time_program = Mapper.time_program(raw_circulation.get("timeprogram", "setting"))
+        raw_operation_mode = raw_circulation.get("configuration", dict()).get("operationMode")
+        operation_mode = None
+        if raw_operation_mode:
+            operation_mode = HeatingMode[raw_operation_mode]
+
+        return Circulation(circulation_id, name, time_program, operation_mode)
+
 
     @classmethod
     def _find_hvac_message_status(cls, hvac_state):

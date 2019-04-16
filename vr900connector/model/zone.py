@@ -29,8 +29,8 @@ class Zone(Component):
     """
 
     def __init__(self, component_id: any, name: str, time_program: TimeProgram, current_temperature: float,
-                 target_temperature: float, operation_mode: HeatingMode, quick_veto: QuickVeto, target_min_temperature: float,
-                 active_function: str, rbr: bool):
+                 target_temperature: float, operation_mode: HeatingMode, quick_veto: QuickVeto,
+                 target_min_temperature: float, active_function: str, rbr: bool):
         super().__init__(component_id, name, time_program, current_temperature, target_temperature, operation_mode,
                          quick_veto)
         self.target_min_temperature = target_min_temperature

@@ -1,4 +1,10 @@
+from datetime import date
+
+
 class Payloads:
+
+    _DATE_FORMAT = "%Y-%m-%d"
+
     """
     This is meant to be used with :mod: `vr900connector.api.urls` to allow user to easily obtain the payload for a
     request.
@@ -18,7 +24,7 @@ class Payloads:
         Payload used to set target temperature for *room*
         """
         return {
-            "setpoint_temperature": temperature
+            "temperatureSetpoint": temperature
         }
 
     @classmethod
@@ -93,4 +99,16 @@ class Payloads:
         return {
             "temperatureSetpoint": temperature,
             "duration": duration
+        }
+
+    @classmethod
+    def holiday_mode(cls, active: bool, start_date: date, end_date: date, temperature: float):
+        """
+        Payload to set holiday mode
+        """
+        return {
+            "active": active,
+            "start_date": start_date.strftime(cls._DATE_FORMAT),
+            "end_date": end_date.strftime(cls._DATE_FORMAT),
+            "temperature_setpoint": temperature
         }

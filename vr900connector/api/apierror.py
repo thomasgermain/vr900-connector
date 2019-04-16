@@ -14,6 +14,7 @@ class ApiError(Exception):
         response: The response returned by the API, if any
     """
 
-    def __init__(self, message: str, response: Response):
+    def __init__(self, message: str, response: Response, payload=None):
         self.message = message
         self.response = response
+        self.payload = payload
