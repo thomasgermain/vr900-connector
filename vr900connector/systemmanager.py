@@ -1,7 +1,8 @@
 import logging
+from datetime import date, timedelta
 
 from .api import ApiConnector, Urls, Payloads, Defaults
-from .model import Mapper, System, HotWater, QuickMode, QuickVeto, Room, Zone, HeatingMode
+from .model import Mapper, System, HotWater, QuickMode, QuickVeto, Room, Zone, HeatingMode, Circulation, Constants
 
 LOGGER = logging.getLogger('SystemManager')
 
@@ -49,10 +50,22 @@ class SystemManager:
 
         return System(holiday_mode, boiler_status, zones, rooms, hot_water, circulation, outdoorTemperature, quickMode)
 
-    def get_hot_water(self):
-        full_system = self._connector.get(Urls.system())
+    def get_hot_water(self, hot_water: HotWater):
+        full_system = self._connector.get(Urls.hot_water(hot_water.id))
         live_report = self._connector.get(Urls.live_report())
-        return Mapper.domestic_hot_water(full_system, live_report)
+        return Mapper.domestic_hot_water_alone(full_system, hot_water.id, live_report)
+
+    def get_room(self, room: Room):
+        new_room = self._connector.get(Urls.room(room.id))
+        return Mapper.room(new_room)
+
+    def get_zone(self, zone: Zone):
+        new_zone = self._connector.get(Urls.zone(zone.id))
+        return Mapper.zone(new_zone)
+
+    def get_circulation(self, circulation: Circulation):
+        new_circulation = self._connector.get(Urls.circulation(circulation.id))
+        return Mapper.circulation_alone(new_circulation, circulation.id)
 
     def set_hot_water_setpoint_temperature(self, hot_water: HotWater, temperature: float):
         """
@@ -165,7 +178,7 @@ class SystemManager:
             LOGGER.debug("There is already a quick mode in place: %s", current_quick_mode.name)
             return False
 
-    def set_quick_veto_room(self, room: Room, quick_veto: QuickVeto):
+    def set_room_quick_veto(self, room: Room, quick_veto: QuickVeto):
         if quick_veto and room:
             self._connector.put(Urls.room_quick_veto(room.id),
                                 Payloads.room_quick_veto(quick_veto.target_temperature, quick_veto.remaining_time))
@@ -174,7 +187,11 @@ class SystemManager:
             LOGGER.debug("Quick veto %s or room %s not provided", quick_veto, room)
             return False
 
-    def set_quick_veto_zone(self, zone: Zone, quick_veto: QuickVeto):
+    def remove_room_quick_veto(self, room: Room):
+        self._connector.delete(Urls.room_quick_veto(room.id))
+        return True
+
+    def set_zone_quick_veto(self, zone: Zone, quick_veto: QuickVeto):
         if quick_veto and zone:
             self._connector.put(Urls.zone_quick_veto(zone.id),
                                 Payloads.zone_quick_veto(quick_veto.target_temperature))
@@ -182,6 +199,86 @@ class SystemManager:
         else:
             LOGGER.debug("Quick veto %s or zone %s not provided", quick_veto, zone)
             return False
+
+    def remove_zone_quick_veto(self, zone: Zone):
+        self._connector.delete(Urls.zone_quick_veto(zone.id))
+        return True
+
+    def set_room_setpoint_temperature(self, room: Room, temperature: float):
+        """
+        This set the target temperature for a room.
+
+        :param room: the room you want to set target temperature
+        :param temperature: the temperature
+        :return: True/False whether the update occurred or not
+        """
+        LOGGER.info("Will try to set room target temperature to %s", temperature)
+        if temperature and room:
+            self._connector.put(Urls.room_set_temperature_setpoint(room.id),
+                                Payloads.room_temperature_setpoint(round(float(temperature))))
+            return True
+        else:
+            LOGGER.debug("No temperature nor room provided, nothing to do")
+            return False
+
+    def set_zone_setpoint_temperature(self, zone: Zone, temperature: float):
+        """
+        This set the target temperature for a zone.
+
+        :param zone: the zone you want to set target temperature
+        :param temperature: the temperature
+        :return: True/False whether the update occurred or not
+        """
+        LOGGER.info("Will try to set zone target temperature to %s", temperature)
+        if temperature and zone:
+            self._connector.put(Urls.zone_heating_setpoint_temperature(zone.id),
+                                Payloads.zone_temperature_setpoint(round(float(temperature))))
+            return True
+        else:
+            LOGGER.debug("No temperature nor zone provided, nothing to do")
+            return False
+
+    def set_zone_setback_temperature(self, zone: Zone, temperature: float):
+        """
+        This set the setback temperature for a zone.
+
+        :param zone: the zone you want to set setback temperature
+        :param temperature: the temperature
+        :return: True/False whether the update occurred or not
+        """
+        LOGGER.info("Will try to set zone setback temperature to %s", temperature)
+        if temperature and zone:
+            self._connector.put(Urls.zone_heating_setback_temperature(zone.id),
+                                Payloads.zone_temperature_setback(round(float(temperature))))
+            return True
+        else:
+            LOGGER.debug("No temperature nor zone provided, nothing to do")
+            return False
+
+    def set_holiday_mode(self, start_date: date, end_date: date, temperature: float):
+        """
+        Set the holiday mode
+
+        :param start_date: starting date of the holiday mode
+        :param end_date: ending date of the holiday mode
+        :param temperature: minimal temperature
+        :return: True if update occurred
+        """
+        self._connector.put(Urls.system_holiday_mode(), Payloads.holiday_mode(True, start_date, end_date, temperature))
+        return True
+
+    def remove_holiday_mode(self, temperature: float = Constants.FROST_PROTECTION_TEMP):
+        """
+        Remove holiday mode. Set start date to two days before and end date to yesterday
+
+        :param temperature: default is :class:`vr900connector.model.Constants#FROST_PROTECTION_TEMP`
+        :return: True if update occurred
+        """
+        self._connector.put(Urls.system_holiday_mode(), Payloads.holiday_mode(False,
+                                                                              date.today() - timedelta(days=2),
+                                                                              date.today() - timedelta(days=1),
+                                                                              temperature))
+        return True
 
     def logout(self):
         """

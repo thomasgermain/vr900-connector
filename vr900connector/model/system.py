@@ -32,18 +32,14 @@ class System:
         self.boiler_status = boiler_status
 
         if zones:
-            self.zones = zones
             self._zones_dict = dict((zone.id, zone) for zone in zones)
         else:
             self._zones_dict = dict()
-            self.zones = []
 
         if rooms:
-            self.rooms = rooms
             self._rooms_dict = dict((room.id, room) for room in rooms)
         else:
             self._rooms_dict = dict()
-            self.rooms = []
 
         self.hot_water = hot_water
         self.circulation = circulation
@@ -55,6 +51,20 @@ class System:
 
     def get_room(self, room_id: int) -> Room:
         return self._rooms_dict[int(room_id)]
+
+    def set_zone(self, zone_id: str, zone: Zone):
+        self._zones_dict[zone_id] = zone
+
+    def set_room(self, room_id: int, room: Room):
+        self._rooms_dict[int(room_id)] = room
+
+    @property
+    def rooms(self):
+        return self._rooms_dict.values()
+
+    @property
+    def zones(self):
+        return self._zones_dict.values()
 
     def get_active_mode_zone(self, zone: Zone) -> ActiveMode:
         # Holiday mode takes precedence over everything
@@ -110,11 +120,7 @@ class System:
             return active_mode
 
         if self.quick_mode and self.quick_mode.for_circulation:
-            if self.quick_mode == QuickMode.QM_SYSTEM_OFF:
-                return ActiveMode(None, self.quick_mode)
-
-            if self.quick_mode == QuickMode.QM_HOTWATER_BOOST:
-                return ActiveMode(None, self.quick_mode)
+            return ActiveMode(None, self.quick_mode)
 
         return circulation.active_mode
 
@@ -132,6 +138,9 @@ class System:
                 return ActiveMode(hot_water.target_temperature, self.quick_mode)
 
             if self.quick_mode == QuickMode.QM_SYSTEM_OFF:
+                return ActiveMode(HotWater.MIN_TEMP, self.quick_mode)
+
+            if self.quick_mode == QuickMode.QM_ONE_DAY_AWAY:
                 return ActiveMode(HotWater.MIN_TEMP, self.quick_mode)
 
         return hot_water.active_mode

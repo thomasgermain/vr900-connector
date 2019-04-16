@@ -92,31 +92,6 @@ class ApiConnector:
         """
         return self.query(url, 'DELETE')
 
-    # def set_hotwater_setpoint_temperature(self, dhw_id, temperature):
-    #     return self._secure_call('PUT',
-    #                            UrlFormatter.format(Defaults.DHW_HOTWATER_SET_POINT_TEMPERATURE_URL, dhw=str(dhw_id)),
-    #                               {'temperature_setpoint': temperature})
-    #
-    # def set_hotwater_operation_mode(self, dhw_id, mode):
-    #     return self._secure_call('PUT',
-    #                               UrlFormatter.format(Defaults.DHW_HOTWATER_OPERATION_MODE_URL, dhw=str(dhw_id)),
-    #                               {"operation_mode": mode})
-    #
-    # def remove_quick_mode(self):
-    #     return self._secure_call('DELETE', Defaults.SYSTEM_CONTROL_QUICK_MODE_URL)
-    #
-    # def set_quick_mode(self, mode, duration=None):
-    #     """Duration in minutes, most of the time, the duration will be overridden by vaillant"""
-    #
-    #     payload = {
-    #         "quickmode":
-    #             {
-    #                 "quickmode": str(mode),
-    #                 "duration": duration if duration is not None else 0
-    #             }
-    #     }
-    #     return self._secure_call('PUT', Defaults.SYSTEM_CONTROL_QUICK_MODE_URL, payload=payload)
-
     def _secure_call(self, method: str, url: str, payload=None, re_login: bool = False):
         response = None
         safe_url = None
@@ -134,7 +109,8 @@ class ApiConnector:
                     _LOGGER.debug('Call to %s failed with HTTP 401, will try to re-login', safe_url)
                     return self._secure_call(method, url, payload, True)
                 else:
-                    raise ApiError('Received error from server url: ' + safe_url + ' and method ' + method, response)
+                    raise ApiError('Received error from server url: ' + safe_url + ' and method ' + method,
+                                   response, payload)
             if response.text:
                 return response.json()
             else:
@@ -142,7 +118,7 @@ class ApiConnector:
         except ApiError:
             raise
         except Exception as e:
-            raise ApiError('Cannot {} url: {}'.format(method, safe_url if safe_url else url), response) from e
+            raise ApiError('Cannot {} url: {}'.format(method, safe_url if safe_url else url), response, payload) from e
 
     def _login(self, force_login: bool = False):
         try:
@@ -224,7 +200,7 @@ class ApiConnector:
             raise ApiError('Cannot get serial number', None) from e
 
     def _create_or_load_session(self):
-        session = requests.session()
+        session = requests.Session()
         cookies = self._load_cookies_from_file()
         _LOGGER.debug('Found cookies %s', cookies)
         if cookies is not None:

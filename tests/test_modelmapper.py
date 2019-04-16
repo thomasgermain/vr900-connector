@@ -223,6 +223,24 @@ class ModelMapperTest(unittest.TestCase):
         boiler_status = Mapper.boiler_status(hvac)
         self.assertIsNone(boiler_status)
 
+    def test_hot_water_alone(self):
+        with open(TestUtil.path('files/responses/hotwater'), 'r') as file:
+            raw_hotwater = json.loads(file.read())
+        with open(TestUtil.path('files/responses/livereport'), 'r') as file:
+            raw_livereport = json.loads(file.read())
+
+        hotwater = Mapper.domestic_hot_water_alone(raw_hotwater, 'control_dhw', raw_livereport)
+        self.assertEqual('control_dhw', hotwater.id)
+        self.assertEqual(HeatingMode.AUTO, hotwater.operation_mode)
+
+    def test_circulation_alone(self):
+        with open(TestUtil.path('files/responses/circulation'), 'r') as file:
+            raw_circulation = json.loads(file.read())
+
+        circulation = Mapper.circulation_alone(raw_circulation, 'control_dhw')
+        self.assertEqual('control_dhw', circulation.id)
+        self.assertEqual(HeatingMode.AUTO, circulation.operation_mode)
+
 
 if __name__ == '__main__':
     unittest.main()
