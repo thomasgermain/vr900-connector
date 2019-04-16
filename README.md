@@ -8,8 +8,6 @@
 
 <b>Please note that the project is still in beta state, it means  I may do some (un)intentional breaking changes</b>
 
-For now, the connector is ony able to read data from the system (but it's planned to be able to alter system as well), it only handles only one heating system (one serial number). I cannot test more than that since I only have heating system at home.
-
 ## Legal Disclaimer
 This software is not affiliated with Vaillant and the developers take no legal responsibility for the functionality or security of your vaillant devices
 
@@ -215,4 +213,10 @@ The main object to manipulate is
  This layer is hiding you  this complexity
 
 ## Todos
-* Add updates method (alter system)
+* improve get hotwater query (not querying the whole system)V
+* improve get circulation query (not querying the whole system)V
+* add function to set target temp for a roomV
+* add function to set target temp for a zoneV
+* add function to set setback temp for a zoneV
+* add function to set holiday modeV
+* tests
