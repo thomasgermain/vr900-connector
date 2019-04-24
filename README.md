@@ -1,7 +1,7 @@
 # vr900-connector
 ![PyPI - License](https://img.shields.io/pypi/l/vr900-connector.svg?color=44cc11)
-[![Build Status](https://travis-ci.com/thomasgermain/vr900-connector.svg?branch=0.1.0_branch)](https://travis-ci.com/thomasgermain/vr900-connector)
-[![Coverage Status](https://coveralls.io/repos/github/thomasgermain/vr900-connector/badge.svg?branch=0.1.0_branch)](https://coveralls.io/github/thomasgermain/vr900-connector?branch=0.1.0_branch)
+[![Build Status](https://travis-ci.com/thomasgermain/vr900-connector.svg?branch=master)](https://travis-ci.com/thomasgermain/vr900-connector)
+[![Coverage Status](https://coveralls.io/repos/github/thomasgermain/vr900-connector/badge.svg?branch=master)](https://coveralls.io/github/thomasgermain/vr900-connector?branch=master)
 ![PyPI](https://img.shields.io/pypi/v/vr900-connector.svg)
 ![PyPI - Status](https://img.shields.io/pypi/status/vr900-connector.svg)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/vr900-connector.svg)
