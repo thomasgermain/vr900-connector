@@ -15,7 +15,7 @@ class BoilerStatus:
     """
 
     def __init__(self, device_name: str, description: str, title: str, code: str, hint: str, last_update: datetime,
-                 online_status: str, update_status: str):
+                 online_status: str, update_status: str, water_pressure: float, current_temperature: float):
         self.device_name = device_name
         self.description = description
         self.title = title
@@ -24,6 +24,8 @@ class BoilerStatus:
         self.last_update = last_update
         self.online_status = online_status
         self.update_status = update_status
+        self.water_pressure = water_pressure
+        self.current_temperature = current_temperature
 
     @property
     def is_error(self) -> bool:
