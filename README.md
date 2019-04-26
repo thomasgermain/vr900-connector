@@ -211,12 +211,3 @@ The main object to manipulate is
  I recommend using this layer if you want to do more complex things, e.g: if you want to get the target temperature for 
  a room or a zone, it can become a bit complex since you have to deal with holiday mode, quick mode, quick veto, time program, etc.
  This layer is hiding you  this complexity
-
-## Todos
-* improve get hotwater query (not querying the whole system)V
-* improve get circulation query (not querying the whole system)V
-* add function to set target temp for a roomV
-* add function to set target temp for a zoneV
-* add function to set setback temp for a zoneV
-* add function to set holiday modeV
-* tests

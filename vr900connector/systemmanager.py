@@ -31,7 +31,7 @@ class SystemManager:
         hvac_state = self._connector.get(Urls.hvac())
 
         holiday_mode = Mapper.holiday_mode(full_system)
-        boiler_status = Mapper.boiler_status(hvac_state)
+        boiler_status = Mapper.boiler_status(hvac_state, live_report)
 
         zones = Mapper.zones(full_system)
 
