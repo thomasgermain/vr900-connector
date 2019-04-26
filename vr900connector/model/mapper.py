@@ -235,7 +235,7 @@ class Mapper:
     @classmethod
     def _map_circulation(cls, raw_circulation, circulation_id):
         name = "Circulation"
-        time_program = Mapper.time_program(raw_circulation.get("timeprogram", "setting"))
+        time_program = Mapper.time_program(raw_circulation.get("timeprogram"), "setting")
         raw_operation_mode = raw_circulation.get("configuration", dict()).get("operationMode")
         operation_mode = None
         if raw_operation_mode:
