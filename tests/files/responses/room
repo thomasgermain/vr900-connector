@@ -17,7 +17,7 @@
                     "isRadioOutOfReach": false
                 },
                 {
-                    "name": "Devoce 2",
+                    "name": "Device 2",
                     "sgtin": "R13456789012345678901235",
                     "deviceType": "VALVE",
                     "isBatteryLow": false,

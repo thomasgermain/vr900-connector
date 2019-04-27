@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from . import TimeProgram, Component, ActiveMode, HeatingMode
 
 
@@ -28,7 +30,15 @@ class HotWater(Component):
                          None)
 
     def _get_specific_active_mode(self) -> ActiveMode:
-        if self.operation_mode == HeatingMode.ON:
+        if self.operation_mode == HeatingMode.AUTO:
+            setting = self.time_program.get_time_program_for(datetime.now())
+
+            if setting.mode == HeatingMode.ON:
+                mode = ActiveMode(self.target_temperature, HeatingMode.AUTO, setting.mode)
+            else:
+                mode = ActiveMode(HotWater.MIN_TEMP, HeatingMode.AUTO, setting.mode)
+
+        elif self.operation_mode == HeatingMode.ON:
             mode = ActiveMode(self.target_temperature, HeatingMode.ON)
         else:  # MODE_OFF
             mode = ActiveMode(HotWater.MIN_TEMP, HeatingMode.OFF)

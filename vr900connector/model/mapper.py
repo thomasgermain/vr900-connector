@@ -152,13 +152,18 @@ class Mapper:
 
     @classmethod
     def zone(cls, raw_zone):
+        raw_zone_body = raw_zone.get("body")
+
+        if raw_zone_body:
+            raw_zone = raw_zone_body
+
         if raw_zone:
             heating = raw_zone.get("heating", dict())
             configuration = raw_zone.get("configuration", dict())
             heating_configuration = heating.get("configuration", dict())
 
             zone_id = raw_zone.get("_id")
-            operation_mode = heating_configuration.get("mode")
+            operation_mode = HeatingMode[heating_configuration.get("mode")]
             target_temp = heating_configuration.get("setpoint_temperature")
             target_min_temp = heating_configuration.get("setback_temperature")
             time_program = Mapper.time_program(heating.get("timeprogram"), "setting")

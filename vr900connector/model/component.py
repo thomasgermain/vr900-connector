@@ -43,7 +43,10 @@ class Component:
 
         if self.operation_mode == HeatingMode.AUTO:
             setting = self.time_program.get_time_program_for(datetime.now())
-            return ActiveMode(setting.target_temperature, HeatingMode.AUTO, setting.mode)
+            if setting.target_temperature:
+                return ActiveMode(setting.target_temperature, HeatingMode.AUTO, setting.mode)
+            else:
+                return self._get_specific_active_mode()
         else:
             return self._get_specific_active_mode()
 
