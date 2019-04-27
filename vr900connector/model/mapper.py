@@ -211,6 +211,7 @@ class Mapper:
             operation_mode = HeatingMode[raw_operation_mode]
         time_program = Mapper.time_program(raw_hot_water.get("timeprogram", dict()), "mode")
 
+
         current_temp = None
         name = None
         if live_report:

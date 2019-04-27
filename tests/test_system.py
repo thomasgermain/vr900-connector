@@ -172,6 +172,28 @@ class SystemTest(unittest.TestCase):
         self.assertEqual(QuickMode.QM_ONE_DAY_AWAY, active_mode.current_mode)
         self.assertEqual(HotWater.MIN_TEMP, active_mode.target_temperature)
 
+    def test_get_active_mode_hot_water_one_day_away(self):
+        timeprogram_day_setting = TimeProgramDaySetting('00:00', 55, HeatingMode.ON)
+        timeprogram_day = TimeProgramDay([timeprogram_day_setting])
+        timeprogram_days = {
+            'monday': timeprogram_day,
+            'tuesday': timeprogram_day,
+            'wednesday': timeprogram_day,
+            'thursday': timeprogram_day,
+            'friday': timeprogram_day,
+            'saturday': timeprogram_day,
+            'sunday': timeprogram_day,
+        }
+        timeprogram = TimeProgram(timeprogram_days)
+
+        hot_water = HotWater('test', 'name', timeprogram, 50, 55, HeatingMode.AUTO)
+        system = System(None, None, [], [], hot_water, None, 5, QuickMode.QM_ONE_DAY_AWAY)
+
+        active_mode = system.get_active_mode_hot_water()
+
+        self.assertEqual(QuickMode.QM_ONE_DAY_AWAY, active_mode.current_mode)
+        self.assertEqual(HotWater.MIN_TEMP, active_mode.target_temperature)
+
     def test_get_active_mode_hot_water_hot_water_boost(self):
         timeprogram_day_setting = TimeProgramDaySetting('00:00', 55, HeatingMode.ON)
         timeprogram_day = TimeProgramDay([timeprogram_day_setting])
