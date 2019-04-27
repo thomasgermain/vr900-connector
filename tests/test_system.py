@@ -230,6 +230,19 @@ class SystemTest(unittest.TestCase):
         self.assertEqual(HeatingMode.DAY, active_mode.sub_mode)
         self.assertEqual(20, active_mode.target_temperature)
 
+    def test_get_active_mode_zone_off(self):
+        with open(TestUtil.path('files/responses/zone_always_off'), 'r') as file:
+            raw_zone = json.loads(file.read())
+
+        zone = Mapper.zone(raw_zone)
+        system = System(None, None, [zone], None, None, None, 5, None)
+
+        active_mode = system.get_active_mode_zone(zone)
+
+        self.assertEqual(HeatingMode.AUTO, active_mode.current_mode)
+        self.assertEqual(HeatingMode.NIGHT, active_mode.sub_mode)
+        self.assertEqual(19.5, active_mode.target_temperature)
+
     def test_get_active_mode_zone_quick_veto(self):
         timeprogram_day_setting = TimeProgramDaySetting('00:00', 20, HeatingMode.DAY)
         timeprogram_day = TimeProgramDay([timeprogram_day_setting])
