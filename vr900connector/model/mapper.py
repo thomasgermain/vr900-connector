@@ -118,7 +118,7 @@ class Mapper:
         return holidayMode
 
     @classmethod
-    def boiler_status(cls, hvac_state):
+    def boiler_status(cls, hvac_state, live_report):
         if hvac_state:
             hvac_state_info = Mapper._find_hvac_message_status(hvac_state)
             meta = hvac_state.get('meta', dict())
@@ -135,8 +135,11 @@ class Mapper:
                 hint = hvac_state_info.get("hint")
                 online = meta.get('onlineStatus', dict()).get('status')
                 update = meta.get('firmwareUpdateStatus', dict()).get('status')
+                water_pressure = Mapper._find_water_pressure_report(live_report)
+                boiler_temperature = Mapper._find_boiler_temperature_report(live_report)
 
-                return BoilerStatus(device_name, description, title, code, hint, last_update, online, update)
+                return BoilerStatus(device_name, description, title, code, hint, last_update, online, update,
+                                    water_pressure, boiler_temperature)
 
     @classmethod
     def zones(cls, full_system):
@@ -149,13 +152,18 @@ class Mapper:
 
     @classmethod
     def zone(cls, raw_zone):
+        raw_zone_body = raw_zone.get("body")
+
+        if raw_zone_body:
+            raw_zone = raw_zone_body
+
         if raw_zone:
             heating = raw_zone.get("heating", dict())
             configuration = raw_zone.get("configuration", dict())
             heating_configuration = heating.get("configuration", dict())
 
             zone_id = raw_zone.get("_id")
-            operation_mode = heating_configuration.get("mode")
+            operation_mode = HeatingMode[heating_configuration.get("mode")]
             target_temp = heating_configuration.get("setpoint_temperature")
             target_min_temp = heating_configuration.get("setback_temperature")
             time_program = Mapper.time_program(heating.get("timeprogram"), "setting")
@@ -203,6 +211,7 @@ class Mapper:
             operation_mode = HeatingMode[raw_operation_mode]
         time_program = Mapper.time_program(raw_hot_water.get("timeprogram", dict()), "mode")
 
+
         current_temp = None
         name = None
         if live_report:
@@ -235,7 +244,7 @@ class Mapper:
     @classmethod
     def _map_circulation(cls, raw_circulation, circulation_id):
         name = "Circulation"
-        time_program = Mapper.time_program(raw_circulation.get("timeprogram", "setting"))
+        time_program = Mapper.time_program(raw_circulation.get("timeprogram"), "setting")
         raw_operation_mode = raw_circulation.get("configuration", dict()).get("operationMode")
         operation_mode = None
         if raw_operation_mode:
@@ -243,32 +252,35 @@ class Mapper:
 
         return Circulation(circulation_id, name, time_program, operation_mode)
 
-
     @classmethod
     def _find_hvac_message_status(cls, hvac_state):
         for message in hvac_state.get("body", dict()).get("errorMessages", list()):
             if message.get("type") == "STATUS":
                 return message
 
-    # @classmethod
-    # def _find_water_pressure_report(cls, live_report):
-    #     for device in live_report.get("body", dict()).get("devices", list()):
-    #         for report in device.get("reports", list()):
-    #           if report.get("associated_device_function") == "HEATING" and report.get("_id") == "WaterPressureSensor":
-    #                 return report
-    #
-    # @classmethod
-    # def _find_boiler_temperature_report(cls, live_report):
-    #     for device in live_report.get("body", dict()).get("devices", list()):
-    #         for report in device.get("reports", list()):
-    #             if report.get("associated_device_function") == "HEATING" \
-    #                     and report.get("_id") == "FlowTemperatureSensor":
-    #                 return report
+    @classmethod
+    def _find_water_pressure_report(cls, live_report):
+        if live_report:
+            for device in live_report.get("body", dict()).get("devices", list()):
+                for report in device.get("reports", list()):
+                    if report.get("associated_device_function") == "HEATING" \
+                            and report.get("_id") == "WaterPressureSensor":
+                        return report.get("value")
+
+    @classmethod
+    def _find_boiler_temperature_report(cls, live_report):
+        if live_report:
+            for device in live_report.get("body", dict()).get("devices", list()):
+                for report in device.get("reports", list()):
+                    if report.get("associated_device_function") == "HEATING" \
+                            and report.get("_id") == "FlowTemperatureSensor":
+                        return report.get("value")
 
     @classmethod
     def _find_dhw_temperature_report(cls, live_report):
-        for device in live_report.get("body", dict()).get("devices", list()):
-            for report in device.get("reports", list()):
-                if report.get("associated_device_function") == "DHW" \
-                        and report.get("_id") == "DomesticHotWaterTankTemperature":
-                    return report
+        if live_report:
+            for device in live_report.get("body", dict()).get("devices", list()):
+                for report in device.get("reports", list()):
+                    if report.get("associated_device_function") == "DHW" \
+                            and report.get("_id") == "DomesticHotWaterTankTemperature":
+                        return report

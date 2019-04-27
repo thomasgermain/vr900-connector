@@ -7,7 +7,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='vr900-connector',
-      version='0.2.0',
+      version='0.3.0',
       description='Connector to handle vaillant vr900/vr920 data',
       long_description_content_type='text/markdown',
       long_description=long_description,

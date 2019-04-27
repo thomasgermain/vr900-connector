@@ -178,6 +178,8 @@ class ModelMapperTest(unittest.TestCase):
         self.assertEqual("Control_DHW", circulation.id)
         self.assertIsNone(circulation.current_temperature)
         self.assertIsNone(circulation.target_temperature)
+        self.assertIsNotNone(circulation.time_program)
+        self.assertIsNotNone(circulation.time_program.time_program_days['monday'].time_program_day_settings[0].mode)
 
     def test_hot_water(self):
         with open(TestUtil.path('files/responses/systemcontrol'), 'r') as file:
@@ -190,6 +192,7 @@ class ModelMapperTest(unittest.TestCase):
         self.assertEqual(51, hot_water.target_temperature)
         self.assertEqual(HeatingMode.AUTO, hot_water.operation_mode)
         self.assertEqual("Control_DHW", hot_water.id)
+        self.assertIsNotNone(hot_water.time_program.time_program_days['monday'].time_program_day_settings[0].mode)
 
     def test_hot_water_no_current_temp(self):
         with open(TestUtil.path('files/responses/systemcontrol'), 'r') as file:
@@ -204,8 +207,10 @@ class ModelMapperTest(unittest.TestCase):
     def test_boiler_status(self):
         with open(TestUtil.path('files/responses/hvacstate'), 'r') as file:
             hvac = json.loads(file.read())
+        with open(TestUtil.path('files/responses/livereport'), 'r') as file:
+            raw_livereport = json.loads(file.read())
 
-        boiler_status = Mapper.boiler_status(hvac)
+        boiler_status = Mapper.boiler_status(hvac, raw_livereport)
         self.assertEqual("...", boiler_status.hint)
         self.assertEqual("...", boiler_status.description)
         self.assertEqual("S.8", boiler_status.code)
@@ -215,12 +220,31 @@ class ModelMapperTest(unittest.TestCase):
         self.assertTrue(boiler_status.is_online)
         self.assertFalse(boiler_status.is_error)
         self.assertEqual(datetime.fromtimestamp(1545896904282/1000), boiler_status.last_update)
+        self.assertEqual(1.9, boiler_status.water_pressure)
+        self.assertEqual(38, boiler_status.current_temperature)
+
+    def test_boiler_status_no_live_report(self):
+        with open(TestUtil.path('files/responses/hvacstate'), 'r') as file:
+            hvac = json.loads(file.read())
+
+        boiler_status = Mapper.boiler_status(hvac, None)
+        self.assertEqual("...", boiler_status.hint)
+        self.assertEqual("...", boiler_status.description)
+        self.assertEqual("S.8", boiler_status.code)
+        self.assertEqual("Mode chauffage : Arrêt temporaire après une opération de chauffage", boiler_status.title)
+        self.assertEqual("VC BE 246/5-3", boiler_status.device_name)
+        self.assertTrue(boiler_status.is_up_to_date)
+        self.assertTrue(boiler_status.is_online)
+        self.assertFalse(boiler_status.is_error)
+        self.assertEqual(datetime.fromtimestamp(1545896904282/1000), boiler_status.last_update)
+        self.assertIsNone(boiler_status.water_pressure)
+        self.assertIsNone(boiler_status.current_temperature)
 
     def test_boiler_status_empty(self):
         with open(TestUtil.path('files/responses/hvacstate_empty'), 'r') as file:
             hvac = json.loads(file.read())
 
-        boiler_status = Mapper.boiler_status(hvac)
+        boiler_status = Mapper.boiler_status(hvac, None)
         self.assertIsNone(boiler_status)
 
     def test_hot_water_alone(self):
@@ -232,6 +256,7 @@ class ModelMapperTest(unittest.TestCase):
         hotwater = Mapper.domestic_hot_water_alone(raw_hotwater, 'control_dhw', raw_livereport)
         self.assertEqual('control_dhw', hotwater.id)
         self.assertEqual(HeatingMode.AUTO, hotwater.operation_mode)
+        self.assertIsNotNone(hotwater.time_program.time_program_days['monday'].time_program_day_settings[0].mode)
 
     def test_circulation_alone(self):
         with open(TestUtil.path('files/responses/circulation'), 'r') as file:
@@ -240,6 +265,8 @@ class ModelMapperTest(unittest.TestCase):
         circulation = Mapper.circulation_alone(raw_circulation, 'control_dhw')
         self.assertEqual('control_dhw', circulation.id)
         self.assertEqual(HeatingMode.AUTO, circulation.operation_mode)
+        self.assertIsNotNone(circulation.time_program)
+        self.assertIsNotNone(circulation.time_program.time_program_days['monday'].time_program_day_settings[0].mode)
 
 
 if __name__ == '__main__':

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from . import Component, TimeProgram, QuickVeto, ActiveMode, Constants, HeatingMode
 
 
@@ -38,7 +40,14 @@ class Zone(Component):
         self.rbr = rbr
 
     def _get_specific_active_mode(self) -> ActiveMode:
-        if self.operation_mode == HeatingMode.OFF:
+        if self.operation_mode == HeatingMode.AUTO:
+            setting = self.time_program.get_time_program_for(datetime.now())
+
+            if setting.mode == HeatingMode.DAY:
+                mode = ActiveMode(self.target_temperature, HeatingMode.AUTO, setting.mode)
+            else:
+                mode = ActiveMode(self.target_min_temperature, HeatingMode.AUTO, setting.mode)
+        elif self.operation_mode == HeatingMode.OFF:
             mode = ActiveMode(self.MIN_TEMP, HeatingMode.OFF)
         elif self.operation_mode == HeatingMode.DAY:
             mode = ActiveMode(self.target_temperature, HeatingMode.DAY)

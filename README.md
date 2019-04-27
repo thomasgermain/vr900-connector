@@ -1,7 +1,7 @@
 # vr900-connector
 ![PyPI - License](https://img.shields.io/pypi/l/vr900-connector.svg?color=44cc11)
-[![Build Status](https://travis-ci.com/thomasgermain/vr900-connector.svg?branch=0.1.0_branch)](https://travis-ci.com/thomasgermain/vr900-connector)
-[![Coverage Status](https://coveralls.io/repos/github/thomasgermain/vr900-connector/badge.svg?branch=0.1.0_branch)](https://coveralls.io/github/thomasgermain/vr900-connector?branch=0.1.0_branch)
+[![Build Status](https://travis-ci.com/thomasgermain/vr900-connector.svg?branch=master)](https://travis-ci.com/thomasgermain/vr900-connector)
+[![Coverage Status](https://coveralls.io/repos/github/thomasgermain/vr900-connector/badge.svg?branch=master)](https://coveralls.io/github/thomasgermain/vr900-connector?branch=master)
 ![PyPI](https://img.shields.io/pypi/v/vr900-connector.svg)
 ![PyPI - Status](https://img.shields.io/pypi/status/vr900-connector.svg)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/vr900-connector.svg)
@@ -211,12 +211,3 @@ The main object to manipulate is
  I recommend using this layer if you want to do more complex things, e.g: if you want to get the target temperature for 
  a room or a zone, it can become a bit complex since you have to deal with holiday mode, quick mode, quick veto, time program, etc.
  This layer is hiding you  this complexity
-
-## Todos
-* improve get hotwater query (not querying the whole system)V
-* improve get circulation query (not querying the whole system)V
-* add function to set target temp for a roomV
-* add function to set target temp for a zoneV
-* add function to set setback temp for a zoneV
-* add function to set holiday modeV
-* tests
