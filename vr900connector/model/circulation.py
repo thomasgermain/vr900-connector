@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from . import Component, TimeProgram, ActiveMode, HeatingMode
 
 
@@ -16,4 +18,9 @@ class Circulation(Component):
         super().__init__(component_id, name, time_program, None, None, operation_mode, None)
 
     def _get_specific_active_mode(self) -> ActiveMode:
-        return ActiveMode(None, self.operation_mode)
+        if self.operation_mode == HeatingMode.AUTO:
+            setting = self.time_program.get_time_program_for(datetime.now())
+            mode = ActiveMode(None, HeatingMode.AUTO, setting.mode)
+        else:
+            mode = ActiveMode(None, self.operation_mode)
+        return mode

@@ -1,8 +1,10 @@
+import json
 import datetime
 import unittest
 
+from tests.testutil import TestUtil
 from vr900connector.model import System, TimeProgram, TimeProgramDaySetting, TimeProgramDay, QuickMode, QuickVeto, \
-    HolidayMode, Room, HotWater, Zone, Constants, Circulation, HeatingMode
+    HolidayMode, Room, HotWater, Zone, Constants, Circulation, HeatingMode, Mapper
 
 
 class SystemTest(unittest.TestCase):
@@ -99,27 +101,32 @@ class SystemTest(unittest.TestCase):
         self.assertEqual(Room.MIN_TEMP, active_mode.target_temperature)
 
     def test_get_active_mode_hot_water(self):
-        timeprogram_day_setting = TimeProgramDaySetting('00:00', 55, HeatingMode.ON)
-        timeprogram_day = TimeProgramDay([timeprogram_day_setting])
-        timeprogram_days = {
-            'monday': timeprogram_day,
-            'tuesday': timeprogram_day,
-            'wednesday': timeprogram_day,
-            'thursday': timeprogram_day,
-            'friday': timeprogram_day,
-            'saturday': timeprogram_day,
-            'sunday': timeprogram_day,
-        }
-        timeprogram = TimeProgram(timeprogram_days)
+        with open(TestUtil.path('files/responses/hotwater_always_on'), 'r') as file:
+            raw_hotwater = json.loads(file.read())
 
-        hot_water = HotWater('test', 'name', timeprogram, 50, 55, HeatingMode.AUTO)
+        hot_water = Mapper.domestic_hot_water_alone(raw_hotwater, 'id', None)
+
         system = System(None, None, [], [], hot_water, None, 5, None)
 
         active_mode = system.get_active_mode_hot_water()
 
         self.assertEqual(HeatingMode.AUTO, active_mode.current_mode)
         self.assertEqual(HeatingMode.ON, active_mode.sub_mode)
-        self.assertEqual(timeprogram_day_setting.target_temperature, active_mode.target_temperature)
+        self.assertEqual(50, active_mode.target_temperature)
+
+    def test_get_active_mode_hot_water_off(self):
+        with open(TestUtil.path('files/responses/hotwater_always_off'), 'r') as file:
+            raw_hotwater = json.loads(file.read())
+
+        hot_water = Mapper.domestic_hot_water_alone(raw_hotwater, 'id', None)
+
+        system = System(None, None, [], [], hot_water, None, 5, None)
+
+        active_mode = system.get_active_mode_hot_water()
+
+        self.assertEqual(HeatingMode.AUTO, active_mode.current_mode)
+        self.assertEqual(HeatingMode.OFF, active_mode.sub_mode)
+        self.assertEqual(HotWater.MIN_TEMP, active_mode.target_temperature)
 
     def test_get_active_mode_hot_water_system_off(self):
         timeprogram_day_setting = TimeProgramDaySetting('00:00', 55, HeatingMode.ON)
@@ -211,27 +218,17 @@ class SystemTest(unittest.TestCase):
         self.assertEqual(HotWater.MIN_TEMP, active_mode.target_temperature)
 
     def test_get_active_mode_zone(self):
-        timeprogram_day_setting = TimeProgramDaySetting('00:00', 20, HeatingMode.DAY)
-        timeprogram_day = TimeProgramDay([timeprogram_day_setting])
-        timeprogram_days = {
-            'monday': timeprogram_day,
-            'tuesday': timeprogram_day,
-            'wednesday': timeprogram_day,
-            'thursday': timeprogram_day,
-            'friday': timeprogram_day,
-            'saturday': timeprogram_day,
-            'sunday': timeprogram_day,
-        }
-        timeprogram = TimeProgram(timeprogram_days)
+        with open(TestUtil.path('files/responses/zone_always_on'), 'r') as file:
+            raw_zone = json.loads(file.read())
 
-        zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, 18, 'STANDBY', False)
+        zone = Mapper.zone(raw_zone)
         system = System(None, None, [zone], None, None, None, 5, None)
 
         active_mode = system.get_active_mode_zone(zone)
 
         self.assertEqual(HeatingMode.AUTO, active_mode.current_mode)
-        self.assertEqual(timeprogram_day_setting.mode, active_mode.sub_mode)
-        self.assertEqual(timeprogram_day_setting.target_temperature, active_mode.target_temperature)
+        self.assertEqual(HeatingMode.DAY, active_mode.sub_mode)
+        self.assertEqual(20, active_mode.target_temperature)
 
     def test_get_active_mode_zone_quick_veto(self):
         timeprogram_day_setting = TimeProgramDaySetting('00:00', 20, HeatingMode.DAY)
