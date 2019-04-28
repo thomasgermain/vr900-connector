@@ -280,6 +280,15 @@ class SystemManager:
                                                                               temperature))
         return True
 
+    def request_hvac_update(self):
+        """
+        Request an hvac update. Please note the update is done asynchronously. Most of the time, it takes about 1 or 2
+        minutes before you can see the new status in :class:`vr900connector.model.BoilerStatus`
+        :return: True if the update request was accepted by the API
+        """
+        self._connector.put(Urls.hvac_update())
+        return True
+
     def logout(self):
         """
         Get logged out from the API
