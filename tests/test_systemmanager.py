@@ -376,6 +376,16 @@ class SystemManagerTest(unittest.TestCase):
         self.assertTrue(self.manager.remove_room_quick_veto(room))
         self.assertEqual(url, responses.calls[-1].request.url)
 
+    @responses.activate
+    def test_request_hvac_update(self):
+        serial = TestUtil.mock_full_auth_success()
+
+        url = Urls.hvac_update().format(serial_number=serial)
+        responses.add(responses.PUT, url, status=200)
+
+        self.assertTrue(self.manager.request_hvac_update())
+        self.assertEqual(url, responses.calls[-1].request.url)
+
     def _mock_urls(self, hvacstate_data, livereport_data, rooms_data, serial, system_data):
         responses.add(responses.GET, Urls.live_report().format(serial_number=serial), json=livereport_data,
                       status=200)
