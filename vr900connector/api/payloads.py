@@ -72,13 +72,17 @@ class Payloads:
         Payload to set quick mode for the system.
         Duration is mandatory (Duration is in minutes, max 1440 =24 hours)
         """
-        return {
+        payload = {
             "quickmode":
                 {
                     "quickmode": quick_mode,
-                    "duration": duration if duration is not None else 0
                 }
         }
+
+        if duration:
+            payload["quickmode"]["duration"] = duration
+
+        return payload
 
     @classmethod
     def zone_quick_veto(cls, temperature: float):
