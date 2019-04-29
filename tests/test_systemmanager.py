@@ -75,7 +75,7 @@ class SystemManagerTest(unittest.TestCase):
 
         hotwater = HotWater('id', 'name', None, 50, 55, HeatingMode.AUTO)
         url = Urls.hot_water_temperature_setpoint(hotwater.id)
-        payload = Payloads.hotwater_temperature_setpoint(60)
+        payload = Payloads.hotwater_temperature_setpoint(60.0)
 
         responses.add(responses.PUT, url.format(serial_number=serial), status=200)
 
@@ -277,7 +277,7 @@ class SystemManagerTest(unittest.TestCase):
 
         room = Room(1, 'Room', None, 15, 20, HeatingMode.AUTO, None, False, False, None)
         url = Urls.room_set_temperature_setpoint(room.id)
-        payload = Payloads.room_temperature_setpoint(22)
+        payload = Payloads.room_temperature_setpoint(22.0)
 
         responses.add(responses.PUT, url.format(serial_number=serial), status=200)
 
@@ -296,11 +296,11 @@ class SystemManagerTest(unittest.TestCase):
 
         zone = Zone('Zone1', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20, 'Heating', False)
         url = Urls.zone_heating_setpoint_temperature(zone.id)
-        payload = Payloads.zone_temperature_setpoint(25)
+        payload = Payloads.zone_temperature_setpoint(25.5)
 
         responses.add(responses.PUT, url.format(serial_number=serial), status=200)
 
-        self.assertTrue(self.manager.set_zone_setpoint_temperature(zone, 25))
+        self.assertTrue(self.manager.set_zone_setpoint_temperature(zone, 25.5))
         self.assertEqual(json.dumps(payload), responses.calls[-1].request.body.decode('utf-8'))
 
     def test_set_zone_setback_temperature_no_value(self):
@@ -315,7 +315,7 @@ class SystemManagerTest(unittest.TestCase):
 
         zone = Zone('Zone1', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20, 'Heating', False)
         url = Urls.zone_heating_setback_temperature(zone.id)
-        payload = Payloads.zone_temperature_setback(18)
+        payload = Payloads.zone_temperature_setback(18.0)
 
         responses.add(responses.PUT, url.format(serial_number=serial), status=200)
 
