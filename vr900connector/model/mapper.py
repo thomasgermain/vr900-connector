@@ -13,7 +13,9 @@ class Mapper:
         if full_system:
             quick_mode = full_system.get("body", dict()).get("configuration", dict()).get("quickmode")
             if quick_mode:
-                return QuickMode[quick_mode.get("quickmode")]
+                qm = QuickMode[quick_mode.get("quickmode")]
+                if qm != QuickMode.QM_QUICK_VETO:
+                    return qm
 
     @classmethod
     def outdoor_temp(cls, full_system):

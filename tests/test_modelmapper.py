@@ -20,7 +20,7 @@ class ModelMapperTest(unittest.TestCase):
             system = json.loads(file.read())
 
         quick_mode = Mapper.quick_mode(system)
-        self.assertEqual(QuickMode.QM_QUICK_VETO, quick_mode)
+        self.assertIsNone(quick_mode)
 
     def test_map_quick_veto_zone(self):
         with open(TestUtil.path("files/responses/systemcontrol_quick_veto"), 'r') as file:
