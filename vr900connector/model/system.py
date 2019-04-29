@@ -92,10 +92,6 @@ class System:
             if self.quick_mode == QuickMode.QM_PARTY:
                 return ActiveMode(zone.target_temperature, self.quick_mode)
 
-            # if the zone doesn't have a quick veto itself, it means the quick mode applies to another zone
-            if self.quick_mode == QuickMode.QM_QUICK_VETO and zone.quick_veto:
-                return ActiveMode(zone.quick_veto.target_temperature, self.quick_mode)
-
         return zone.active_mode
 
     def get_active_mode_room(self, room: Room) -> ActiveMode:
