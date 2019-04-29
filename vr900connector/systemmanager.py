@@ -78,7 +78,7 @@ class SystemManager:
         LOGGER.info("Will try to set dhw target temperature to %s", temperature)
         if temperature and hot_water:
             self._connector.put(Urls.hot_water_temperature_setpoint(hot_water.id),
-                                Payloads.hotwater_temperature_setpoint(round(float(temperature))))
+                                Payloads.hotwater_temperature_setpoint(round(float(temperature), 1)))
             return True
         else:
             LOGGER.debug("No temperature nor hot_water provided, nothing to do")
@@ -215,7 +215,7 @@ class SystemManager:
         LOGGER.info("Will try to set room target temperature to %s", temperature)
         if temperature and room:
             self._connector.put(Urls.room_set_temperature_setpoint(room.id),
-                                Payloads.room_temperature_setpoint(round(float(temperature))))
+                                Payloads.room_temperature_setpoint(round(float(temperature), 1)))
             return True
         else:
             LOGGER.debug("No temperature nor room provided, nothing to do")
@@ -232,7 +232,7 @@ class SystemManager:
         LOGGER.info("Will try to set zone target temperature to %s", temperature)
         if temperature and zone:
             self._connector.put(Urls.zone_heating_setpoint_temperature(zone.id),
-                                Payloads.zone_temperature_setpoint(round(float(temperature))))
+                                Payloads.zone_temperature_setpoint(round(float(temperature), 1)))
             return True
         else:
             LOGGER.debug("No temperature nor zone provided, nothing to do")
@@ -249,7 +249,7 @@ class SystemManager:
         LOGGER.info("Will try to set zone setback temperature to %s", temperature)
         if temperature and zone:
             self._connector.put(Urls.zone_heating_setback_temperature(zone.id),
-                                Payloads.zone_temperature_setback(round(float(temperature))))
+                                Payloads.zone_temperature_setback(round(float(temperature), 1)))
             return True
         else:
             LOGGER.debug("No temperature nor zone provided, nothing to do")
