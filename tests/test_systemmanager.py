@@ -83,6 +83,19 @@ class SystemManagerTest(unittest.TestCase):
         self.assertEqual(json.dumps(payload), responses.calls[-1].request.body.decode('utf-8'))
 
     @responses.activate
+    def test_set_hot_water_setpoint_temperature_number_to_round(self):
+        serial = TestUtil.mock_full_auth_success()
+
+        hotwater = HotWater('id', 'name', None, 50, 55, HeatingMode.AUTO)
+        url = Urls.hot_water_temperature_setpoint(hotwater.id)
+        payload = Payloads.hotwater_temperature_setpoint(60.5)
+
+        responses.add(responses.PUT, url.format(serial_number=serial), status=200)
+
+        self.assertTrue(self.manager.set_hot_water_setpoint_temperature(hotwater, 60.4))
+        self.assertEqual(json.dumps(payload), responses.calls[-1].request.body.decode('utf-8'))
+
+    @responses.activate
     def test_set_quick_mode_no_current_quick_mode(self):
         serial = TestUtil.mock_full_auth_success()
 
