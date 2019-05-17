@@ -1,3 +1,6 @@
+from urllib.parse import urlencode
+
+
 class Urls:
     """
     Vaillant API Urls with placeholder when needed.
@@ -286,11 +289,21 @@ class Urls:
         return Urls._EMF_REPORT.format(serial_number='{serial_number}')
 
     @classmethod
-    def emf_report_device(cls, device_id) -> str:
+    def emf_report_device(cls, device_id, energy_type, function, time_range, start, offset) -> str:
         """
         Url to get emf (Embedded Metering Function) report for a specific device
         """
-        return Urls._EMF_REPORT_DEVICE.format(serial_number='{serial_number}', device_id=device_id)
+        url = Urls._EMF_REPORT_DEVICE.format(serial_number='{serial_number}', device_id=device_id)
+
+        query_params = {
+            'energy_type': energy_type,
+            'function': function,
+            'timeRange': time_range,
+            'start': start,
+            'offset': offset,
+        }
+
+        return '{}?{}'.format(url, urlencode(query_params))
 
     @classmethod
     def facilities_details(cls) -> str:
