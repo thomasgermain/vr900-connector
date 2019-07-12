@@ -6,7 +6,7 @@ from tests.testutil import TestUtil
 from vr900connector.model import Mapper, QuickMode, HeatingMode
 
 
-class ModelMapperTest(unittest.TestCase):
+class MapperTest(unittest.TestCase):
 
     def test_map_quick_mode(self):
         with open(TestUtil.path("files/responses/systemcontrol_hotwater_boost"), 'r') as file:
@@ -267,6 +267,25 @@ class ModelMapperTest(unittest.TestCase):
         self.assertEqual(HeatingMode.AUTO, circulation.operation_mode)
         self.assertIsNotNone(circulation.time_program)
         self.assertIsNotNone(circulation.time_program.time_program_days['monday'].time_program_day_settings[0].mode)
+
+    def test_errors_no_error(self):
+        with open(TestUtil.path('files/responses/hvacstate'), 'r') as file:
+            raw_hvac = json.loads(file.read())
+
+        errors = Mapper.errors(raw_hvac)
+        self.assertEqual(0, len(errors))
+
+    def test_errors_with_errors(self):
+        with open(TestUtil.path('files/responses/hvacstate_errors'), 'r') as file:
+            raw_hvac = json.loads(file.read())
+
+        errors = Mapper.errors(raw_hvac)
+        self.assertEqual(1, len(errors))
+        self.assertEqual(Mapper._datetime(1562909693021), errors[0].timestamp)
+        self.assertEqual('...', errors[0].description)
+        self.assertEqual('Défaut : Bus de communication eBus', errors[0].title)
+        self.assertEqual('VR920', errors[0].device_name)
+        self.assertEqual('F.900', errors[0].status_code)
 
 
 if __name__ == '__main__':
