@@ -1,7 +1,7 @@
 import datetime
 
 from . import BoilerStatus, Circulation, Device, HolidayMode, HotWater, QuickMode, QuickVeto, Room, TimeProgram, \
-    TimeProgramDay, TimeProgramDaySetting, Zone, HeatingMode
+    TimeProgramDay, TimeProgramDaySetting, Zone, HeatingMode, SystemErrorMessage
 
 _DATE_FORMAT = "%Y-%m-%d"
 
@@ -113,7 +113,7 @@ class Mapper:
             if raw_holiday_mode and raw_holiday_mode.get("active"):
                 holidayMode.active = True
                 holidayMode.targetTemperature = raw_holiday_mode.get("temperature_setpoint")
-                holidayMode.startDate = datetime.datetime\
+                holidayMode.startDate = datetime.datetime \
                     .strptime(raw_holiday_mode.get("start_date"), _DATE_FORMAT).date()
                 holidayMode.endDate = datetime.datetime.strptime(raw_holiday_mode.get("end_date"), _DATE_FORMAT).date()
 
@@ -125,11 +125,7 @@ class Mapper:
             hvac_state_info = Mapper._find_hvac_message_status(hvac_state)
             meta = hvac_state.get('meta', dict())
             if hvac_state_info:
-                timestamp = hvac_state_info.get("timestamp")
-                last_update = None
-                if timestamp:
-                    last_update = datetime.datetime.fromtimestamp(timestamp / 1000)
-
+                last_update = Mapper._datetime(hvac_state_info.get("timestamp"))
                 device_name = hvac_state_info.get("deviceName")
                 code = hvac_state_info.get("statusCode")
                 title = hvac_state_info.get("title")
@@ -213,7 +209,6 @@ class Mapper:
             operation_mode = HeatingMode[raw_operation_mode]
         time_program = Mapper.time_program(raw_hot_water.get("timeprogram", dict()), "mode")
 
-
         current_temp = None
         name = None
         if live_report:
@@ -242,6 +237,15 @@ class Mapper:
         if raw_circulation:
             raw_circulation_body = raw_circulation.get("body", dict())
             return cls._map_circulation(raw_circulation_body, dhw_id)
+
+    @classmethod
+    def errors(cls, hvac_state):
+        errors = []
+        for error in hvac_state.get("body", dict()).get("errorMessages", list()):
+            if error.get("type") == "ERROR":
+                errors.append(SystemErrorMessage(error.get('deviceName'), error.get('title'), error.get('statusCode'),
+                                                 error.get('description'), Mapper._datetime(error.get('timestamp'))))
+        return errors
 
     @classmethod
     def _map_circulation(cls, raw_circulation, circulation_id):
@@ -286,3 +290,8 @@ class Mapper:
                     if report.get("associated_device_function") == "DHW" \
                             and report.get("_id") == "DomesticHotWaterTankTemperature":
                         return report
+
+    @classmethod
+    def _datetime(cls, timestamp):
+        if timestamp:
+            return datetime.datetime.fromtimestamp(timestamp / 1000)

@@ -10,5 +10,6 @@ from .holidaymode import HolidayMode
 from .hotwater import HotWater
 from .room import Room
 from .zone import Zone
+from .systemerrormessage import SystemErrorMessage
 from .system import System
 from .mapper import Mapper

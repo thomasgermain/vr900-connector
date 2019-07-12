@@ -47,8 +47,10 @@ class SystemManager:
 
         outdoorTemperature = Mapper.outdoor_temp(full_system)
         quickMode = Mapper.quick_mode(full_system)
+        errors = Mapper.errors(hvac_state)
 
-        return System(holiday_mode, boiler_status, zones, rooms, hot_water, circulation, outdoorTemperature, quickMode)
+        return System(holiday_mode, boiler_status, zones, rooms, hot_water, circulation, outdoorTemperature, quickMode,
+                      errors)
 
     def get_hot_water(self, hot_water: HotWater):
         full_system = self._connector.get(Urls.hot_water(hot_water.id))
