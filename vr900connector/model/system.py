@@ -1,7 +1,7 @@
 import datetime
 from typing import List
 
-from . import ActiveMode, HolidayMode, HotWater, Room, Zone, BoilerStatus, Circulation, QuickMode, HeatingMode
+from . import ActiveMode, HolidayMode, HotWater, Room, Zone, BoilerStatus, Circulation, QuickMode, SystemErrorMessage
 
 
 class System:
@@ -20,10 +20,12 @@ class System:
         circulation: See :class:`vr900connector.Circulation`
         outdoor_temperature: Outdoor temperature, if available
         quick_mode: A :class:`vr900connector.QuickMode` if any is running on
+        errors: List of errors :class:`vr900connector.SystemErrorMessage` if any
     """
 
     def __init__(self, holiday_mode: HolidayMode, boiler_status: BoilerStatus, zones: List[Zone], rooms: List[Room],
-                 hot_water: HotWater, circulation: Circulation, outdoor_temperature: float, quick_mode: QuickMode):
+                 hot_water: HotWater, circulation: Circulation, outdoor_temperature: float, quick_mode: QuickMode,
+                 errors: List[SystemErrorMessage]):
         if holiday_mode:
             self.holiday_mode = holiday_mode
         else:
@@ -45,6 +47,7 @@ class System:
         self.circulation = circulation
         self.outdoor_temperature = outdoor_temperature
         self.quick_mode = quick_mode
+        self.errors = errors
 
     def get_zone(self, zone_id: str) -> Zone:
         return self._zones_dict[zone_id]
