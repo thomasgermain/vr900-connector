@@ -289,5 +289,6 @@ class MapperTest(unittest.TestCase):
         self.assertEqual('VR920', errors[0].device_name)
         self.assertEqual('F.900', errors[0].status_code)
 
+
 if __name__ == '__main__':
     unittest.main()
