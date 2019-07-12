@@ -24,7 +24,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         room = Room(1, 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, False, False, [])
-        system = System(None, None, [], [room], None, None, 5, None)
+        system = System(None, None, [], [room], None, None, 5, None, [])
 
         active_mode = system.get_active_mode_room(room)
 
@@ -48,7 +48,7 @@ class SystemTest(unittest.TestCase):
         quick_veto = QuickVeto(0, 22)
 
         room = Room(1, 'Test', timeprogram, 20, 20, HeatingMode.AUTO, quick_veto, False, False, [])
-        system = System(None, None, [], [room], None, None, 5, None)
+        system = System(None, None, [], [room], None, None, 5, None, [])
 
         active_mode = system.get_active_mode_room(room)
 
@@ -71,7 +71,7 @@ class SystemTest(unittest.TestCase):
         holiday_mode = HolidayMode(True, datetime.date.today(), datetime.date.today(), 10)
 
         room = Room(1, 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, False, False, [])
-        system = System(holiday_mode, None, [], [room], None, None, 5, None)
+        system = System(holiday_mode, None, [], [room], None, None, 5, None, [])
 
         active_mode = system.get_active_mode_room(room)
 
@@ -93,7 +93,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         room = Room(1, 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, False, False, [])
-        system = System(None, None, [], [room], None, None, 5, QuickMode.QM_SYSTEM_OFF)
+        system = System(None, None, [], [room], None, None, 5, QuickMode.QM_SYSTEM_OFF, [])
 
         active_mode = system.get_active_mode_room(room)
 
@@ -106,7 +106,7 @@ class SystemTest(unittest.TestCase):
 
         hot_water = Mapper.domestic_hot_water_alone(raw_hotwater, 'id', None)
 
-        system = System(None, None, [], [], hot_water, None, 5, None)
+        system = System(None, None, [], [], hot_water, None, 5, None, [])
 
         active_mode = system.get_active_mode_hot_water()
 
@@ -120,7 +120,7 @@ class SystemTest(unittest.TestCase):
 
         hot_water = Mapper.domestic_hot_water_alone(raw_hotwater, 'id', None)
 
-        system = System(None, None, [], [], hot_water, None, 5, None)
+        system = System(None, None, [], [], hot_water, None, 5, None, [])
 
         active_mode = system.get_active_mode_hot_water()
 
@@ -143,7 +143,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         hot_water = HotWater('test', 'name', timeprogram, 50, 55, HeatingMode.AUTO)
-        system = System(None, None, [], [], hot_water, None, 5, QuickMode.QM_SYSTEM_OFF)
+        system = System(None, None, [], [], hot_water, None, 5, QuickMode.QM_SYSTEM_OFF, [])
 
         active_mode = system.get_active_mode_hot_water()
 
@@ -165,7 +165,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         hot_water = HotWater('test', 'name', timeprogram, 50, 55, HeatingMode.AUTO)
-        system = System(None, None, [], [], hot_water, None, 5, QuickMode.QM_ONE_DAY_AWAY)
+        system = System(None, None, [], [], hot_water, None, 5, QuickMode.QM_ONE_DAY_AWAY, [])
 
         active_mode = system.get_active_mode_hot_water()
 
@@ -187,7 +187,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         hot_water = HotWater('test', 'name', timeprogram, 50, 55, HeatingMode.AUTO)
-        system = System(None, None, [], [], hot_water, None, 5, QuickMode.QM_ONE_DAY_AWAY)
+        system = System(None, None, [], [], hot_water, None, 5, QuickMode.QM_ONE_DAY_AWAY, [])
 
         active_mode = system.get_active_mode_hot_water()
 
@@ -209,7 +209,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         hot_water = HotWater('test', 'name', timeprogram, 50, 55, HeatingMode.ON)
-        system = System(None, None, [], [], hot_water, None, 5, QuickMode.QM_HOTWATER_BOOST)
+        system = System(None, None, [], [], hot_water, None, 5, QuickMode.QM_HOTWATER_BOOST, [])
 
         active_mode = system.get_active_mode_hot_water()
 
@@ -232,7 +232,7 @@ class SystemTest(unittest.TestCase):
         holiday_mode = HolidayMode(True, datetime.date.today(), datetime.date.today(), 10)
 
         hot_water = HotWater('test', 'name', timeprogram, 50, 55, HeatingMode.AUTO)
-        system = System(holiday_mode, None, [], [], hot_water, None, 5, None)
+        system = System(holiday_mode, None, [], [], hot_water, None, 5, None, [])
 
         active_mode = system.get_active_mode_hot_water()
 
@@ -244,7 +244,7 @@ class SystemTest(unittest.TestCase):
             raw_zone = json.loads(file.read())
 
         zone = Mapper.zone(raw_zone)
-        system = System(None, None, [zone], None, None, None, 5, None)
+        system = System(None, None, [zone], None, None, None, 5, None, [])
 
         active_mode = system.get_active_mode_zone(zone)
 
@@ -257,7 +257,7 @@ class SystemTest(unittest.TestCase):
             raw_zone = json.loads(file.read())
 
         zone = Mapper.zone(raw_zone)
-        system = System(None, None, [zone], None, None, None, 5, None)
+        system = System(None, None, [zone], None, None, None, 5, None, [])
 
         active_mode = system.get_active_mode_zone(zone)
 
@@ -281,7 +281,7 @@ class SystemTest(unittest.TestCase):
         quickveto = QuickVeto(0, 55)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, quickveto, 18, 'STANDBY', False)
-        system = System(None, None, [zone], None, None, None, 5, None)
+        system = System(None, None, [zone], None, None, None, 5, None, [])
 
         active_mode = system.get_active_mode_zone(zone)
 
@@ -304,7 +304,7 @@ class SystemTest(unittest.TestCase):
         holiday_mode = HolidayMode(True, datetime.date.today(), datetime.date.today(), 10)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, 18, 'STANDBY', False)
-        system = System(holiday_mode, None, [zone], None, None, None, 5, None)
+        system = System(holiday_mode, None, [zone], None, None, None, 5, None, [])
 
         active_mode = system.get_active_mode_zone(zone)
 
@@ -326,7 +326,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, 18, 'STANDBY', False)
-        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_HOTWATER_BOOST)
+        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_HOTWATER_BOOST, [])
 
         active_mode = system.get_active_mode_zone(zone)
 
@@ -349,7 +349,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, 18, 'STANDBY', False)
-        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_SYSTEM_OFF)
+        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_SYSTEM_OFF, [])
 
         active_mode = system.get_active_mode_zone(zone)
 
@@ -372,7 +372,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, 18, 'STANDBY', False)
-        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_ONE_DAY_AT_HOME)
+        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_ONE_DAY_AT_HOME, [])
 
         active_mode = system.get_active_mode_zone(zone)
 
@@ -394,7 +394,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, 18, 'STANDBY', False)
-        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_ONE_DAY_AWAY)
+        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_ONE_DAY_AWAY, [])
 
         active_mode = system.get_active_mode_zone(zone)
 
@@ -416,7 +416,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, 18, 'STANDBY', False)
-        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_PARTY)
+        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_PARTY, [])
 
         active_mode = system.get_active_mode_zone(zone)
 
@@ -440,7 +440,7 @@ class SystemTest(unittest.TestCase):
         quick_veto = QuickVeto(0, 15)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, quick_veto, 18, 'STANDBY', False)
-        system = System(None, None, [zone], None, None, None, 5, None)
+        system = System(None, None, [zone], None, None, None, 5, None, [])
 
         active_mode = system.get_active_mode_zone(zone)
 
@@ -463,7 +463,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, HeatingMode.AUTO, None, 18, 'STANDBY', False)
-        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_VENTILATION_BOOST)
+        system = System(None, None, [zone], None, None, None, 5, QuickMode.QM_VENTILATION_BOOST, [])
 
         active_mode = system.get_active_mode_zone(zone)
 
@@ -485,7 +485,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         circulation = Circulation('id', 'name', timeprogram, HeatingMode.AUTO)
-        system = System(None, None, [], None, None, circulation, 5, QuickMode.QM_HOTWATER_BOOST)
+        system = System(None, None, [], None, None, circulation, 5, QuickMode.QM_HOTWATER_BOOST, [])
 
         active_mode = system.get_active_mode_circulation()
 
@@ -508,7 +508,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         circulation = Circulation('id', 'name', timeprogram, HeatingMode.AUTO)
-        system = System(None, None, [], None, None, circulation, 5, QuickMode.QM_SYSTEM_OFF)
+        system = System(None, None, [], None, None, circulation, 5, QuickMode.QM_SYSTEM_OFF, [])
 
         active_mode = system.get_active_mode_circulation()
 
@@ -532,7 +532,7 @@ class SystemTest(unittest.TestCase):
 
         circulation = Circulation('id', 'name', timeprogram, HeatingMode.AUTO)
         holiday_mode = HolidayMode(True, datetime.date.today(), datetime.date.today(), 10)
-        system = System(holiday_mode, None, [], None, None, circulation, 5, None)
+        system = System(holiday_mode, None, [], None, None, circulation, 5, None, [])
 
         active_mode = system.get_active_mode_circulation()
 
@@ -555,7 +555,7 @@ class SystemTest(unittest.TestCase):
         timeprogram = TimeProgram(timeprogram_days)
 
         circulation = Circulation('id', 'name', timeprogram, HeatingMode.AUTO)
-        system = System(None, None, [], None, None, circulation, 5, None)
+        system = System(None, None, [], None, None, circulation, 5, None, [])
 
         active_mode = system.get_active_mode_circulation()
 
@@ -566,14 +566,14 @@ class SystemTest(unittest.TestCase):
     def test_room_handling_with_rooms(self):
         r1 = Room(10, "name1", None, None, None, None, None, False, False, [])
         r2 = Room(11, "name1", None, None, None, None, None, False, False, [])
-        system = System(None, None, [], [r1, r2], None, None, 5, None)
+        system = System(None, None, [], [r1, r2], None, None, 5, None, [])
 
         self.assertEqual(2, len(system.rooms))
         self.assertEqual(r1, system.get_room(10))
         self.assertEqual(r2, system.get_room(11))
 
     def test_room_handling_with_no_rooms(self):
-        system = System(None, None, [], [], None, None, 5, None)
+        system = System(None, None, [], [], None, None, 5, None, [])
 
         self.assertEqual(0, len(system.rooms))
         self.assertEqual(0, len(system._rooms_dict))
@@ -581,14 +581,14 @@ class SystemTest(unittest.TestCase):
     def test_zone_handling_with_zones(self):
         z1 = Zone("id1", "name1", None, None, None, None, None, None, None, None)
         z2 = Zone("id2", "name1", None, None, None, None, None, None, None, None)
-        system = System(None, None, [z1, z2], [], None, None, 5, None)
+        system = System(None, None, [z1, z2], [], None, None, 5, None, [])
 
         self.assertEqual(2, len(system.zones))
         self.assertEqual(z1, system.get_zone("id1"))
         self.assertEqual(z2, system.get_zone("id2"))
 
     def test_zone_handling_with_no_zones(self):
-        system = System(None, None, [], [], None, None, 5, None)
+        system = System(None, None, [], [], None, None, 5, None, [])
 
         self.assertEqual(0, len(system.zones))
         self.assertEqual(0, len(system._zones_dict))
@@ -597,7 +597,7 @@ class SystemTest(unittest.TestCase):
         z1 = Zone("id1", "name1", None, None, None, None, None, None, None, None)
         z2 = Zone("id2", "name1", None, None, None, None, None, None, None, None)
         z3 = Zone("id2", "name3", None, None, None, None, None, None, None, None)
-        system = System(None, None, [z1, z2], [], None, None, 5, None)
+        system = System(None, None, [z1, z2], [], None, None, 5, None, [])
 
         system.set_zone(z2.id, z3)
         self.assertEqual(2, len(system.zones))
@@ -607,7 +607,7 @@ class SystemTest(unittest.TestCase):
         z1 = Zone("id1", "name1", None, None, None, None, None, None, None, None)
         z2 = Zone("id2", "name1", None, None, None, None, None, None, None, None)
         z3 = Zone("id3", "name3", None, None, None, None, None, None, None, None)
-        system = System(None, None, [z1, z2], [], None, None, 5, None)
+        system = System(None, None, [z1, z2], [], None, None, 5, None, [])
 
         self.assertEqual(2, len(system.zones))
         system.set_zone(z3.id, z3)
@@ -617,7 +617,7 @@ class SystemTest(unittest.TestCase):
         r1 = Room(10, "name1", None, None, None, None, None, False, False, [])
         r2 = Room(11, "name1", None, None, None, None, None, False, False, [])
         r3 = Room(11, "name3", None, None, None, None, None, False, False, [])
-        system = System(None, None, [], [r1, r2], None, None, 5, None)
+        system = System(None, None, [], [r1, r2], None, None, 5, None, [])
 
         system.set_room(r3.id, r3)
         self.assertEqual(2, len(system.rooms))
@@ -627,7 +627,7 @@ class SystemTest(unittest.TestCase):
         r1 = Room(10, "name1", None, None, None, None, None, False, False, [])
         r2 = Room(11, "name1", None, None, None, None, None, False, False, [])
         r3 = Room(12, "name3", None, None, None, None, None, False, False, [])
-        system = System(None, None, [], [r1, r2], None, None, 5, None)
+        system = System(None, None, [], [r1, r2], None, None, 5, None, [])
 
         system.set_room(r3.id, r3)
         self.assertEqual(3, len(system.rooms))
