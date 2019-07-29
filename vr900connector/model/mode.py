@@ -116,7 +116,7 @@ class QuickMode(Mode, Enum):
     The heating installation will then return to the pre-set mode.
     """
 
-    HOLIDAY = ('HOLIDAY', True, True, True, True)
+    QM_HOLIDAY = ('QM_HOLIDAY', True, True, True, True)
     """
     """
 

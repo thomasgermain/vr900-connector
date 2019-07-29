@@ -23,4 +23,4 @@ class HolidayMode:
     @property
     def active_mode(self) -> ActiveMode:
         if self.active:
-            return ActiveMode(self.target_temperature, QuickMode.HOLIDAY)
+            return ActiveMode(self.target_temperature, QuickMode.QM_HOLIDAY)

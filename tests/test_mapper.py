@@ -163,6 +163,8 @@ class MapperTest(unittest.TestCase):
             raw_system = json.loads(file.read())
 
         holiday_mode = Mapper.holiday_mode(raw_system)
+        quick_mode = Mapper.quick_mode(raw_system)
+        self.assertEqual(QuickMode.QM_HOLIDAY, quick_mode)
         self.assertIsNotNone(holiday_mode)
         self.assertTrue(holiday_mode.active)
         self.assertEqual(date(2019, 1, 2), holiday_mode.startDate)
@@ -286,7 +288,6 @@ class MapperTest(unittest.TestCase):
         self.assertEqual('Défaut : Bus de communication eBus', errors[0].title)
         self.assertEqual('VR920', errors[0].device_name)
         self.assertEqual('F.900', errors[0].status_code)
-
 
 if __name__ == '__main__':
     unittest.main()
