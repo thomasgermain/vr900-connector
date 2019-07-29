@@ -143,10 +143,10 @@ but it can be overridden. Files are named .vr900-vaillant.cookies and .vr900-vai
 
 Here is an example how to use it:
 ```python
-from vr900connector.api import ApiConnector, urls
+from vr900connector.api import ApiConnector, Urls
    
 connector = ApiConnector('user', 'pass')
-connector.get(urls.facilities_list()) 
+connector.get(Urls.facilities_list()) 
 ```
 to get some information about your installation, this returns the raw response, something like this:
 ```json

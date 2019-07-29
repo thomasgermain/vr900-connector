@@ -75,7 +75,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_room(room)
 
-        self.assertEqual(QuickMode.HOLIDAY, active_mode.current_mode)
+        self.assertEqual(QuickMode.QM_HOLIDAY, active_mode.current_mode)
         self.assertEqual(holiday_mode.target_temperature, active_mode.target_temperature)
 
     def test_get_active_mode_room_system_off(self):
@@ -236,7 +236,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_hot_water()
 
-        self.assertEqual(QuickMode.HOLIDAY, active_mode.current_mode)
+        self.assertEqual(QuickMode.QM_HOLIDAY, active_mode.current_mode)
         self.assertEqual(HotWater.MIN_TEMP, active_mode.target_temperature)
 
     def test_get_active_mode_zone(self):
@@ -308,7 +308,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_zone(zone)
 
-        self.assertEqual(QuickMode.HOLIDAY, active_mode.current_mode)
+        self.assertEqual(QuickMode.QM_HOLIDAY, active_mode.current_mode)
         self.assertEqual(holiday_mode.target_temperature, active_mode.target_temperature)
 
     def test_get_active_mode_zone_quick_mode_water_boost(self):
@@ -536,7 +536,7 @@ class SystemTest(unittest.TestCase):
 
         active_mode = system.get_active_mode_circulation()
 
-        self.assertEqual(QuickMode.HOLIDAY, active_mode.current_mode)
+        self.assertEqual(QuickMode.QM_HOLIDAY, active_mode.current_mode)
         self.assertIsNone(active_mode.target_temperature)
         self.assertIsNone(active_mode.sub_mode)
 
