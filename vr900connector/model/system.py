@@ -71,7 +71,7 @@ class System:
 
     def get_active_mode_zone(self, zone: Zone) -> ActiveMode:
         # Holiday mode takes precedence over everything
-        if self.holiday_mode.active:
+        if self.holiday_mode.is_currently_active:
             return self.holiday_mode.active_mode
 
         # Global system quick mode takes over zone settings
@@ -99,7 +99,7 @@ class System:
 
     def get_active_mode_room(self, room: Room) -> ActiveMode:
         # Holiday mode takes precedence over everything
-        if self.holiday_mode.active:
+        if self.holiday_mode.is_currently_active:
             return self.holiday_mode.active_mode
 
         # Global system quick mode takes over room settings
@@ -113,7 +113,7 @@ class System:
         if not circulation:
             circulation = self.circulation
 
-        if self.holiday_mode.active:
+        if self.holiday_mode.is_currently_active:
             active_mode = self.holiday_mode.active_mode
             active_mode.target_temperature = None
             return active_mode
@@ -127,7 +127,7 @@ class System:
         if not hot_water:
             hot_water = self.hot_water
 
-        if self.holiday_mode.active:
+        if self.holiday_mode.is_currently_active:
             active_mode = self.holiday_mode.active_mode
             active_mode.target_temperature = HotWater.MIN_TEMP
             return active_mode
