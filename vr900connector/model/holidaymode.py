@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from vr900connector.model import ActiveMode, QuickMode
 
@@ -22,5 +22,13 @@ class HolidayMode:
 
     @property
     def active_mode(self) -> ActiveMode:
-        if self.active:
+        if self.is_currently_active:
             return ActiveMode(self.target_temperature, QuickMode.QM_HOLIDAY)
+
+    @property
+    def is_currently_active(self):
+        """if holiday is active and today is between start and end date."""
+        return self.active \
+           and self.start_date \
+           and self.end_date \
+           and self.start_date <= date.today() <= self.end_date
