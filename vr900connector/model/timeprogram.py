@@ -1,86 +1,91 @@
+"""Groups all time program related functionality. Time program is used when
+*AUTO* operation mode is activated."""
 import copy
 from datetime import timedelta, datetime
-from typing import List, Dict
-from . import HeatingMode
+from typing import List, Dict, Optional, Any
+
+import re
+import attr
+
+from . import OperationMode
 
 
+def _to_absolute_minutes(start_time: str) -> int:
+    """Convert hh:mm to absolute minutes."""
+    split = start_time.split(":")
+    hour = int(split[0]) * 60
+    minute = int(split[1])
+    return hour + minute
+
+
+# pylint: disable=too-few-public-methods
+@attr.s
 class TimeProgramDaySetting:
-    """
-    This class represents a time program setting within a day
+    """This class represents a time program setting within a day."""
 
-    Args:
-        start_time: Start time of the setting (format hh:mm)
-        target_temperature: Target temperature of the setting
-        mode: The mode that will be applied to the component (always None for a :class: `vr900connector.Room`)
-    """
-    def __init__(self, start_time: str, target_temperature: float, mode: HeatingMode):
-        self.start_time = start_time
-        self.target_temperature = target_temperature
-        self.mode = mode
-        self.absolute_minutes = TimeProgramDaySetting.to_absolute_minute(start_time)
+    start_time = attr.ib(type=str)
+    target_temperature = attr.ib(type=Optional[float])
+    mode = attr.ib(type=Optional[OperationMode])
+    absolute_minutes = attr.ib(type=int, init=False)
 
-    @classmethod
-    def to_absolute_minute(cls, start_time) -> int:
-        split = start_time.split(":")
-        if len(split) > 1:
-            hour = int(split[0]) * 60
-            minute = int(split[1])
-            return hour + minute
-        raise ValueError(start_time)
+    def __attrs_post_init__(self) -> None:
+        self.absolute_minutes = _to_absolute_minutes(self.start_time)
 
-    def __deepcopy__(self, memodict={}):
-        return TimeProgramDaySetting(self.start_time, self.target_temperature, self.mode)
+    # pylint: disable=unused-argument, no-self-use
+    @start_time.validator
+    def _validate_start_time(self, attribute: Any, value: Any) -> None:
+        validator = re.compile('[0-9]{2}:[0-9]{2}')
+        if not validator.match(value):
+            raise ValueError(value)
+
+    def __deepcopy__(self, memodict: Any = None) -> 'TimeProgramDaySetting':
+        return TimeProgramDaySetting(self.start_time, self.target_temperature,
+                                     self.mode)
 
 
+# pylint: disable=too-few-public-methods
+@attr.s
 class TimeProgramDay:
-    """
-    This class represents a time program day, it's basically a list of :class: `vr900connector.TimeProgramDaySetting`
+    """This class represents a time program day, it's basically a list of
+    TimeProgramDaySetting."""
 
-    Args:
-        time_program_day_settings: list of settings (:class: `vr900connector.TimeProgramDaySetting`)
-    """
-
-    def __init__(self, time_program_day_settings: List[TimeProgramDaySetting]):
-        self.time_program_day_settings = time_program_day_settings
+    settings = attr.ib(type=List[TimeProgramDaySetting])
 
 
+# pylint: disable=too-few-public-methods
+@attr.s
 class TimeProgram:
-    """
-    This class represents a time program (a week)
+    """This class represents a time program (a week), reflecting the
+    configuration done through mobile app."""
 
-    Args:
-        time_program_days: List of time program day (:class: `vr900connector.TimeProgramDay`)
-    """
+    days = attr.ib(type=Dict[str, TimeProgramDay])
 
-    def __init__(self, time_program_days: Dict[str, TimeProgramDay]):
-        self.time_program_days = time_program_days
-
-    def get_time_program_for(self, search_date: datetime) -> TimeProgramDaySetting:
-        """
-        This return the corresponding time program day setting for a given date
-
-        :param search_date: The date for which you want to get the :class:`vr900connector.TimeProgramDaySetting`
-        :return: The time program day setting corresponding to the date
+    def get_for(self, search_date: datetime) -> TimeProgramDaySetting:
+        """Return the corresponding time program day setting for a given date.
         """
         day = search_date.strftime("%A").lower()
         day_before = (search_date - timedelta(days=1)).strftime("%A").lower()
         time = str(search_date.hour) + ':' + str(search_date.minute)
 
-        absolute_minute = TimeProgramDaySetting.to_absolute_minute(time)
-        timeProgramDay = self.time_program_days[day]
-        timeProgramDayBefore = self.time_program_days[day_before]
+        abs_minutes = _to_absolute_minutes(time)
+        tp_day = self.days[day]
+        tp_day_before = self.days[day_before]
 
-        # if given hour:minute is before the first setting of the day, get last setting of the previous day
-        if absolute_minute < timeProgramDay.time_program_day_settings[0].absolute_minutes:
-            return copy.deepcopy(timeProgramDayBefore.time_program_day_settings[-1])
-        else:
-            idx = 0
-            while idx < len(timeProgramDay.time_program_day_settings) - 1:
-                if absolute_minute > timeProgramDay.time_program_day_settings[idx].absolute_minutes and \
-                        (idx + 1 == len(timeProgramDay.time_program_day_settings)
-                         or absolute_minute < timeProgramDay.time_program_day_settings[idx + 1].absolute_minutes):
-                    return copy.deepcopy(timeProgramDay.time_program_day_settings[idx])
-                idx += 1
+        # if given hour:minute is before the first setting of the day,
+        # get last setting of the previous day
+        if abs_minutes < tp_day.settings[0].absolute_minutes:
+            return copy.deepcopy(tp_day_before.settings[-1])
 
-            # if no match a this point, it means search date is after the last setting of the day
-            return copy.deepcopy(timeProgramDay.time_program_day_settings[-1])
+        idx: int = 0
+        max_len: int = len(tp_day.settings)
+        while idx < max_len and\
+                abs_minutes > tp_day.settings[idx].absolute_minutes:
+            idx += 1
+
+        if not idx == max_len:
+            # At this point, we went 1 step too far, so idx - 1
+            return copy.deepcopy(tp_day.settings[idx - 1])
+
+        # if no match a this point, it means search date is after the last
+        # setting of the day
+        return copy.deepcopy(tp_day.settings[-1])

@@ -1,37 +1,45 @@
 import json
 import unittest
 from datetime import date, timedelta
+from typing import Any
 
-import responses
+from responses import mock as responses  # type: ignore
 
-from tests.testutil import TestUtil
-from vr900connector.api import Urls, Payloads, ApiError
-from vr900connector.model import HotWater, HeatingMode, QuickMode, QuickVeto, Room, Zone, Circulation, Constants
+from tests import testutil
+from vr900connector.api import urls, payloads, ApiError
+from vr900connector.model import OperationMode, QuickMode, QuickVeto, constants
 from vr900connector.systemmanager import SystemManager
 
 
 class SystemManagerTest(unittest.TestCase):
 
-    def setUp(self):
-        self.manager = SystemManager('user', 'pass', 'vr900-connector', TestUtil.temp_path())
+    def setUp(self) -> None:
+        self.manager = SystemManager('user', 'pass', 'vr900-connector',
+                                     testutil.temp_path())
 
     @responses.activate
-    def test_system(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_login_ok(self) -> None:
+        testutil.mock_full_auth_success()
+        self.assertTrue(self.manager.login())
 
-        with open(TestUtil.path('files/responses/livereport'), 'r') as file:
+    @responses.activate
+    def test_system(self) -> None:
+        serial = testutil.mock_full_auth_success()
+
+        with open(testutil.path('files/responses/livereport'), 'r') as file:
             livereport_data = json.loads(file.read())
 
-        with open(TestUtil.path('files/responses/rooms'), 'r') as file:
+        with open(testutil.path('files/responses/rooms'), 'r') as file:
             rooms_data = json.loads(file.read())
 
-        with open(TestUtil.path('files/responses/systemcontrol'), 'r') as file:
+        with open(testutil.path('files/responses/systemcontrol'), 'r') as file:
             system_data = json.loads(file.read())
 
-        with open(TestUtil.path('files/responses/hvacstate'), 'r') as file:
+        with open(testutil.path('files/responses/hvacstate'), 'r') as file:
             hvacstate_data = json.loads(file.read())
 
-        self._mock_urls(hvacstate_data, livereport_data, rooms_data, serial, system_data)
+        self._mock_urls(hvacstate_data, livereport_data, rooms_data, serial,
+                        system_data)
 
         system = self.manager.get_system()
 
@@ -41,405 +49,370 @@ class SystemManagerTest(unittest.TestCase):
         self.assertEqual(4, len(system.rooms))
 
     @responses.activate
-    def test_get_hot_water(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_get_hot_water(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
-        with open(TestUtil.path('files/responses/livereport'), 'r') as file:
+        with open(testutil.path('files/responses/livereport'), 'r') as file:
             livereport_data = json.loads(file.read())
 
-        with open(TestUtil.path('files/responses/hotwater'), 'r') as file:
+        with open(testutil.path('files/responses/hotwater'), 'r') as file:
             raw_hotwater = json.loads(file.read())
 
-        responses.add(responses.GET, Urls.hot_water('Control_DHW').format(serial_number=serial), json=raw_hotwater,
+        responses.add(responses.GET, urls.hot_water('Control_DHW')
+                      .format(serial_number=serial), json=raw_hotwater,
                       status=200)
 
-        responses.add(responses.GET, Urls.live_report().format(serial_number=serial), json=livereport_data,
+        responses.add(responses.GET, urls.live_report()
+                      .format(serial_number=serial), json=livereport_data,
                       status=200)
 
-        param = HotWater('Control_DHW', None, None, None, None, None)
-        hot_water = self.manager.get_hot_water(param)
+        hot_water = self.manager.get_hot_water('Control_DHW')
 
         self.assertIsNotNone(hot_water)
 
-        self.assertEqual(Urls.live_report().format(serial_number=serial), responses.calls[-1].request.url)
-        self.assertEqual(Urls.hot_water('Control_DHW').format(serial_number=serial), responses.calls[-2].request.url)
-
-    def test_set_hot_water_setpoint_temperature_no_value(self):
-        self.assertFalse(self.manager.set_hot_water_setpoint_temperature(None, 18))
-        self.assertFalse(self.manager.set_hot_water_setpoint_temperature(HotWater('id', 'name', None, 50, 55,
-                                                                                  HeatingMode.AUTO), None))
+        self.assertEqual(urls.live_report().format(serial_number=serial),
+                         responses.calls[-1].request.url)
+        self.assertEqual(urls.hot_water('Control_DHW')
+                         .format(serial_number=serial),
+                         responses.calls[-2].request.url)
 
     @responses.activate
-    def test_set_hot_water_setpoint_temperature(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_set_hot_water_setpoint_temperature(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
-        hotwater = HotWater('id', 'name', None, 50, 55, HeatingMode.AUTO)
-        url = Urls.hot_water_temperature_setpoint(hotwater.id)
-        payload = Payloads.hotwater_temperature_setpoint(60.0)
+        url = urls.hot_water_temperature_setpoint('id')
+        payload = payloads.hotwater_temperature_setpoint(60.0)
 
-        responses.add(responses.PUT, url.format(serial_number=serial), status=200)
-
-        self.assertTrue(self.manager.set_hot_water_setpoint_temperature(hotwater, 60))
-        self.assertEqual(json.dumps(payload), responses.calls[-1].request.body.decode('utf-8'))
-
-    @responses.activate
-    def test_set_hot_water_setpoint_temperature_number_to_round(self):
-        serial = TestUtil.mock_full_auth_success()
-
-        hotwater = HotWater('id', 'name', None, 50, 55, HeatingMode.AUTO)
-        url = Urls.hot_water_temperature_setpoint(hotwater.id)
-        payload = Payloads.hotwater_temperature_setpoint(60.5)
-
-        responses.add(responses.PUT, url.format(serial_number=serial), status=200)
-
-        self.assertTrue(self.manager.set_hot_water_setpoint_temperature(hotwater, 60.4))
-        self.assertEqual(json.dumps(payload), responses.calls[-1].request.body.decode('utf-8'))
-
-    @responses.activate
-    def test_set_quick_mode_no_current_quick_mode(self):
-        serial = TestUtil.mock_full_auth_success()
-
-        url = Urls.system_quickmode()
-        payload = Payloads.quickmode(QuickMode.QM_VENTILATION_BOOST.name)
-
-        responses.add(responses.PUT, url.format(serial_number=serial), status=200)
-
-        self.assertTrue(self.manager.set_quick_mode(None, QuickMode.QM_VENTILATION_BOOST))
-        self.assertEqual(json.dumps(payload), responses.calls[-1].request.body.decode('utf-8'))
-
-    def test_set_quick_mode_existing_quick_mode(self):
-        TestUtil.mock_full_auth_success()
-        self.assertFalse(self.manager.set_quick_mode(QuickMode.QM_SYSTEM_OFF, QuickMode.QM_VENTILATION_BOOST))
-
-    def test_set_quick_mode_no_new_quick_mode(self):
-        TestUtil.mock_full_auth_success()
-        self.assertFalse(self.manager.set_quick_mode(None, None))
-
-    @responses.activate
-    def test_logout(self):
-        TestUtil.mock_logout()
-        self.manager.logout()
-
-        self.assertEqual(Urls.logout(), responses.calls[-1].request.url)
-
-    @responses.activate
-    def test_set_quick_veto_room(self):
-        serial_number = TestUtil.mock_full_auth_success()
-        url = Urls.room_quick_veto(1).format(serial_number=serial_number)
-
-        quick_veto = QuickVeto(100, 25)
-        room = Room(1, 'Room', None, 15, 20, HeatingMode.AUTO, None, False, False, None)
-        responses.add(responses.PUT, url, status=200)
-
-        self.assertTrue(self.manager.set_room_quick_veto(room, quick_veto))
-        self.assertEqual(url, responses.calls[-1].request.url)
-
-    def test_set_quick_veto_room_no_quick_veto(self):
-        TestUtil.mock_full_auth_success()
-
-        room = Room(1, 'Room', None, 15, 20, HeatingMode.AUTO, None, False, False, None)
-        self.assertFalse(self.manager.set_room_quick_veto(room, None))
-
-    def test_set_quick_veto_room_no_room(self):
-        TestUtil.mock_full_auth_success()
-
-        quick_veto = QuickVeto(100, 25)
-        self.assertFalse(self.manager.set_room_quick_veto(None, quick_veto))
-
-    def test_set_hot_water_operation_mode_no_new_mode(self):
-        hotwater = HotWater('hotwater', 'hotwater', None, 25, 30, HeatingMode.AUTO)
-        self.assertFalse(self.manager.set_hot_water_operation_mode(hotwater, None))
-
-    def test_set_hot_water_operation_mode_no_hotwater(self):
-        self.assertFalse(self.manager.set_hot_water_operation_mode(None, HeatingMode.ON))
-
-    def test_set_hot_water_operation_mode_wrong_mode(self):
-        hotwater = HotWater('hotwater', 'hotwater', None, 25, 30, HeatingMode.AUTO)
-        self.assertFalse(self.manager.set_hot_water_operation_mode(hotwater, HeatingMode.NIGHT))
-
-    @responses.activate
-    def test_set_hot_water_operation_mode_heating_mode(self):
-        serial_number = TestUtil.mock_full_auth_success()
-
-        url = Urls.hot_water_operation_mode('hotwater').format(serial_number=serial_number)
-        hotwater = HotWater('hotwater', 'hotwater', None, 25, 30, HeatingMode.AUTO)
-
-        responses.add(responses.PUT, url, status=200)
-        self.assertTrue(self.manager.set_hot_water_operation_mode(hotwater, HeatingMode.ON))
-        self.assertEqual(url, responses.calls[-1].request.url)
-
-    @responses.activate
-    def test_set_quick_veto_zone(self):
-        serial_number = TestUtil.mock_full_auth_success()
-        url = Urls.zone_quick_veto("Zone1").format(serial_number=serial_number)
-
-        quick_veto = QuickVeto(100, 25)
-        zone = Zone('Zone1', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20, 'Heating', False)
-        responses.add(responses.PUT, url, status=200)
-
-        self.assertTrue(self.manager.set_zone_quick_veto(zone, quick_veto))
-        self.assertEqual(url, responses.calls[-1].request.url)
-
-    def test_set_quick_veto_zone_no_quick_veto(self):
-        TestUtil.mock_full_auth_success()
-
-        zone = Zone('Zone1', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20, 'Heating', False)
-        self.assertFalse(self.manager.set_zone_quick_veto(zone, None))
-
-    def test_set_quick_veto_zone_no_zone(self):
-        TestUtil.mock_full_auth_success()
-
-        quick_veto = QuickVeto(100, 25)
-        self.assertFalse(self.manager.set_zone_quick_veto(None, quick_veto))
-
-    @responses.activate
-    def test_set_room_operation_mode_heating_mode(self):
-        serial_number = TestUtil.mock_full_auth_success()
-
-        url = Urls.room_operation_mode(1).format(serial_number=serial_number)
-        room = Room(1, 'Room', None, 15, 20, HeatingMode.AUTO, None, False, False, None)
-
-        responses.add(responses.PUT, url, status=200)
-        self.assertTrue(self.manager.set_room_operation_mode(room, HeatingMode.AUTO))
-        self.assertEqual(url, responses.calls[-1].request.url)
-
-    def test_set_room_operation_mode_no_new_mode(self):
-        room = Room(1, 'Room', None, 15, 20, HeatingMode.AUTO, None, False, False, None)
-        self.assertFalse(self.manager.set_room_operation_mode(room, None))
-
-    def test_set_room_operation_mode_no_room(self):
-        self.assertFalse(self.manager.set_room_operation_mode(None, HeatingMode.MANUAL))
-
-    def test_set_room_operation_mode_wrong_mode(self):
-        room = Room(1, 'Room', None, 15, 20, HeatingMode.AUTO, None, False, False, None)
-        self.assertFalse(self.manager.set_room_operation_mode(room, HeatingMode.NIGHT))
-
-    @responses.activate
-    def test_set_zone_operation_mode_heating_mode(self):
-        serial_number = TestUtil.mock_full_auth_success()
-
-        url = Urls.zone_heating_mode('Zone1').format(serial_number=serial_number)
-        zone = Zone('Zone1', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20, 'Heating', False)
-
-        responses.add(responses.PUT, url, status=200)
-        self.assertTrue(self.manager.set_zone_operation_mode(zone, HeatingMode.AUTO))
-        self.assertEqual(url, responses.calls[-1].request.url)
-
-    def test_set_zone_operation_mode_no_new_mode(self):
-        zone = Zone('Zone1', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20, 'Heating', False)
-        self.assertFalse(self.manager.set_zone_operation_mode(zone, None))
-
-    def test_set_zone_operation_mode_no_zone(self):
-        self.assertFalse(self.manager.set_zone_operation_mode(None, HeatingMode.MANUAL))
-
-    def test_set_zone_operation_mode_wrong_mode(self):
-        zone = Zone('Zone1', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20, 'Heating', False)
-        self.assertFalse(self.manager.set_zone_operation_mode(zone, HeatingMode.ON))
-
-    @responses.activate
-    def test_get_room(self):
-        serial = TestUtil.mock_full_auth_success()
-
-        r1 = Room(1, "name1", None, None, None, None, None, False, False, [])
-
-        with open(TestUtil.path('files/responses/room'), 'r') as file:
-            raw_rooms = json.loads(file.read())
-
-        responses.add(responses.GET, Urls.room(r1.id).format(serial_number=serial), json=raw_rooms,
+        responses.add(responses.PUT, url.format(serial_number=serial),
                       status=200)
 
-        new_room = self.manager.get_room(r1)
+        self.manager.set_hot_water_setpoint_temperature('id', 60)
+        self.assertEqual(json.dumps(payload),
+                         responses.calls[-1].request.body.decode('utf-8'))
+
+    @responses.activate
+    def test_set_hot_water_setpoint_temperature_number_to_round(self) -> None:
+        serial = testutil.mock_full_auth_success()
+
+        url = urls.hot_water_temperature_setpoint('id')
+        payload = payloads.hotwater_temperature_setpoint(60.5)
+
+        responses.add(responses.PUT, url.format(serial_number=serial),
+                      status=200)
+
+        self.manager.set_hot_water_setpoint_temperature('id', 60.4)
+        self.assertEqual(json.dumps(payload),
+                         responses.calls[-1].request.body.decode('utf-8'))
+
+    @responses.activate
+    def test_set_quick_mode_no_current_quick_mode(self) -> None:
+        serial = testutil.mock_full_auth_success()
+
+        url = urls.system_quickmode()
+        payload = payloads.quickmode(QuickMode.QM_VENTILATION_BOOST.name)
+
+        responses.add(responses.PUT, url.format(serial_number=serial),
+                      status=200)
+
+        self.manager.set_quick_mode(QuickMode.QM_VENTILATION_BOOST)
+        self.assertEqual(json.dumps(payload),
+                         responses.calls[-1].request.body.decode('utf-8'))
+
+    @responses.activate
+    def test_logout(self) -> None:
+        testutil.mock_logout()
+        self.manager.logout()
+
+        self.assertEqual(urls.logout(), responses.calls[-1].request.url)
+
+    @responses.activate
+    def test_set_quick_veto_room(self) -> None:
+        serial_number = testutil.mock_full_auth_success()
+        url = urls.room_quick_veto('1').format(serial_number=serial_number)
+
+        quick_veto = QuickVeto(100, 25)
+        responses.add(responses.PUT, url, status=200)
+
+        self.manager.set_room_quick_veto('1', quick_veto)
+        self.assertEqual(url, responses.calls[-1].request.url)
+
+    def test_set_hot_water_operation_mode_wrong_mode(self) -> None:
+        self.manager.\
+            set_hot_water_operation_mode('hotwater', OperationMode.NIGHT)
+
+    @responses.activate
+    def test_set_hot_water_operation_mode_heating_mode(self) -> None:
+        serial_number = testutil.mock_full_auth_success()
+
+        url = urls.hot_water_operation_mode('hotwater')\
+            .format(serial_number=serial_number)
+
+        responses.add(responses.PUT, url, status=200)
+        self.manager.set_hot_water_operation_mode('hotwater', OperationMode.ON)
+        self.assertEqual(url, responses.calls[-1].request.url)
+
+    @responses.activate
+    def test_set_quick_veto_zone(self) -> None:
+        serial_number = testutil.mock_full_auth_success()
+        url = urls.zone_quick_veto("Zone1").format(serial_number=serial_number)
+
+        quick_veto = QuickVeto(100, 25)
+        responses.add(responses.PUT, url, status=200)
+
+        self.manager.set_zone_quick_veto('Zone1', quick_veto)
+        self.assertEqual(url, responses.calls[-1].request.url)
+
+    @responses.activate
+    def test_set_room_operation_mode_heating_mode(self) -> None:
+        serial_number = testutil.mock_full_auth_success()
+
+        url = urls.room_operation_mode('1').format(serial_number=serial_number)
+
+        responses.add(responses.PUT, url, status=200)
+        self.manager.set_room_operation_mode('1', OperationMode.AUTO)
+        self.assertEqual(url, responses.calls[-1].request.url)
+
+    def test_set_room_operation_mode_no_new_mode(self) -> None:
+        self.manager.set_room_operation_mode('1', None)
+
+    def test_set_room_operation_mode_wrong_mode(self) -> None:
+        self.manager.set_room_operation_mode('1', OperationMode.NIGHT)
+
+    @responses.activate
+    def test_set_zone_operation_mode_heating_mode(self) -> None:
+        serial_number = testutil.mock_full_auth_success()
+
+        url = urls.zone_heating_mode('Zone1')\
+            .format(serial_number=serial_number)
+
+        responses.add(responses.PUT, url, status=200)
+        self.manager.set_zone_operation_mode('Zone1', OperationMode.AUTO)
+        self.assertEqual(url, responses.calls[-1].request.url)
+
+    def test_set_zone_operation_mode_no_new_mode(self) -> None:
+        self.manager.set_zone_operation_mode('Zone1', None)
+
+    def test_set_zone_operation_mode_no_zone(self) -> None:
+        self.manager.set_zone_operation_mode(None, OperationMode.MANUAL)
+
+    def test_set_zone_operation_mode_wrong_mode(self) -> None:
+        self.manager.set_zone_operation_mode('Zone1', OperationMode.ON)
+
+    @responses.activate
+    def test_get_room(self) -> None:
+        serial = testutil.mock_full_auth_success()
+
+        with open(testutil.path('files/responses/room'), 'r') as file:
+            raw_rooms = json.loads(file.read())
+
+        responses.add(responses.GET, urls.room('1')
+                      .format(serial_number=serial), json=raw_rooms,
+                      status=200)
+
+        new_room = self.manager.get_room('1')
         self.assertIsNotNone(new_room)
 
     @responses.activate
-    def test_get_zone(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_get_zone(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
-        zone = Zone('Control_ZO2', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20, 'Heating', False)
-
-        with open(TestUtil.path('files/responses/zone'), 'r') as file:
+        with open(testutil.path('files/responses/zone'), 'r') as file:
             raw_zone = json.loads(file.read())
 
-        responses.add(responses.GET, Urls.zone(zone.id).format(serial_number=serial), json=raw_zone,
+        responses.add(responses.GET, urls.zone('Control_ZO2')
+                      .format(serial_number=serial), json=raw_zone,
                       status=200)
 
-        new_zone = self.manager.get_zone(zone)
+        new_zone = self.manager.get_zone('Control_ZO2')
         self.assertIsNotNone(new_zone)
 
     @responses.activate
-    def test_get_circulation(self):
-        serial_number = TestUtil.mock_full_auth_success()
+    def test_get_circulation(self) -> None:
+        serial_number = testutil.mock_full_auth_success()
 
-        with open(TestUtil.path('files/responses/circulation'), 'r') as file:
+        with open(testutil.path('files/responses/circulation'), 'r') as file:
             raw_circulation = json.loads(file.read())
 
-        responses.add(responses.GET, Urls.circulation('id_dhw').format(serial_number=serial_number),
+        responses.add(responses.GET, urls.circulation('id_dhw')
+                      .format(serial_number=serial_number),
                       json=raw_circulation, status=200)
 
-        new_circulation = self.manager.get_circulation(Circulation('id_dhw', None, None, None))
+        new_circulation = self.manager.get_circulation('id_dhw')
         self.assertIsNotNone(new_circulation)
 
-    def test_set_room_setpoint_temperature_no_value(self):
-        self.assertFalse(self.manager.set_room_setpoint_temperature(None, 18))
-        self.assertFalse(self.manager.set_room_setpoint_temperature(Room('id', 'name', None, 15, 15, None, None, False,
-                                                                         False, []), None))
+    @responses.activate
+    def test_set_room_setpoint_temperature(self) -> None:
+        serial = testutil.mock_full_auth_success()
+
+        url = urls.room_set_temperature_setpoint('1')
+        payload = payloads.room_temperature_setpoint(22.0)
+
+        responses.add(responses.PUT, url.format(serial_number=serial),
+                      status=200)
+
+        self.manager.set_room_setpoint_temperature('1', 22)
+        self.assertEqual(json.dumps(payload),
+                         responses.calls[-1].request.body.decode('utf-8'))
 
     @responses.activate
-    def test_set_room_setpoint_temperature(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_set_zone_setpoint_temperature(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
-        room = Room(1, 'Room', None, 15, 20, HeatingMode.AUTO, None, False, False, None)
-        url = Urls.room_set_temperature_setpoint(room.id)
-        payload = Payloads.room_temperature_setpoint(22.0)
+        url = urls.zone_heating_setpoint_temperature('Zone1')
+        payload = payloads.zone_temperature_setpoint(25.5)
 
-        responses.add(responses.PUT, url.format(serial_number=serial), status=200)
+        responses.add(responses.PUT, url.format(serial_number=serial),
+                      status=200)
 
-        self.assertTrue(self.manager.set_room_setpoint_temperature(room, 22))
-        self.assertEqual(json.dumps(payload), responses.calls[-1].request.body.decode('utf-8'))
-
-    def test_set_zone_setpoint_temperature_no_value(self):
-        self.assertFalse(self.manager.set_zone_setpoint_temperature(None, 18))
-        self.assertFalse(
-            self.manager.set_zone_setpoint_temperature(Zone('Zone1', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20,
-                                                            'Heating', False), None))
+        self.manager.set_zone_setpoint_temperature('Zone1', 25.5)
+        self.assertEqual(json.dumps(payload),
+                         responses.calls[-1].request.body.decode('utf-8'))
 
     @responses.activate
-    def test_set_zone_setpoint_temperature(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_set_zone_setback_temperature(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
-        zone = Zone('Zone1', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20, 'Heating', False)
-        url = Urls.zone_heating_setpoint_temperature(zone.id)
-        payload = Payloads.zone_temperature_setpoint(25.5)
+        url = urls.zone_heating_setback_temperature('Zone1')
+        payload = payloads.zone_temperature_setback(18.0)
 
-        responses.add(responses.PUT, url.format(serial_number=serial), status=200)
+        responses.add(responses.PUT, url.format(serial_number=serial),
+                      status=200)
 
-        self.assertTrue(self.manager.set_zone_setpoint_temperature(zone, 25.5))
-        self.assertEqual(json.dumps(payload), responses.calls[-1].request.body.decode('utf-8'))
-
-    def test_set_zone_setback_temperature_no_value(self):
-        self.assertFalse(self.manager.set_zone_setback_temperature(None, 18))
-        self.assertFalse(
-            self.manager.set_zone_setback_temperature(Zone('Zone1', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20,
-                                                           'Heating', False), None))
+        self.manager.set_zone_setback_temperature('Zone1', 18)
+        self.assertEqual(json.dumps(payload),
+                         responses.calls[-1].request.body.decode('utf-8'))
 
     @responses.activate
-    def test_set_zone_setback_temperature(self):
-        serial = TestUtil.mock_full_auth_success()
-
-        zone = Zone('Zone1', 'Zone1', None, 20, 22, HeatingMode.AUTO, None, 20, 'Heating', False)
-        url = Urls.zone_heating_setback_temperature(zone.id)
-        payload = Payloads.zone_temperature_setback(18.0)
-
-        responses.add(responses.PUT, url.format(serial_number=serial), status=200)
-
-        self.assertTrue(self.manager.set_zone_setback_temperature(zone, 18))
-        self.assertEqual(json.dumps(payload), responses.calls[-1].request.body.decode('utf-8'))
-
-    @responses.activate
-    def test_set_holiday_mode(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_set_holiday_mode(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
         tomorrow = date.today() + timedelta(days=1)
         after_tomorrow = tomorrow + timedelta(days=1)
 
-        url = Urls.system_holiday_mode()
-        responses.add(responses.PUT, url.format(serial_number=serial), status=200)
-        payload = Payloads.holiday_mode(True, tomorrow, after_tomorrow, 15)
+        url = urls.system_holiday_mode()
+        responses.add(responses.PUT, url.format(serial_number=serial),
+                      status=200)
+        payload = payloads.holiday_mode(True, tomorrow, after_tomorrow, 15)
 
-        self.assertTrue(self.manager.set_holiday_mode(tomorrow, after_tomorrow, 15))
-        self.assertEqual(json.dumps(payload), responses.calls[-1].request.body.decode('utf-8'))
-
-        return True
+        self.manager.set_holiday_mode(tomorrow, after_tomorrow, 15)
+        self.assertEqual(json.dumps(payload),
+                         responses.calls[-1].request.body.decode('utf-8'))
 
     @responses.activate
-    def test_remove_holiday_mode(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_remove_holiday_mode(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
         yesterday = date.today() - timedelta(days=1)
         before_yesterday = yesterday - timedelta(days=1)
 
-        url = Urls.system_holiday_mode()
-        responses.add(responses.PUT, url.format(serial_number=serial), status=200)
-        payload = Payloads.holiday_mode(False, before_yesterday, yesterday, Constants.FROST_PROTECTION_TEMP)
+        url = urls.system_holiday_mode()
+        responses.add(responses.PUT, url.format(serial_number=serial),
+                      status=200)
+        payload = payloads.holiday_mode(False, before_yesterday, yesterday,
+                                        constants.FROST_PROTECTION_TEMP)
 
-        self.assertTrue(self.manager.remove_holiday_mode())
-        self.assertEqual(json.dumps(payload), responses.calls[-1].request.body.decode('utf-8'))
+        self.manager.remove_holiday_mode()
+        self.assertEqual(json.dumps(payload),
+                         responses.calls[-1].request.body.decode('utf-8'))
 
     @responses.activate
-    def test_remove_zone_quick_veto(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_remove_zone_quick_veto(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
-        zone = Zone('id', None, None, None, None, None, None, None, None, None)
-
-        url = Urls.zone_quick_veto(zone.id).format(serial_number=serial)
+        url = urls.zone_quick_veto('id').format(serial_number=serial)
         responses.add(responses.DELETE, url, status=200)
 
-        self.assertTrue(self.manager.remove_zone_quick_veto(zone))
+        self.manager.remove_zone_quick_veto('id')
         self.assertEqual(url, responses.calls[-1].request.url)
 
     @responses.activate
-    def test_remove_room_quick_veto(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_remove_room_quick_veto(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
-        room = Room('id', None, None, None, None, None, None, None, None, None)
-
-        url = Urls.room_quick_veto(room.id).format(serial_number=serial)
+        url = urls.room_quick_veto('1').format(serial_number=serial)
         responses.add(responses.DELETE, url, status=200)
 
-        self.assertTrue(self.manager.remove_room_quick_veto(room))
+        self.manager.remove_room_quick_veto('1')
         self.assertEqual(url, responses.calls[-1].request.url)
 
     @responses.activate
-    def test_request_hvac_update(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_request_hvac_update(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
-        url = Urls.hvac_update().format(serial_number=serial)
-        responses.add(responses.PUT, url, status=200)
+        url_update = urls.hvac_update().format(serial_number=serial)
+        responses.add(responses.PUT, url_update, status=200)
 
-        self.assertTrue(self.manager.request_hvac_update())
-        self.assertEqual(url, responses.calls[-1].request.url)
+        with open(testutil.path('files/responses/hvacstate'), 'r') as file:
+            hvacstate_data = json.loads(file.read())
+
+        url_hvac = urls.hvac().format(serial_number=serial)
+        responses.add(responses.GET, url_hvac, json=hvacstate_data, status=200)
+
+        self.manager.request_hvac_update()
+        self.assertEqual(url_update, responses.calls[-1].request.url)
+        self.assertEqual(url_hvac, responses.calls[-2].request.url)
 
     @responses.activate
-    def test_remove_quick_mode(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_request_hvac_not_sync(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
-        url = Urls.system_quickmode().format(serial_number=serial)
+        url_update = urls.hvac_update().format(serial_number=serial)
+        responses.add(responses.PUT, url_update, status=200)
+
+        with open(testutil.path('files/responses/hvacstate_pending'), 'r') \
+                as file:
+            hvacstate_data = json.loads(file.read())
+
+        url_hvac = urls.hvac().format(serial_number=serial)
+        responses.add(responses.GET, url_hvac, json=hvacstate_data, status=200)
+
+        self.manager.request_hvac_update()
+        self.assertEqual(url_hvac, responses.calls[-1].request.url)
+
+    @responses.activate
+    def test_remove_quick_mode(self) -> None:
+        serial = testutil.mock_full_auth_success()
+
+        url = urls.system_quickmode().format(serial_number=serial)
         responses.add(responses.DELETE, url, status=200)
 
         self.manager.remove_quick_mode()
         self.assertEqual(url, responses.calls[-1].request.url)
 
     @responses.activate
-    def test_remove_quick_mode_no_active_quick_mode(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_remove_quick_mode_no_active_quick_mode(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
-        url = Urls.system_quickmode().format(serial_number=serial)
+        url = urls.system_quickmode().format(serial_number=serial)
         responses.add(responses.DELETE, url, status=409)
 
         self.manager.remove_quick_mode()
         self.assertEqual(url, responses.calls[-1].request.url)
 
     @responses.activate
-    def test_remove_quick_mode_error(self):
-        serial = TestUtil.mock_full_auth_success()
+    def test_remove_quick_mode_error(self) -> None:
+        serial = testutil.mock_full_auth_success()
 
-        url = Urls.system_quickmode().format(serial_number=serial)
+        url = urls.system_quickmode().format(serial_number=serial)
         responses.add(responses.DELETE, url, status=500)
 
         try:
             self.manager.remove_quick_mode()
-        except ApiError as e:
-            self.assertEqual(500, e.response.status_code)
+        except ApiError as exc:
+            self.assertEqual(500, exc.response.status_code)
 
         self.assertEqual(url, responses.calls[-1].request.url)
 
-    def _mock_urls(self, hvacstate_data, livereport_data, rooms_data, serial, system_data):
-        responses.add(responses.GET, Urls.live_report().format(serial_number=serial), json=livereport_data,
+    # pylint: disable=no-self-use,too-many-arguments
+    def _mock_urls(self, hvacstate_data: Any, livereport_data: Any,
+                   rooms_data: Any, serial: str, system_data: Any) -> None:
+        responses.add(responses.GET, urls.live_report()
+                      .format(serial_number=serial), json=livereport_data,
                       status=200)
-        responses.add(responses.GET, Urls.rooms().format(serial_number=serial), json=rooms_data, status=200)
-        responses.add(responses.GET, Urls.system().format(serial_number=serial), json=system_data, status=200)
-        responses.add(responses.GET, Urls.hvac().format(serial_number=serial), json=hvacstate_data, status=200)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        responses.add(responses.GET, urls.rooms().format(serial_number=serial),
+                      json=rooms_data, status=200)
+        responses.add(responses.GET, urls.system()
+                      .format(serial_number=serial), json=system_data,
+                      status=200)
+        responses.add(responses.GET, urls.hvac().format(serial_number=serial),
+                      json=hvacstate_data, status=200)

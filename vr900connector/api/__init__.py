@@ -1,5 +1,4 @@
-from .defaults import Defaults
-from .payloads import Payloads
-from .urls import Urls
-from .apierror import ApiError
-from .apiconnector import ApiConnector
+"""Low level connector to the API."""
+# pylint: disable=cyclic-import
+from .error import ApiError
+from .connector import ApiConnector

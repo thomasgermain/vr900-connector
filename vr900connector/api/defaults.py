@@ -1,14 +1,9 @@
-import tempfile
+"""contains some default parameters of the application."""
+from os.path import expanduser
 
+FILES_PATH = expanduser('~/.vr900connector')
 
-class Defaults:
-    """
-    This contains some default parameters of the application
-    """
+COOKIE_FILE_NAME = '.cookies'
+SERIAL_NUMBER_FILE_NAME = '.serial'
 
-    FILES_PATH = tempfile.gettempdir() + '/.vaillant_vr900_files'
-
-    COOKIE_FILE_NAME = '.vr900-vaillant.cookies'
-    SERIAL_NUMBER_FILE_NAME = '.vr900-vaillant.serial'
-
-    SMART_PHONE_ID = 'vr900-connector'
+SMARTPHONE_ID = 'vr900-connector'
