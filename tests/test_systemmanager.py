@@ -5,7 +5,7 @@ from datetime import date, timedelta
 import responses
 
 from tests.testutil import TestUtil
-from vr900connector.api import Urls, Payloads
+from vr900connector.api import Urls, Payloads, ApiError
 from vr900connector.model import HotWater, HeatingMode, QuickMode, QuickVeto, Room, Zone, Circulation, Constants
 from vr900connector.systemmanager import SystemManager
 
@@ -397,6 +397,40 @@ class SystemManagerTest(unittest.TestCase):
         responses.add(responses.PUT, url, status=200)
 
         self.assertTrue(self.manager.request_hvac_update())
+        self.assertEqual(url, responses.calls[-1].request.url)
+
+    @responses.activate
+    def test_remove_quick_mode(self):
+        serial = TestUtil.mock_full_auth_success()
+
+        url = Urls.system_quickmode().format(serial_number=serial)
+        responses.add(responses.DELETE, url, status=200)
+
+        self.manager.remove_quick_mode()
+        self.assertEqual(url, responses.calls[-1].request.url)
+
+    @responses.activate
+    def test_remove_quick_mode_no_active_quick_mode(self):
+        serial = TestUtil.mock_full_auth_success()
+
+        url = Urls.system_quickmode().format(serial_number=serial)
+        responses.add(responses.DELETE, url, status=409)
+
+        self.manager.remove_quick_mode()
+        self.assertEqual(url, responses.calls[-1].request.url)
+
+    @responses.activate
+    def test_remove_quick_mode_error(self):
+        serial = TestUtil.mock_full_auth_success()
+
+        url = Urls.system_quickmode().format(serial_number=serial)
+        responses.add(responses.DELETE, url, status=500)
+
+        try:
+            self.manager.remove_quick_mode()
+        except ApiError as e:
+            self.assertEqual(500, e.response.status_code)
+
         self.assertEqual(url, responses.calls[-1].request.url)
 
     def _mock_urls(self, hvacstate_data, livereport_data, rooms_data, serial, system_data):

@@ -1,7 +1,7 @@
 import logging
 from datetime import date, timedelta
 
-from .api import ApiConnector, Urls, Payloads, Defaults
+from .api import ApiConnector, Urls, Payloads, Defaults, ApiError
 from .model import Mapper, System, HotWater, QuickMode, QuickVeto, Room, Zone, HeatingMode, Circulation, Constants
 
 LOGGER = logging.getLogger('SystemManager')
@@ -179,6 +179,14 @@ class SystemManager:
         else:
             LOGGER.debug("There is already a quick mode in place: %s", current_quick_mode.name)
             return False
+
+    def remove_quick_mode(self):
+        """Removes current quickmode."""
+        try:
+            self._connector.delete(Urls.system_quickmode())
+        except ApiError as e:
+            if e.response is None or e.response.status_code != 409:
+                raise e
 
     def set_room_quick_veto(self, room: Room, quick_veto: QuickVeto):
         if quick_veto and room:
