@@ -1,105 +1,93 @@
+"""Full system coming from vaillant API."""
 import datetime
-from typing import List
+from typing import List, Optional, Dict
 
-from . import ActiveMode, HolidayMode, HotWater, Room, Zone, BoilerStatus, Circulation, QuickMode, SystemErrorMessage
+import attr
+
+from . import ActiveMode, HolidayMode, HotWater, Room, Zone, BoilerStatus, \
+    Circulation, QuickMode, Error, SystemStatus
 
 
+@attr.s
 class System:
-    """
-    This class represents the main class to manipulate vaillant system. This class is designed to know everything (or
-    at least to know to who it has to delegate to know) about the system.
-
-    If your are using :class:`vr900connector.SystemManager`, you should only use this class to interact with the system
-
-    Args:
-        holiday_mode: See :class:`vr900connector.HolidayMode`
-        boiler_status: See :class:`vr900connector.BoilerStatus`
-        zones: List of :class:`vr900connector.Zone` available in the system
-        rooms: List of :class:`vr900connector.Room` available in the system
-        hot_water: See :class:`vr900connector.HotWater`
-        circulation: See :class:`vr900connector.Circulation`
-        outdoor_temperature: Outdoor temperature, if available
-        quick_mode: A :class:`vr900connector.QuickMode` if any is running on
-        errors: List of errors :class:`vr900connector.SystemErrorMessage` if any
+    """This class represents the main class to manipulate vaillant system.
+    It is designed to know everything about the system.
     """
 
-    def __init__(self, holiday_mode: HolidayMode, boiler_status: BoilerStatus, zones: List[Zone], rooms: List[Room],
-                 hot_water: HotWater, circulation: Circulation, outdoor_temperature: float, quick_mode: QuickMode,
-                 errors: List[SystemErrorMessage]):
-        if holiday_mode:
-            self.holiday_mode = holiday_mode
-        else:
-            self.holiday_mode = HolidayMode(False, None, None, None)
+    holiday_mode = attr.ib(type=HolidayMode)
+    system_status = attr.ib(type=SystemStatus)
+    boiler_status = attr.ib(type=Optional[BoilerStatus])
+    zones = attr.ib(type=List[Zone])
+    rooms = attr.ib(type=List[Room])
+    hot_water = attr.ib(type=Optional[HotWater])
+    circulation = attr.ib(type=Optional[Circulation])
+    outdoor_temperature = attr.ib(type=Optional[float])
+    quick_mode = attr.ib(type=Optional[QuickMode])
+    errors = attr.ib(type=List[Error])
+    _zones = attr.ib(type=Dict[str, Zone], default=dict(), init=False)
+    _rooms = attr.ib(type=Dict[str, Room], default=dict(), init=False)
 
-        self.boiler_status = boiler_status
+    def __attrs_post_init__(self) -> None:
+        """Post init from attrs."""
+        if self.holiday_mode is None:
+            self.holiday_mode = HolidayMode(False)
 
-        if zones:
-            self._zones_dict = dict((zone.id, zone) for zone in zones)
-        else:
-            self._zones_dict = dict()
+        if self.zones:
+            self._zones = dict((zone.id, zone) for zone in self.zones)
 
-        if rooms:
-            self._rooms_dict = dict((room.id, room) for room in rooms)
-        else:
-            self._rooms_dict = dict()
+        if self.rooms:
+            self._rooms = dict((room.id, room) for room in self.rooms)
 
-        self.hot_water = hot_water
-        self.circulation = circulation
-        self.outdoor_temperature = outdoor_temperature
-        self.quick_mode = quick_mode
-        self.errors = errors
+    def set_zone(self, zone_id: str, zone: Zone) -> None:
+        """Set *zone* for id."""
+        self._zones[zone_id] = zone
+        self.zones = list(self._zones.values())
 
-    def get_zone(self, zone_id: str) -> Zone:
-        return self._zones_dict[zone_id]
-
-    def get_room(self, room_id: int) -> Room:
-        return self._rooms_dict[int(room_id)]
-
-    def set_zone(self, zone_id: str, zone: Zone):
-        self._zones_dict[zone_id] = zone
-
-    def set_room(self, room_id: int, room: Room):
-        self._rooms_dict[int(room_id)] = room
-
-    @property
-    def rooms(self):
-        return self._rooms_dict.values()
-
-    @property
-    def zones(self):
-        return self._zones_dict.values()
+    def set_room(self, room_id: str, room: Room) -> None:
+        """Set *room* for id."""
+        self._rooms[room_id] = room
+        self.rooms = list(self._rooms.values())
 
     def get_active_mode_zone(self, zone: Zone) -> ActiveMode:
+        """Gets current *active mode* for a *room*. This is the only way to get
+        it through the vr900connector.
+        """
+        mode: ActiveMode = zone.active_mode
+
         # Holiday mode takes precedence over everything
-        if self.holiday_mode.is_currently_active:
-            return self.holiday_mode.active_mode
+        if self.holiday_mode.active_mode:
+            mode = self.holiday_mode.active_mode
 
         # Global system quick mode takes over zone settings
         if self.quick_mode and self.quick_mode.for_zone:
             if self.quick_mode == QuickMode.QM_VENTILATION_BOOST:
-                return ActiveMode(Zone.MIN_TEMP, self.quick_mode)
+                mode = ActiveMode(Zone.MIN_TEMP, self.quick_mode)
 
             if self.quick_mode == QuickMode.QM_ONE_DAY_AWAY:
-                return ActiveMode(zone.target_min_temperature, self.quick_mode)
+                mode = ActiveMode(zone.target_min_temperature, self.quick_mode)
 
             if self.quick_mode == QuickMode.QM_SYSTEM_OFF:
-                return ActiveMode(Zone.MIN_TEMP, self.quick_mode)
+                mode = ActiveMode(Zone.MIN_TEMP, self.quick_mode)
 
             if self.quick_mode == QuickMode.QM_ONE_DAY_AT_HOME:
                 today = datetime.datetime.now()
                 sunday = today - datetime.timedelta(days=today.weekday() - 6)
 
-                time_program = zone.time_program.get_time_program_for(sunday)
-                return ActiveMode(time_program.target_temperature, self.quick_mode)
+                time_program = zone.time_program.get_for(sunday)
+                mode = ActiveMode(time_program.target_temperature,
+                                  self.quick_mode)
 
             if self.quick_mode == QuickMode.QM_PARTY:
-                return ActiveMode(zone.target_temperature, self.quick_mode)
+                mode = ActiveMode(zone.target_temperature, self.quick_mode)
 
-        return zone.active_mode
+        return mode
 
     def get_active_mode_room(self, room: Room) -> ActiveMode:
+        """Gets current *active mode* for a *room*. This is the only way to get
+        it through the vr900connector.
+        """
         # Holiday mode takes precedence over everything
-        if self.holiday_mode.is_currently_active:
+        if self.holiday_mode.active_mode:
             return self.holiday_mode.active_mode
 
         # Global system quick mode takes over room settings
@@ -109,37 +97,51 @@ class System:
 
         return room.active_mode
 
-    def get_active_mode_circulation(self, circulation: Circulation = None) -> ActiveMode:
+    def get_active_mode_circulation(self,
+                                    circulation: Optional[Circulation] = None)\
+            -> Optional[ActiveMode]:
+        """Gets current *active mode* for *circulation*. This is the only way
+        to get it through the vr900connector.
+        """
         if not circulation:
             circulation = self.circulation
 
-        if self.holiday_mode.is_currently_active:
-            active_mode = self.holiday_mode.active_mode
-            active_mode.target_temperature = None
-            return active_mode
+        if circulation:
+            if self.holiday_mode.active_mode:
+                active_mode = self.holiday_mode.active_mode
+                active_mode.target_temperature = None
+                return active_mode
 
-        if self.quick_mode and self.quick_mode.for_circulation:
-            return ActiveMode(None, self.quick_mode)
+            if self.quick_mode and self.quick_mode.for_circulation:
+                return ActiveMode(None, self.quick_mode)
 
-        return circulation.active_mode
+            return circulation.active_mode
+        return None
 
-    def get_active_mode_hot_water(self, hot_water: HotWater = None) -> ActiveMode:
+    def get_active_mode_hot_water(self, hot_water: Optional[HotWater] = None)\
+            -> Optional[ActiveMode]:
+        """Gets current *active mode* for *hot water*. This is the only way to
+        get it through the vr900connector.
+        """
         if not hot_water:
             hot_water = self.hot_water
 
-        if self.holiday_mode.is_currently_active:
-            active_mode = self.holiday_mode.active_mode
-            active_mode.target_temperature = HotWater.MIN_TEMP
-            return active_mode
+        if hot_water:
+            if self.holiday_mode.active_mode:
+                active_mode = self.holiday_mode.active_mode
+                active_mode.target_temperature = HotWater.MIN_TEMP
+                return active_mode
 
-        if self.quick_mode and self.quick_mode.for_hot_water:
-            if self.quick_mode == QuickMode.QM_HOTWATER_BOOST:
-                return ActiveMode(hot_water.target_temperature, self.quick_mode)
+            if self.quick_mode and self.quick_mode.for_hot_water:
+                if self.quick_mode == QuickMode.QM_HOTWATER_BOOST:
+                    return ActiveMode(hot_water.target_temperature,
+                                      self.quick_mode)
 
-            if self.quick_mode == QuickMode.QM_SYSTEM_OFF:
-                return ActiveMode(HotWater.MIN_TEMP, self.quick_mode)
+                if self.quick_mode == QuickMode.QM_SYSTEM_OFF:
+                    return ActiveMode(HotWater.MIN_TEMP, self.quick_mode)
 
-            if self.quick_mode == QuickMode.QM_ONE_DAY_AWAY:
-                return ActiveMode(HotWater.MIN_TEMP, self.quick_mode)
+                if self.quick_mode == QuickMode.QM_ONE_DAY_AWAY:
+                    return ActiveMode(HotWater.MIN_TEMP, self.quick_mode)
 
-        return hot_water.active_mode
+            return hot_water.active_mode
+        return None
