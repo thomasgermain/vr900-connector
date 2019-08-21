@@ -24,110 +24,6 @@ pytest
 
 ## Usages
 
-### Command line usage
-
-```python
-python3 vaillant.py username password method command [command parameters]
-```
-List of commands are the name of functions in api.urls module.
-
-Example:
-```python
-python3 vaillant.py username password GET room 0
-```
-
-Output:
-```json
-{
-    "body": {
-        "roomIndex": 0,
-        "configuration": {
-            "name": "Room name",
-            "temperatureSetpoint": 17.5,
-            "operationMode": "AUTO",
-            "currentTemperature": 19.4,
-            "childLock": false,
-            "isWindowOpen": false,
-            "devices": [
-                {
-                    "name": "Device name",
-                    "sgtin": "000000000000000000000000",
-                    "deviceType": "VALVE",
-                    "isBatteryLow": false,
-                    "isRadioOutOfReach": false
-                }
-            ],
-            "iconId": "BEDROOM"
-        },
-        "timeprogram": {
-            "monday": [
-                {
-                    "startTime": "00:00",
-                    "temperatureSetpoint": 17.5
-                }
-            ],
-            "tuesday": [
-                {
-                    "startTime": "00:00",
-                    "temperatureSetpoint": 17.5
-                }
-            ],
-            "wednesday": [
-                {
-                    "startTime": "00:00",
-                    "temperatureSetpoint": 17.5
-                }
-            ],
-            "thursday": [
-                {
-                    "startTime": "00:00",
-                    "temperatureSetpoint": 17.5
-                }
-            ],
-            "friday": [
-                {
-                    "startTime": "00:00",
-                    "temperatureSetpoint": 17.5
-                }
-            ],
-            "saturday": [
-                {
-                    "startTime": "00:00",
-                    "temperatureSetpoint": 17.5
-                }
-            ],
-            "sunday": [
-                {
-                    "startTime": "00:00",
-                    "temperatureSetpoint": 17.5
-                }
-            ]
-        }
-    },
-    "meta": {
-        "resourceState": [
-            {
-                "state": "SYNCED",
-                "timestamp": 1551383333000,
-                "link": {
-                    "rel": "child",
-                    "resourceLink": "/facilities/1234567891234567891234567890/rbr/v1/rooms/0/configuration"
-                }
-            },
-            {
-                "state": "SYNCED",
-                "timestamp": 1549054971000,
-                "link": {
-                    "rel": "child",
-                    "resourceLink": "/facilities/1234567891234567891234567890/rbr/v1/rooms/0/timeprogram"
-                }
-            }
-        ]
-    }
-}
-```
-
-
 ### Module usage
  
 The connector is separate in two layers:
@@ -211,3 +107,13 @@ The main object to manipulate is
  I recommend using this layer if you want to do more complex things, e.g: if you want to get the target temperature for 
  a room or a zone, it can become a bit complex since you have to deal with holiday mode, quick mode, quick veto, time program, etc.
  This layer is hiding you  this complexity
+ 
+
+## Todo's
+- add the possibility to remove quick mode
+- Move ApiConnector to async
+- Handling ventilation
+- Add more documentation
+- Handling missing information when VRC700 (and/or boiler) is shutdown 
+(e.g. TimeProgram are not coming anymore from the API if boiler is down)
+- Add some lint/pylint checks during the build (+ refactor some piece of code in a more pythonic way)
