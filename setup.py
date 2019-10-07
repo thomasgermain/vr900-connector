@@ -13,7 +13,7 @@ setup(name='vr900-connector',
       long_description=long_description,
       url='https://github.com/thomasgermain/vr900-connector.git',
       author='Thomas Germain',
-      author_email='thomas.germain@live.be',
+      author_email='12560542+thomasgermain@users.noreply.github.com',
       license='MIT',
       packages=find_packages(exclude=
                              ('tests', 'tests/*', '/tests', '/tests/*')),

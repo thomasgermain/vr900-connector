@@ -87,7 +87,7 @@ The underlying `ApiConnector` is hidden and raw responses are mapped to more use
 Here is an example:
 ```python
 from vr900connector.systemmanager import SystemManager
-from vr900connector.model import OperationMode
+from vr900connector.model import OperatingModes
    
 manager = SystemManager('user', 'pass')
 
@@ -98,7 +98,7 @@ system = manager.get_system()
 manager.set_hot_water_setpoint_temperature('dhw_id', 55)
 
 # set the zone operation mode to 'AUTO'
-manager.set_zone_operation_mode('zone_id', OperationMode.AUTO)
+manager.set_zone_operation_mode('zone_id', OperatingModes.AUTO)
 ```
 
 The main object to manipulate is `vr900connector.model.System`, which is grouping all the information about your system.
