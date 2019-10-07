@@ -1,4 +1,4 @@
-"""Groups all API payloads. Payload are always json."""
+"""Groups all API payloads. Payload are always json formatted."""
 
 from datetime import date
 from typing import Dict, Optional, Any

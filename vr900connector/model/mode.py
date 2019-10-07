@@ -128,7 +128,7 @@ class SettingMode(Mode):
 class SettingModes:
     """Groups all :class:`SettingMode` together."""
 
-    ON = 'ON'
+    ON = SettingMode('ON')
     """Within the time period,
     :class:`~vr900connector.model.component.HotWater` generation is switched on
     and maintains the hot water in the domestic hot water cylinder at the
@@ -136,23 +136,37 @@ class SettingModes:
     :class:`~vr900connector.model.component.Circulation` is switched off.
     """
 
-    OFF = 'OFF'
+    OFF = SettingMode('OFF')
     """Outside the time period,
     :class:`~vr900connector.model.component.HotWater` generation (and
     :class:`~vr900connector.model.component.Circulation`) is switched off.
     """
 
-    DAY = 'DAY'
+    DAY = SettingMode('DAY')
     """Within the time periods, the controller brings the
     :class:`~vr900connector.model.component.Zone` temperature to the `DAY`
     temp. heating that has been set (Comfort mode).
     """
 
-    NIGHT = 'NIGHT'
+    NIGHT = SettingMode('NIGHT')
     """Outside of the time period, the controller brings the
     :class:`~vr900connector.model.component.Zone` temperature to the Set-back
     temp. heating (`NIGHT`) that has been set.
     """
+
+    _VALUES = {sm.name: sm for sm in [ON, OFF, DAY, NIGHT]}
+
+    @classmethod
+    def get(cls, name: str) -> SettingMode:
+        """Get :class:`SettingMode` by name.
+
+        Args:
+            name (str): Name of the setting mode
+
+        Returns:
+            The corresponding setting mode or None
+        """
+        return cls._VALUES[name]
 
 
 @attr.s

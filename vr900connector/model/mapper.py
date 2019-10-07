@@ -4,8 +4,9 @@ from typing import Optional, List, Any
 
 from . import BoilerStatus, Circulation, Device, HolidayMode, HotWater, \
     QuickMode, QuickModes, QuickVeto, Room, TimeProgram, TimeProgramDay, \
-    TimePeriodSetting, Zone, OperatingModes, Error, \
-    SystemStatus, SyncState
+    TimePeriodSetting, Zone, OperatingModes, Error, SystemStatus, SyncState, \
+    SettingModes
+
 
 _DATE_FORMAT = "%Y-%m-%d"
 
@@ -128,8 +129,7 @@ def map_time_program_day(raw_time_program_day, key: Optional[str] = None) \
 
             mode = None
             if key:
-                mode = OperatingModes.get(time_setting.get(key))
-                # TODO SettingMode
+                mode = SettingModes.get(time_setting.get(key))
 
             settings.append(
                 TimePeriodSetting(start_time, target_temp, mode))

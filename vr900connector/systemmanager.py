@@ -182,7 +182,7 @@ class SystemManager:
         """This set the *target temperature* for a *room*."""
         _LOGGER.debug("Will try to set room target temperature to %s",
                       temperature)
-        self._connector.put(urls.room_set_temperature_setpoint(room_id),
+        self._connector.put(urls.room_temperature_setpoint(room_id),
                             payloads.room_temperature_setpoint(
                                 self._round(temperature)))
 

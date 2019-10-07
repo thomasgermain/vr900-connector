@@ -246,7 +246,7 @@ class SystemManagerTest(unittest.TestCase):
     def test_set_room_setpoint_temperature(self) -> None:
         serial = testutil.mock_full_auth_success()
 
-        url = urls.room_set_temperature_setpoint('1')
+        url = urls.room_temperature_setpoint('1')
         payload = payloads.room_temperature_setpoint(22.0)
 
         responses.add(responses.PUT, url.format(serial_number=serial),

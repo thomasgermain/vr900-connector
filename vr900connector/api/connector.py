@@ -23,8 +23,8 @@ class ApiConnector:
     :exc:`~vr900connector.api.error.ApiError` if something goes wrong
     (basically, when response error code is 4xx or 5xx).
 
-    On the first call, the connector will login automatically (if `login` was
-    not called previously).
+    On the first call, the connector will login automatically (if
+    :func:`~login` was not called previously).
 
     On following calls, the connector will re-use the cookie received from the
     API. If the connector receives an HTTP 401, it will clear the cookie and
@@ -57,11 +57,11 @@ class ApiConnector:
     def login(self, force_login: bool = False) -> bool:
         """Log in to the API.
 
-        By default, the `connector` will try to use cookie located under
+        By default, the ``connector`` will try to use cookie located under
         :attr:`file_path`.
 
         Args:
-            force_login (bool): If set to `True`, the connector will clear
+            force_login (bool): If set to ``True``, the connector will clear
                 the cookie (if any) and start a new authentication, otherwise
                 it will re-use the existing cookie.
 
@@ -76,11 +76,11 @@ class ApiConnector:
     def logout(self) -> None:
         """Get logged out of the API.
 
-        It first sends a `logout` request to the API (it means cookies are
+        It first sends a ``logout`` request to the API (it means cookies are
         invalidated).
 
         Second, cookies will be cleared, regardless of the result of the
-        `logout` request.
+        ``logout`` request.
 
         The connector will have to request a new token and ask for cookies if
         a new request is done.
@@ -191,9 +191,10 @@ class ApiConnector:
         """Call the API using selected :attr:`method`, attr:`url` and
         :attr:`payload`.
 
-        This is `safe` in a sense the connector ensure you are logged in.
+        This is ``safe`` in a sense the connector ensure you are logged in.
 
-        The replacement of `serial_number` placeholder in `url` is done here.
+        The replacement of ``serial_number`` placeholder in
+        :mod:`~vr900connector.api.urls` is done here.
         """
         response: Optional[Response] = None
         safe_url: Optional[str] = None

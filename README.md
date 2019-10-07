@@ -13,7 +13,7 @@ This software is not affiliated with Vaillant and the developers take no legal r
 
 ## Install
 ```bash
-[sudo] pip install vr900-connector 
+[sudo] pip3 install vr900-connector 
 ```
 
 ## Tests

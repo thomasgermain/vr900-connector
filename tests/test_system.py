@@ -6,7 +6,7 @@ import unittest
 from tests import testutil
 from vr900connector.model import System, TimePeriodSetting, \
     TimeProgramDay, QuickModes, QuickVeto, HolidayMode, Room, HotWater, Zone, \
-    Circulation, OperatingModes, mapper
+    Circulation, OperatingModes, mapper, SettingModes
 
 
 class SystemTest(unittest.TestCase):
@@ -85,7 +85,7 @@ class SystemTest(unittest.TestCase):
         active_mode = system.get_active_mode_hot_water()
 
         self.assertEqual(OperatingModes.AUTO, active_mode.current_mode)
-        self.assertEqual(OperatingModes.ON, active_mode.sub_mode)
+        self.assertEqual(SettingModes.ON, active_mode.sub_mode)
         self.assertEqual(50, active_mode.target_temperature)
 
     def test_get_active_mode_hot_water_no_hotwater(self) -> None:
@@ -109,12 +109,12 @@ class SystemTest(unittest.TestCase):
         active_mode = system.get_active_mode_hot_water()
 
         self.assertEqual(OperatingModes.AUTO, active_mode.current_mode)
-        self.assertEqual(OperatingModes.OFF, active_mode.sub_mode)
+        self.assertEqual(SettingModes.OFF, active_mode.sub_mode)
         self.assertEqual(HotWater.MIN_TARGET_TEMP, active_mode.target_temperature)
 
     def test_get_active_mode_hot_water_system_off(self) -> None:
         """Test active mode hot water system off."""
-        timeprogram = testutil.default_time_program(OperatingModes.ON, 55)
+        timeprogram = testutil.default_time_program(SettingModes.ON, 55)
 
         hot_water = HotWater('test', 'name', timeprogram, 50, 55,
                              OperatingModes.AUTO)
@@ -128,7 +128,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_hot_water_one_day_away(self) -> None:
         """Test get active mode for hot water with one day away."""
-        timeprogram = testutil.default_time_program(OperatingModes.ON, 55)
+        timeprogram = testutil.default_time_program(SettingModes.ON, 55)
 
         hot_water = HotWater('test', 'name', timeprogram, 50, 55,
                              OperatingModes.AUTO)
@@ -143,7 +143,7 @@ class SystemTest(unittest.TestCase):
     def test_get_active_mode_hot_water_hot_water_boost(self) -> None:
         """Test get active mode for hot water with hot water boost."""
         temp = 55
-        timeprogram = testutil.default_time_program(OperatingModes.ON, temp)
+        timeprogram = testutil.default_time_program(SettingModes.ON, temp)
 
         hot_water = HotWater('test', 'name', timeprogram, 50, 55,
                              OperatingModes.ON)
@@ -157,7 +157,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_hot_water_holiday_mode(self) -> None:
         """Test get active mode for hot water with holiday mode."""
-        timeprogram = testutil.default_time_program(OperatingModes.ON, 55)
+        timeprogram = testutil.default_time_program(SettingModes.ON, 55)
         holiday_mode = HolidayMode(True, datetime.date.today(),
                                    datetime.date.today(), 10)
 
@@ -184,7 +184,7 @@ class SystemTest(unittest.TestCase):
         active_mode = system.get_active_mode_zone(zone)
 
         self.assertEqual(OperatingModes.AUTO, active_mode.current_mode)
-        self.assertEqual(OperatingModes.DAY, active_mode.sub_mode)
+        self.assertEqual(SettingModes.DAY, active_mode.sub_mode)
         self.assertEqual(20, active_mode.target_temperature)
 
     def test_get_active_mode_zone_off(self) -> None:
@@ -200,12 +200,12 @@ class SystemTest(unittest.TestCase):
         active_mode = system.get_active_mode_zone(zone)
 
         self.assertEqual(OperatingModes.AUTO, active_mode.current_mode)
-        self.assertEqual(OperatingModes.NIGHT, active_mode.sub_mode)
+        self.assertEqual(SettingModes.NIGHT, active_mode.sub_mode)
         self.assertEqual(19.5, active_mode.target_temperature)
 
     def test_get_active_mode_zone_quick_veto(self) -> None:
         """Test get active mode for zone quick veto."""
-        timeprogram = testutil.default_time_program(OperatingModes.DAY, 20)
+        timeprogram = testutil.default_time_program(SettingModes.DAY, 20)
         quickveto = QuickVeto(0, 55)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, OperatingModes.AUTO,
@@ -221,7 +221,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_zone_holiday_mode(self) -> None:
         """Test get active mode for zone with holiday mode."""
-        timeprogram = testutil.default_time_program(OperatingModes.DAY, 20)
+        timeprogram = testutil.default_time_program(SettingModes.DAY, 20)
         holiday_mode = HolidayMode(True, datetime.date.today(),
                                    datetime.date.today(), 10)
 
@@ -238,7 +238,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_zone_quick_mode_water_boost(self) -> None:
         """Test get active mode for zone with hot water boost."""
-        timeprogram = testutil.default_time_program(OperatingModes.DAY, 20)
+        timeprogram = testutil.default_time_program(SettingModes.DAY, 20)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, OperatingModes.AUTO,
                     None, 18, 'STANDBY', False)
@@ -248,12 +248,12 @@ class SystemTest(unittest.TestCase):
         active_mode = system.get_active_mode_zone(zone)
 
         self.assertEqual(OperatingModes.AUTO, active_mode.current_mode)
-        self.assertEqual(OperatingModes.DAY, active_mode.sub_mode)
+        self.assertEqual(SettingModes.DAY, active_mode.sub_mode)
         self.assertEqual(20, active_mode.target_temperature)
 
     def test_get_active_mode_zone_quick_mode_system_off(self) -> None:
         """Test get active mode for zone with system off."""
-        timeprogram = testutil.default_time_program(OperatingModes.DAY, 20)
+        timeprogram = testutil.default_time_program(SettingModes.DAY, 20)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, OperatingModes.AUTO,
                     None, 18, 'STANDBY', False)
@@ -271,7 +271,7 @@ class SystemTest(unittest.TestCase):
         timeprogram_day_setting_sunday = \
             TimePeriodSetting('00:00', 25, OperatingModes.DAY)
 
-        timeprogram = testutil.default_time_program(OperatingModes.DAY, 20)
+        timeprogram = testutil.default_time_program(SettingModes.DAY, 20)
         timeprogram.days['sunday'] = \
             TimeProgramDay([timeprogram_day_setting_sunday])
 
@@ -289,7 +289,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_zone_quick_mode_one_day_away(self) -> None:
         """Test get active mode for zone one day away."""
-        timeprogram = testutil.default_time_program(OperatingModes.DAY, 20)
+        timeprogram = testutil.default_time_program(SettingModes.DAY, 20)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, OperatingModes.AUTO,
                     None, 18, 'STANDBY', False)
@@ -304,7 +304,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_zone_quick_mode_party(self) -> None:
         """Test get active mode for zone quick mode party."""
-        timeprogram = testutil.default_time_program(OperatingModes.DAY, 20)
+        timeprogram = testutil.default_time_program(SettingModes.DAY, 20)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, OperatingModes.AUTO,
                     None, 18, 'STANDBY', False)
@@ -319,7 +319,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_zone_quick_mode_quick_veto(self) -> None:
         """Test get active mode for zone quick mode + quick veto."""
-        timeprogram = testutil.default_time_program(OperatingModes.DAY, 20)
+        timeprogram = testutil.default_time_program(SettingModes.DAY, 20)
 
         quick_veto = QuickVeto(0, 15)
 
@@ -336,7 +336,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_zone_quick_mode_ventilation(self) -> None:
         """Test get active mode for zone quick mode ventilation."""
-        timeprogram = testutil.default_time_program(OperatingModes.DAY, 20)
+        timeprogram = testutil.default_time_program(SettingModes.DAY, 20)
 
         zone = Zone('1', 'Test', timeprogram, 20, 20, OperatingModes.AUTO,
                     None, 18, 'STANDBY', False)
@@ -351,7 +351,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_circulation_hot_water_boost(self) -> None:
         """Test get active mode for circulation with hotwater boost."""
-        timeprogram = testutil.default_time_program(OperatingModes.ON)
+        timeprogram = testutil.default_time_program(SettingModes.ON)
 
         circulation = Circulation('id', 'name', timeprogram,
                                   OperatingModes.AUTO)
@@ -374,7 +374,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_circulation_off(self) -> None:
         """Test active mode for circulation off."""
-        timeprogram = testutil.default_time_program(OperatingModes.ON)
+        timeprogram = testutil.default_time_program(SettingModes.ON)
 
         circulation = Circulation('id', 'name', timeprogram,
                                   OperatingModes.AUTO)
@@ -389,7 +389,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_circulation_holiday(self) -> None:
         """Test get active mode for circulation with holiday mode."""
-        timeprogram = testutil.default_time_program(OperatingModes.ON)
+        timeprogram = testutil.default_time_program(SettingModes.ON)
 
         circulation = Circulation('id', 'name', timeprogram,
                                   OperatingModes.AUTO)
@@ -406,7 +406,7 @@ class SystemTest(unittest.TestCase):
 
     def test_get_active_mode_circulation_auto(self) -> None:
         """Test get active mode for circulation."""
-        timeprogram = testutil.default_time_program(OperatingModes.ON)
+        timeprogram = testutil.default_time_program(SettingModes.ON)
 
         circulation = Circulation('id', 'name', timeprogram,
                                   OperatingModes.AUTO)
@@ -417,7 +417,7 @@ class SystemTest(unittest.TestCase):
 
         self.assertEqual(OperatingModes.AUTO, active_mode.current_mode)
         self.assertIsNone(active_mode.target_temperature)
-        self.assertEqual(OperatingModes.ON, active_mode.sub_mode)
+        self.assertEqual(SettingModes.ON, active_mode.sub_mode)
 
     def test_room_handling_with_rooms(self) -> None:
         """Test manipulating rooms in system."""

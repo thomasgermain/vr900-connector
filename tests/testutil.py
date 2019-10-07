@@ -7,7 +7,7 @@ from typing import Optional
 from responses import mock as responses  # type: ignore
 
 from vr900connector.model import TimeProgramDay, TimeProgram, \
-    TimePeriodSetting, OperatingMode, OperatingModes
+    TimePeriodSetting, SettingMode, SettingModes
 from vr900connector.api import urls
 
 
@@ -56,7 +56,7 @@ def mock_logout() -> None:
                   headers={"Set-Cookies": ""})
 
 
-def default_time_program(mode: Optional[OperatingMode] = OperatingModes.ON,
+def default_time_program(mode: Optional[SettingMode] = SettingModes.ON,
                          temperature: Optional[float] = None) \
         -> TimeProgram:
     timeprogram_day_setting = TimePeriodSetting('00:00', temperature, mode)

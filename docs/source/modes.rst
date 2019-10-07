@@ -1,0 +1,52 @@
+Modes
+=====
+.. automodule:: vr900connector.model.mode
+
+Mode
+****
+.. autoclass:: Mode
+
+QuickVeto
+*********
+.. autoclass:: QuickVeto
+   :members:
+
+OperatingMode
+*************
+.. autoclass:: OperatingMode
+   :members:
+
+OperatingModes
+**************
+.. autoclass:: OperatingModes
+   :members:
+
+SettingMode
+***********
+.. autoclass:: SettingMode
+   :members:
+
+SettingModes
+************
+.. autoclass:: SettingModes
+   :members:
+
+QuickMode
+*********
+.. autoclass:: QuickMode
+   :members:
+
+QuickModes
+**********
+.. autoclass:: QuickModes
+   :members:
+
+ActiveMode
+**********
+.. autoclass:: ActiveMode
+   :members:
+
+HolidayMode
+***********
+.. autoclass:: HolidayMode
+   :members:

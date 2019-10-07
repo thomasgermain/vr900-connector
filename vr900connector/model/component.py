@@ -5,7 +5,7 @@ from datetime import datetime
 import attr
 
 from . import Mode, TimeProgram, QuickVeto, ActiveMode, OperatingMode, \
-    OperatingModes, constants
+    OperatingModes, SettingModes, constants
 
 
 # pylint: disable=too-few-public-methods
@@ -129,7 +129,7 @@ class HotWater(Component):
         if self.operating_mode == OperatingModes.AUTO:
             setting = self.time_program.get_for(datetime.now())
 
-            if setting.setting == OperatingModes.ON:
+            if setting.setting == SettingModes.ON:
                 mode = ActiveMode(self.target_temperature, OperatingModes.AUTO,
                                   setting.setting)
             else:
@@ -247,7 +247,7 @@ class Zone(Component):
         if self.operating_mode == OperatingModes.AUTO:
             setting = self.time_program.get_for(datetime.now())
 
-            if setting.setting == OperatingModes.DAY:
+            if setting.setting == SettingModes.DAY:
                 mode = ActiveMode(self.target_temperature, OperatingModes.AUTO,
                                   setting.setting)
             else:

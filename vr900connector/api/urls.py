@@ -1,7 +1,7 @@
 """Vaillant API Urls with placeholder and when needed.
 
-All placeholders are resolved here except {serial_number} which is resolved by
-the *api connector*.
+All placeholders are resolved here except ``{serial_number}`` which is resolved
+by :mod:`~vr900connector.api.connector`
 """
 from urllib import parse
 
@@ -144,7 +144,7 @@ def rbr_underfloor_heating_status() -> str:
 
 
 def rbr_installation_status() -> str:
-    """Url to check installation status."""
+    """Url to check the room by room installation status."""
     return _RBR_INSTALLATION_STATUS.format(
         serial_number='{serial_number}')
 
@@ -155,7 +155,8 @@ def rooms() -> str:
 
 
 def room(room_index: str) -> str:
-    """Url to get specific room details (configuration, timeprogram)."""
+    """Url to get specific room details (configuration, timeprogram). Or to
+    delete a room"""
     return _ROOM.format(serial_number='{serial_number}',
                         room_index=room_index)
 
@@ -168,8 +169,7 @@ def room_configuration(room_index: str) -> str:
 
 
 def room_quick_veto(room_index: str) -> str:
-    """Url to get configuration for a room (name, temperature,
-    target temperature, etc.)."""
+    """Url to handle quick veto for a room."""
     return _ROOM_QUICK_VETO.format(serial_number='{serial_number}',
                                    room_index=room_index)
 
@@ -181,33 +181,33 @@ def room_operation_mode(room_index: str) -> str:
 
 
 def room_timeprogram(room_index: str) -> str:
-    """Url to get configuration for a room (name, temperature,
+    """Url to get/update configuration for a room (name, temperature,
     target temperature, etc.)."""
     return _ROOM_TIMEPROGRAM.format(serial_number='{serial_number}',
                                     room_index=room_index)
 
 
-def room_set_child_lock(room_index: str) -> str:
-    """Url to set child lock for all devices in a room."""
+def room_child_lock(room_index: str) -> str:
+    """Url to handle child lock for all devices in a room."""
     return _ROOM_CHILD_LOCK.format(serial_number='{serial_number}',
                                    room_index=room_index)
 
 
-def room_set_name(room_index: str) -> str:
-    """Url to set child lock for all devices in a room."""
+def room_name(room_index: str) -> str:
+    """Set room name."""
     return _ROOM_NAME.format(serial_number='{serial_number}',
                              room_index=room_index)
 
 
-def room_set_device_name(room_index: str, sgtin: str) -> str:
-    """Url to set child lock for all devices in a room."""
+def room_device_name(room_index: str, sgtin: str) -> str:
+    """Set device name."""
     return _ROOM_DEVICE_NAME.format(serial_number='{serial_number}',
                                     room_index=room_index,
                                     sgtin=sgtin)
 
 
-def room_set_temperature_setpoint(room_index: str) -> str:
-    """Url to set child lock for all devices in a room."""
+def room_temperature_setpoint(room_index: str) -> str:
+    """Url to handle target temperature for a room."""
     return _ROOM_TEMPERATURE_SETPOINT.format(
         serial_number='{serial_number}', room_index=room_index)
 
@@ -223,7 +223,7 @@ def delete_repeater(sgtin: str) -> str:
                                    sgtin=sgtin)
 
 
-def set_repeater_name(sgtin: str) -> str:
+def repeater_name(sgtin: str) -> str:
     """Url to set repeater's name."""
     return _REPEATER_SET_NAME.format(serial_number='{serial_number}',
                                      sgtin=sgtin)
@@ -235,7 +235,7 @@ def hvac() -> str:
 
 
 def hvac_update() -> str:
-    """Url to request hvac update."""
+    """Url to request an hvac update."""
     return _HVAC_REQUEST_UPDATE.format(
         serial_number='{serial_number}')
 
@@ -364,13 +364,13 @@ def circulation(dhw_id: str) -> str:
 
 
 def circulation_configuration(dhw_id: str) -> str:
-    """Url to get circulation configuration."""
+    """Url to handle circulation configuration."""
     return _CIRCULATION_CONFIGURATION.format(
         serial_number='{serial_number}', dhw_id=dhw_id)
 
 
 def circulation_timeprogram(dhw_id: str) -> str:
-    """Url to get circulation timeprogram."""
+    """Url to handle circulation timeprogram."""
     return _CIRCULATION_TIMEPROGRAM.format(
         serial_number='{serial_number}', dhw_id=dhw_id)
 
@@ -382,13 +382,13 @@ def hot_water(dhw_id: str) -> str:
 
 
 def hot_water_configuration(dhw_id: str) -> str:
-    """Url to get hot water configuration."""
+    """Url to handle hot water configuration."""
     return _HOT_WATER_CONFIGURATION.format(
         serial_number='{serial_number}', dhw_id=dhw_id)
 
 
 def hot_water_timeprogram(dhw_id: str) -> str:
-    """Url to get hot water timeprogram."""
+    """Url to handle hot water timeprogram."""
     return _HOT_WATER_TIMEPROGRAM.format(
         serial_number='{serial_number}', dhw_id=dhw_id)
 
