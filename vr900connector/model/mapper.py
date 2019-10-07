@@ -3,8 +3,9 @@ from datetime import datetime
 from typing import Optional, List, Any
 
 from . import BoilerStatus, Circulation, Device, HolidayMode, HotWater, \
-    QuickMode, QuickVeto, Room, TimeProgram, TimeProgramDay, \
-    TimeProgramDaySetting, Zone, OperationMode, Error, SystemStatus, SyncState
+    QuickMode, QuickModes, QuickVeto, Room, TimeProgram, TimeProgramDay, \
+    TimePeriodSetting, Zone, OperatingModes, Error, \
+    SystemStatus, SyncState
 
 _DATE_FORMAT = "%Y-%m-%d"
 
@@ -15,8 +16,8 @@ def map_quick_mode(full_system) -> Optional[QuickMode]:
         quick_mode = full_system.get("body", dict())\
             .get("configuration", dict()).get("quickmode")
         if quick_mode:
-            mode = QuickMode[quick_mode.get("quickmode")]
-            if mode != QuickMode.QM_QUICK_VETO:
+            mode = QuickModes.get(quick_mode.get("quickmode"))
+            if mode != QuickModes.QUICK_VETO:
                 return mode
     return None
 
@@ -58,7 +59,7 @@ def map_room(raw_room) -> Optional[Room]:
             devices = map_devices(config.get("devices"))
             window_open = config.get("isWindowOpen")
             name = config.get("name")
-            operation_mode = OperationMode[config.get("operationMode")]
+            operation_mode = OperatingModes.get(config.get("operationMode"))
             humidity = config.get('currentHumidity')
 
             raw_quick_veto = config.get("quickVeto")
@@ -127,10 +128,11 @@ def map_time_program_day(raw_time_program_day, key: Optional[str] = None) \
 
             mode = None
             if key:
-                mode = OperationMode[time_setting.get(key)]
+                mode = OperatingModes.get(time_setting.get(key))
+                # TODO SettingMode
 
             settings.append(
-                TimeProgramDaySetting(start_time, target_temp, mode))
+                TimePeriodSetting(start_time, target_temp, mode))
 
     return TimeProgramDay(settings)
 
@@ -143,7 +145,7 @@ def map_holiday_mode(full_system) -> HolidayMode:
             .get("configuration", dict()).get("holidaymode")
 
         if raw_holiday_mode:
-            mode.active = bool(raw_holiday_mode.get("active"))
+            mode.is_active = bool(raw_holiday_mode.get("active"))
             mode.target_temperature = float(raw_holiday_mode
                                             .get("temperature_setpoint"))
             mode.start_date = datetime.strptime(
@@ -207,7 +209,7 @@ def map_zone(raw_zone) -> Optional[Zone]:
         heating_configuration = heating.get("configuration", dict())
 
         zone_id = raw_zone.get("_id")
-        operation_mode = OperationMode[heating_configuration.get("mode")]
+        operation_mode = OperatingModes.get(heating_configuration.get("mode"))
         target_temp = heating_configuration.get("setpoint_temperature")
         target_min_temp = heating_configuration.get("setback_temperature")
         time_program = map_time_program(heating.get("timeprogram"), "setting")
@@ -317,7 +319,7 @@ def _map_hot_water(raw_hot_water, dhw_id: str, live_report) \
         raw_operation_mode = raw_hot_water.get("configuration", dict())\
             .get("operation_mode")
 
-        operation_mode = OperationMode[raw_operation_mode]
+        operation_mode = OperatingModes.get(raw_operation_mode)
 
         time_program = map_time_program(raw_hot_water.get("timeprogram",
                                                           dict()), "mode")
@@ -344,7 +346,7 @@ def _map_circulation(raw_circulation, circulation_id: str) -> Circulation:
     raw_operation_mode = raw_circulation.get("configuration", dict())\
         .get("operationMode")
 
-    operation_mode = OperationMode[raw_operation_mode]
+    operation_mode = OperatingModes.get(raw_operation_mode)
 
     return Circulation(circulation_id, name, time_program, operation_mode)
 
@@ -390,7 +392,7 @@ def _find_dhw_temperature_report(live_report) -> Optional[Any]:
 def _map_quick_veto_zone(raw_quick_veto) -> Optional[QuickVeto]:
     if raw_quick_veto and raw_quick_veto.get("active"):
         # No way to find start_date, Quick veto on zone lasts 6 hours
-        return QuickVeto(-1, raw_quick_veto.get("setpoint_temperature"))
+        return QuickVeto(None, raw_quick_veto.get("setpoint_temperature"))
     return None
 
 

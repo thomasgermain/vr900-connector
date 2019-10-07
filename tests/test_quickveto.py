@@ -14,5 +14,5 @@ class QuickVetoTest(unittest.TestCase):
     def test_quick_veto(self) -> None:
         """Test correct quick veto."""
         quickveto = QuickVeto(600, 15)
-        self.assertEqual(600, quickveto.remaining_time)
+        self.assertEqual(600, quickveto.remaining_duration)
         self.assertEqual(15, quickveto.target_temperature)

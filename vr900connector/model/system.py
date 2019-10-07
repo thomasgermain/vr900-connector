@@ -5,7 +5,7 @@ from typing import List, Optional, Dict
 import attr
 
 from . import ActiveMode, HolidayMode, HotWater, Room, Zone, BoilerStatus, \
-    Circulation, QuickMode, Error, SystemStatus
+    Circulation, QuickMode, QuickModes, Error, SystemStatus
 
 
 @attr.s
@@ -60,16 +60,16 @@ class System:
 
         # Global system quick mode takes over zone settings
         if self.quick_mode and self.quick_mode.for_zone:
-            if self.quick_mode == QuickMode.QM_VENTILATION_BOOST:
-                mode = ActiveMode(Zone.MIN_TEMP, self.quick_mode)
+            if self.quick_mode == QuickModes.VENTILATION_BOOST:
+                mode = ActiveMode(Zone.MIN_TARGET_TEMP, self.quick_mode)
 
-            if self.quick_mode == QuickMode.QM_ONE_DAY_AWAY:
+            if self.quick_mode == QuickModes.ONE_DAY_AWAY:
                 mode = ActiveMode(zone.target_min_temperature, self.quick_mode)
 
-            if self.quick_mode == QuickMode.QM_SYSTEM_OFF:
-                mode = ActiveMode(Zone.MIN_TEMP, self.quick_mode)
+            if self.quick_mode == QuickModes.SYSTEM_OFF:
+                mode = ActiveMode(Zone.MIN_TARGET_TEMP, self.quick_mode)
 
-            if self.quick_mode == QuickMode.QM_ONE_DAY_AT_HOME:
+            if self.quick_mode == QuickModes.ONE_DAY_AT_HOME:
                 today = datetime.datetime.now()
                 sunday = today - datetime.timedelta(days=today.weekday() - 6)
 
@@ -77,7 +77,7 @@ class System:
                 mode = ActiveMode(time_program.target_temperature,
                                   self.quick_mode)
 
-            if self.quick_mode == QuickMode.QM_PARTY:
+            if self.quick_mode == QuickModes.PARTY:
                 mode = ActiveMode(zone.target_temperature, self.quick_mode)
 
         return mode
@@ -92,8 +92,8 @@ class System:
 
         # Global system quick mode takes over room settings
         if self.quick_mode and self.quick_mode.for_room:
-            if self.quick_mode == QuickMode.QM_SYSTEM_OFF:
-                return ActiveMode(Room.MIN_TEMP, self.quick_mode)
+            if self.quick_mode == QuickModes.SYSTEM_OFF:
+                return ActiveMode(Room.MIN_TARGET_TEMP, self.quick_mode)
 
         return room.active_mode
 
@@ -112,7 +112,7 @@ class System:
                 active_mode.target_temperature = None
                 return active_mode
 
-            if self.quick_mode and self.quick_mode.for_circulation:
+            if self.quick_mode and self.quick_mode.for_dhw:
                 return ActiveMode(None, self.quick_mode)
 
             return circulation.active_mode
@@ -129,19 +129,21 @@ class System:
         if hot_water:
             if self.holiday_mode.active_mode:
                 active_mode = self.holiday_mode.active_mode
-                active_mode.target_temperature = HotWater.MIN_TEMP
+                active_mode.target_temperature = HotWater.MIN_TARGET_TEMP
                 return active_mode
 
-            if self.quick_mode and self.quick_mode.for_hot_water:
-                if self.quick_mode == QuickMode.QM_HOTWATER_BOOST:
+            if self.quick_mode and self.quick_mode.for_dhw:
+                if self.quick_mode == QuickModes.HOTWATER_BOOST:
                     return ActiveMode(hot_water.target_temperature,
                                       self.quick_mode)
 
-                if self.quick_mode == QuickMode.QM_SYSTEM_OFF:
-                    return ActiveMode(HotWater.MIN_TEMP, self.quick_mode)
+                if self.quick_mode == QuickModes.SYSTEM_OFF:
+                    return ActiveMode(HotWater.MIN_TARGET_TEMP,
+                                      self.quick_mode)
 
-                if self.quick_mode == QuickMode.QM_ONE_DAY_AWAY:
-                    return ActiveMode(HotWater.MIN_TEMP, self.quick_mode)
+                if self.quick_mode == QuickModes.ONE_DAY_AWAY:
+                    return ActiveMode(HotWater.MIN_TARGET_TEMP,
+                                      self.quick_mode)
 
             return hot_water.active_mode
         return None

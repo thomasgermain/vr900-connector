@@ -7,7 +7,8 @@ from responses import mock as responses  # type: ignore
 
 from tests import testutil
 from vr900connector.api import urls, payloads, ApiError
-from vr900connector.model import OperationMode, QuickMode, QuickVeto, constants
+from vr900connector.model import OperatingModes, QuickModes, QuickVeto, \
+    constants
 from vr900connector.systemmanager import SystemManager
 
 
@@ -109,12 +110,12 @@ class SystemManagerTest(unittest.TestCase):
         serial = testutil.mock_full_auth_success()
 
         url = urls.system_quickmode()
-        payload = payloads.quickmode(QuickMode.QM_VENTILATION_BOOST.name)
+        payload = payloads.quickmode(QuickModes.VENTILATION_BOOST.name)
 
         responses.add(responses.PUT, url.format(serial_number=serial),
                       status=200)
 
-        self.manager.set_quick_mode(QuickMode.QM_VENTILATION_BOOST)
+        self.manager.set_quick_mode(QuickModes.VENTILATION_BOOST)
         self.assertEqual(json.dumps(payload),
                          responses.calls[-1].request.body.decode('utf-8'))
 
@@ -138,7 +139,7 @@ class SystemManagerTest(unittest.TestCase):
 
     def test_set_hot_water_operation_mode_wrong_mode(self) -> None:
         self.manager.\
-            set_hot_water_operation_mode('hotwater', OperationMode.NIGHT)
+            set_hot_water_operation_mode('hotwater', OperatingModes.NIGHT)
 
     @responses.activate
     def test_set_hot_water_operation_mode_heating_mode(self) -> None:
@@ -148,7 +149,8 @@ class SystemManagerTest(unittest.TestCase):
             .format(serial_number=serial_number)
 
         responses.add(responses.PUT, url, status=200)
-        self.manager.set_hot_water_operation_mode('hotwater', OperationMode.ON)
+        self.manager.set_hot_water_operation_mode('hotwater',
+                                                  OperatingModes.ON)
         self.assertEqual(url, responses.calls[-1].request.url)
 
     @responses.activate
@@ -169,14 +171,14 @@ class SystemManagerTest(unittest.TestCase):
         url = urls.room_operation_mode('1').format(serial_number=serial_number)
 
         responses.add(responses.PUT, url, status=200)
-        self.manager.set_room_operation_mode('1', OperationMode.AUTO)
+        self.manager.set_room_operation_mode('1', OperatingModes.AUTO)
         self.assertEqual(url, responses.calls[-1].request.url)
 
     def test_set_room_operation_mode_no_new_mode(self) -> None:
         self.manager.set_room_operation_mode('1', None)
 
     def test_set_room_operation_mode_wrong_mode(self) -> None:
-        self.manager.set_room_operation_mode('1', OperationMode.NIGHT)
+        self.manager.set_room_operation_mode('1', OperatingModes.NIGHT)
 
     @responses.activate
     def test_set_zone_operation_mode_heating_mode(self) -> None:
@@ -186,17 +188,17 @@ class SystemManagerTest(unittest.TestCase):
             .format(serial_number=serial_number)
 
         responses.add(responses.PUT, url, status=200)
-        self.manager.set_zone_operation_mode('Zone1', OperationMode.AUTO)
+        self.manager.set_zone_operation_mode('Zone1', OperatingModes.AUTO)
         self.assertEqual(url, responses.calls[-1].request.url)
 
     def test_set_zone_operation_mode_no_new_mode(self) -> None:
         self.manager.set_zone_operation_mode('Zone1', None)
 
     def test_set_zone_operation_mode_no_zone(self) -> None:
-        self.manager.set_zone_operation_mode(None, OperationMode.MANUAL)
+        self.manager.set_zone_operation_mode(None, OperatingModes.MANUAL)
 
     def test_set_zone_operation_mode_wrong_mode(self) -> None:
-        self.manager.set_zone_operation_mode('Zone1', OperationMode.ON)
+        self.manager.set_zone_operation_mode('Zone1', OperatingModes.ON)
 
     @responses.activate
     def test_get_room(self) -> None:

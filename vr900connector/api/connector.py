@@ -1,5 +1,6 @@
 """Low level connector module."""
 import logging
+import os
 from typing import Optional, Dict, Any
 
 import attr
@@ -18,19 +19,27 @@ _JSON_CONTENT_TYPE_HEADER = {'content-type': 'application/json'}
 class ApiConnector:
     """This is the low level smart.vaillant.com API connector.
 
-    This is returning the raw JSON from responses or an *ApiError* if something
-    goes wrong (basically, when response error code is 4xx or 5xx).
+    This is returning the raw JSON from responses or an
+    :exc:`~vr900connector.api.error.ApiError` if something goes wrong
+    (basically, when response error code is 4xx or 5xx).
 
-    On the first call, the connector will login automatically (if *login* was
+    On the first call, the connector will login automatically (if `login` was
     not called previously).
 
-    On following calls, if login doesn't succeed the first time, it will try to
-    clear cookies and login a second time (only if response error code is 401)
-    before raising an *ApiError*`. This also means the connector is able to
-    reconnect automatically when cookies are outdated.
+    On following calls, the connector will re-use the cookie received from the
+    API. If the connector receives an HTTP 401, it will clear the cookie and
+    try to login before raising an `~vr900connector.api.error.ApiError`. This
+    also means the connector is able to reconnect automatically when cookie is
+    outdated.
 
-    Please use *urls* module in order to generate URL to be passed to the
-    connector.
+    Please use :mod:`~vr900connector.api.urls` in order to generate URL to be
+    passed to the connector.
+
+    Args:
+        user (str): User to login with.
+        password (str): Password associated with the user.
+        smartphone_id (str): This is required by the API to login.
+        file_path: (str): Path where cookie is/will be stored.
     """
 
     _user = attr.ib(type=str)
@@ -41,15 +50,23 @@ class ApiConnector:
     _session = attr.ib(type=requests.Session, default=None, init=False)
 
     def __attrs_post_init__(self) -> None:
+        self._file_path = os.path.expanduser(self._file_path)
         self._serial_number = self._load_serial_number_from_file()
         self._session = self._create_or_load_session()
 
     def login(self, force_login: bool = False) -> bool:
-        """Log in to API. Returns True/False.
+        """Log in to the API.
 
-        By default, the *connector* will try to use cookie located under
-        *file_path*. If you set *force_login* to *True*, then the connector
-        will clear cookies and start a new authentication.
+        By default, the `connector` will try to use cookie located under
+        :attr:`file_path`.
+
+        Args:
+            force_login (bool): If set to `True`, the connector will clear
+                the cookie (if any) and start a new authentication, otherwise
+                it will re-use the existing cookie.
+
+        Returns:
+            bool: True/False if authentication succeeded or not.
         """
         try:
             return self._authentication(force_login)
@@ -59,13 +76,18 @@ class ApiConnector:
     def logout(self) -> None:
         """Get logged out of the API.
 
-        It first sends a *logout* request to the API (it means cookies are
+        It first sends a `logout` request to the API (it means cookies are
         invalidated).
 
-        Second, cookies will be cleared.
+        Second, cookies will be cleared, regardless of the result of the
+        `logout` request.
 
         The connector will have to request a new token and ask for cookies if
         a new request is done.
+
+
+        Raises:
+            ApiError: When something went wrong with the API call.
         """
         response = None
         try:
@@ -77,46 +99,101 @@ class ApiConnector:
 
     def query(self, url: str, method: str = 'GET',
               payload: Optional[Dict[str, Any]] = None) -> Optional[Any]:
-        """Call the vaillant API url with the chosen method, please use *urls*
-        module in order to generate the URL to be passed to the connector.
+        """Call the vaillant API url with the chosen method, please use
+        :mod:`~vr900connector.api.urls` in order to generate the URL to be
+        passed to the connector.
+
+        Args:
+            url (str): URL to call.
+            method (str): HTTP method.
+            payload (Dict[str, Any]): Payload to send.
+
+        Returns:
+            JSON response.
+
+        Raises:
+            ApiError: When something went wrong with the API call.
         """
 
         return self._safe_call(method, url, payload)
 
     def get(self, url: str) -> Optional[Any]:
-        """Create a GET call to a vaillant API, please use *urls*
-        module in order to generate the URL to be passed to the connector.
+        """Create a GET call to a vaillant API, please use
+        :mod:`~vr900connector.api.urls` in order to generate the URL to be
+        passed to the connector.
+
+        Args:
+            url (str): URL to call.
+
+        Returns:
+            JSON response.
+
+        Raises:
+            ApiError: When something went wrong with the API call
         """
         return self.query(url)
 
     def put(self, url: str, payload: Optional[Dict[str, Any]] = None) \
             -> Optional[Any]:
-        """Create a PUT call to a vaillant API, please use *urls*
-        module in order to generate the URL to be passed to the connector.
+        """Create a PUT call to a vaillant API, please use
+        :mod:`~vr900connector.api.urls` in order to generate the URL to be
+        passed to the connector.
+
+        Args:
+            url (str): URL to call.
+            payload (Dict[str, Any]): Payload to send.
+
+        Returns:
+            JSON response.
+
+        Raises:
+            ApiError: When something went wrong with the API call
         """
         return self.query(url, 'PUT', payload)
 
     def post(self, url: str, payload: Optional[Dict[str, Any]] = None) \
             -> Optional[Any]:
-        """Create a POST call to a vaillant API, please use *urls*
-        module in order to generate the URL to be passed to the connector.
+        """Create a POST call to a vaillant API, please use
+        :mod:`~vr900connector.api.urls` in order to generate the URL to be
+        passed to the connector.
+
+        Args:
+            url (str): URL to call.
+            payload (Dict[str, Any]): Payload to send.
+
+        Returns:
+            JSON response.
+
+        Raises:
+            ApiError: When something went wrong with the API call
         """
         return self.query(url, 'POST', payload)
 
     def delete(self, url: str) -> Optional[Any]:
-        """Create a DELETE call to a vaillant API, please use *urls*
-        module in order to generate the URL to be passed to the connector.
+        """Create a DELETE call to a vaillant API, please use
+        :mod:`~vr900connector.api.urls` in order to generate the URL to be
+        passed to the connector.
+
+        Args:
+            url (str): URL to call.
+
+        Returns:
+            JSON response.
+
+        Raises:
+            ApiError: When something went wrong with the API call
         """
         return self.query(url, 'DELETE')
 
     def _safe_call(self, method: str, url: str,
                    payload: Optional[Dict[str, Any]] = None,
                    re_login: bool = False) -> Optional[Any]:
-        """Call the API using selected *method*, *url* and *payload*.
+        """Call the API using selected :attr:`method`, attr:`url` and
+        :attr:`payload`.
 
-        This is *safe* in a sense the connector ensure you are logged in.
+        This is `safe` in a sense the connector ensure you are logged in.
 
-        The replacement of *serial_number* placeholder in *url* is done here.
+        The replacement of `serial_number` placeholder in `url` is done here.
         """
         response: Optional[Response] = None
         safe_url: Optional[str] = None

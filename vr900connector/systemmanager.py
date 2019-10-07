@@ -5,7 +5,7 @@ from typing import Optional, List
 
 from .api import ApiConnector, urls, payloads, defaults, ApiError
 from .model import mapper, System, HotWater, QuickMode, QuickVeto, Room, \
-    Zone, OperationMode, Circulation, constants
+    Zone, OperatingMode, Circulation, OperatingModes, constants
 
 _LOGGER = logging.getLogger('SystemManager')
 
@@ -99,7 +99,7 @@ class SystemManager:
             payloads.hotwater_temperature_setpoint(self._round(temperature)))
 
     def set_hot_water_operation_mode(self, dhw_id: str,
-                                     new_mode: OperationMode) -> None:
+                                     new_mode: OperatingMode) -> None:
         """Set new operation mode for *hot water*."""
         _LOGGER.debug("Will try to set hot water mode to %s", new_mode)
 
@@ -112,10 +112,10 @@ class SystemManager:
             _LOGGER.debug("New mode is not available for hot water %s",
                           new_mode)
 
-    def set_room_operation_mode(self, room_id: str, new_mode: OperationMode) \
+    def set_room_operation_mode(self, room_id: str, new_mode: OperatingMode) \
             -> None:
         """Set new operation mode for a *room*."""
-        if new_mode in Room.MODES and new_mode != OperationMode.QUICK_VETO:
+        if new_mode in Room.MODES and new_mode != OperatingModes.QUICK_VETO:
             _LOGGER.debug("New mode is %s", new_mode)
             self._connector.put(urls.room_operation_mode(room_id),
                                 payloads.room_operation_mode(
@@ -123,10 +123,10 @@ class SystemManager:
         else:
             _LOGGER.debug("mode is not available for room %s", new_mode)
 
-    def set_zone_operation_mode(self, zone_id: str, new_mode: OperationMode) \
+    def set_zone_operation_mode(self, zone_id: str, new_mode: OperatingMode) \
             -> None:
         """Set new operation mode for a *zone*."""
-        if new_mode in Zone.MODES and new_mode != OperationMode.QUICK_VETO:
+        if new_mode in Zone.MODES and new_mode != OperatingModes.QUICK_VETO:
             _LOGGER.debug("New mode is %s", new_mode)
             self._connector.put(urls.zone_heating_mode(zone_id),
                                 payloads.zone_operation_mode(new_mode.name))
@@ -159,7 +159,7 @@ class SystemManager:
         self._connector.put(urls.room_quick_veto(room_id),
                             payloads.room_quick_veto(
                                 quick_veto.target_temperature,
-                                quick_veto.remaining_time))
+                                quick_veto.remaining_duration))
 
     def remove_room_quick_veto(self, room_id: str) -> None:
         """Remove the *quick veto* from a *room*."""

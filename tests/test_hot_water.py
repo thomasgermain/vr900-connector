@@ -2,7 +2,7 @@
 import unittest
 
 from tests import testutil
-from vr900connector.model import HotWater, OperationMode
+from vr900connector.model import HotWater, OperatingModes
 
 
 class HotWaterTest(unittest.TestCase):
@@ -11,21 +11,21 @@ class HotWaterTest(unittest.TestCase):
     def test_get_active_mode_on(self) -> None:
         """Test active mode on."""
         hot_water = HotWater('id', 'Test', testutil.default_time_program(),
-                             5.0, 7.0, OperationMode.ON)
+                             5.0, 7.0, OperatingModes.ON)
 
         active_mode = hot_water.active_mode
 
-        self.assertEqual(OperationMode.ON, active_mode.current_mode)
+        self.assertEqual(OperatingModes.ON, active_mode.current_mode)
         self.assertEqual(7.0, active_mode.target_temperature)
         self.assertIsNone(active_mode.sub_mode)
 
     def test_get_active_mode_off(self) -> None:
         """Test active mode off."""
         hot_water = HotWater('id', 'Test', testutil.default_time_program(),
-                             5.0, 7.0, OperationMode.OFF)
+                             5.0, 7.0, OperatingModes.OFF)
 
         active_mode = hot_water.active_mode
 
-        self.assertEqual(OperationMode.OFF, active_mode.current_mode)
-        self.assertEqual(HotWater.MIN_TEMP, active_mode.target_temperature)
+        self.assertEqual(OperatingModes.OFF, active_mode.current_mode)
+        self.assertEqual(HotWater.MIN_TARGET_TEMP, active_mode.target_temperature)
         self.assertIsNone(active_mode.sub_mode)

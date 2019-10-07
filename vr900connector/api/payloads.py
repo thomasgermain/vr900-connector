@@ -78,11 +78,16 @@ def zone_quick_veto(temperature: float) -> Dict[str, Any]:
     }
 
 
-def room_quick_veto(temperature: float, duration: int) -> Dict[str, Any]:
+def room_quick_veto(temperature: float, duration: Optional[int])\
+        -> Dict[str, Any]:
     """Payload to set a quick veto for a *Room*.
 
     Duration is mandatory (Duration is in minutes, max 1440 =24 hours).
     """
+
+    if not duration:
+        duration = 180
+
     return {
         "temperatureSetpoint": temperature,
         "duration": duration

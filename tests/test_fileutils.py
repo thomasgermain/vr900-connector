@@ -9,7 +9,7 @@ from vr900connector.util import fileutils
 
 
 class FileUtilsTest(unittest.TestCase):
-    """Test clas.."""
+    """Test class."""
 
     def test_load_from_file_not_exists(self) -> None:
         """Test load non-existing file."""

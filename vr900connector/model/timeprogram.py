@@ -7,7 +7,7 @@ from typing import List, Dict, Optional, Any
 import re
 import attr
 
-from . import OperationMode
+from . import SettingMode
 
 
 def _to_absolute_minutes(start_time: str) -> int:
@@ -20,12 +20,12 @@ def _to_absolute_minutes(start_time: str) -> int:
 
 # pylint: disable=too-few-public-methods
 @attr.s
-class TimeProgramDaySetting:
+class TimePeriodSetting:
     """This class represents a time program setting within a day."""
 
     start_time = attr.ib(type=str)
     target_temperature = attr.ib(type=Optional[float])
-    mode = attr.ib(type=Optional[OperationMode])
+    setting = attr.ib(type=Optional[SettingMode])
     absolute_minutes = attr.ib(type=int, init=False)
 
     def __attrs_post_init__(self) -> None:
@@ -38,9 +38,9 @@ class TimeProgramDaySetting:
         if not validator.match(value):
             raise ValueError(value)
 
-    def __deepcopy__(self, memodict: Any = None) -> 'TimeProgramDaySetting':
-        return TimeProgramDaySetting(self.start_time, self.target_temperature,
-                                     self.mode)
+    def __deepcopy__(self, memodict: Any = None) -> 'TimePeriodSetting':
+        return TimePeriodSetting(self.start_time, self.target_temperature,
+                                 self.setting)
 
 
 # pylint: disable=too-few-public-methods
@@ -49,7 +49,7 @@ class TimeProgramDay:
     """This class represents a time program day, it's basically a list of
     TimeProgramDaySetting."""
 
-    settings = attr.ib(type=List[TimeProgramDaySetting])
+    settings = attr.ib(type=List[TimePeriodSetting])
 
 
 # pylint: disable=too-few-public-methods
@@ -60,7 +60,7 @@ class TimeProgram:
 
     days = attr.ib(type=Dict[str, TimeProgramDay])
 
-    def get_for(self, search_date: datetime) -> TimeProgramDaySetting:
+    def get_for(self, search_date: datetime) -> TimePeriodSetting:
         """Return the corresponding time program day setting for a given date.
         """
         day = search_date.strftime("%A").lower()

@@ -2,7 +2,7 @@
 import unittest
 
 from tests import testutil
-from vr900connector.model import Component, OperationMode, QuickVeto
+from vr900connector.model import Component, OperatingModes, QuickVeto
 
 
 class ComponentTest(unittest.TestCase):
@@ -12,21 +12,21 @@ class ComponentTest(unittest.TestCase):
         """Get active mode when there is a quick veto."""
         comp = Component('Id', 'Name',  # type: ignore
                          testutil.default_time_program(), 1.0, 5.0,
-                         OperationMode.AUTO, QuickVeto(300, 10.0))
+                         OperatingModes.AUTO, QuickVeto(300, 10.0))
 
         active_mode = comp.active_mode
-        self.assertEqual(OperationMode.QUICK_VETO, active_mode.current_mode)
+        self.assertEqual(OperatingModes.QUICK_VETO, active_mode.current_mode)
         self.assertEqual(10.0, active_mode.target_temperature)
         self.assertIsNone(active_mode.sub_mode)
 
     def test_get_active_mode_auto(self) -> None:
         """Get active mode when AUTO mode."""
-        timeprogram = testutil.default_time_program(OperationMode.ON, 25)
+        timeprogram = testutil.default_time_program(OperatingModes.ON, 25)
 
         comp = Component('Id', 'Name', timeprogram, 1.0, 5.0,  # type: ignore
-                         OperationMode.AUTO, None)
+                         OperatingModes.AUTO, None)
 
         active_mode = comp.active_mode
-        self.assertEqual(OperationMode.AUTO, active_mode.current_mode)
+        self.assertEqual(OperatingModes.AUTO, active_mode.current_mode)
         self.assertEqual(25, active_mode.target_temperature)
-        self.assertEqual(OperationMode.ON, active_mode.sub_mode)
+        self.assertEqual(OperatingModes.ON, active_mode.sub_mode)

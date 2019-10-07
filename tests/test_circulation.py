@@ -2,7 +2,7 @@
 import unittest
 
 from tests import testutil
-from vr900connector.model import Circulation, OperationMode
+from vr900connector.model import Circulation, OperatingModes
 
 
 class CirculationTest(unittest.TestCase):
@@ -12,10 +12,10 @@ class CirculationTest(unittest.TestCase):
         """Get active mode when operation mode is ON."""
         circulation = Circulation('id', 'Test',
                                   testutil.default_time_program(),
-                                  OperationMode.ON)
+                                  OperatingModes.ON)
 
         active_mode = circulation.active_mode
 
-        self.assertEqual(OperationMode.ON, active_mode.current_mode)
+        self.assertEqual(OperatingModes.ON, active_mode.current_mode)
         self.assertIsNone(active_mode.target_temperature)
         self.assertIsNone(active_mode.sub_mode)

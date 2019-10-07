@@ -111,6 +111,5 @@ This layer is hiding you  this complexity.
 ## Todo's
 - Move ApiConnector to async
 - Handling ventilation
-- Add more documentation
 - Handling missing information when VRC700 (and/or boiler) is shutdown 
 (e.g. TimeProgram are not coming anymore from the API if boiler is down)

@@ -4,7 +4,7 @@ import unittest
 from datetime import date, datetime
 
 from tests import testutil
-from vr900connector.model import mapper, QuickMode, OperationMode
+from vr900connector.model import mapper, QuickModes, OperatingModes
 
 
 class MapperTest(unittest.TestCase):
@@ -23,7 +23,7 @@ class MapperTest(unittest.TestCase):
             system = json.loads(file.read())
 
         quick_mode = mapper.map_quick_mode(system)
-        self.assertEqual(QuickMode.QM_HOTWATER_BOOST.name, quick_mode.name)
+        self.assertEqual(QuickModes.HOTWATER_BOOST.name, quick_mode.name)
 
     def test_map_quick_mode_quick_veto(self) -> None:
         """Test map quick veto."""
@@ -48,7 +48,7 @@ class MapperTest(unittest.TestCase):
             if zone.id == "Control_ZO2":
                 self.assertIsNotNone(zone.quick_veto)
                 self.assertEqual(18.5, zone.quick_veto.target_temperature)
-                self.assertEqual(-1, zone.quick_veto.remaining_time)
+                self.assertIsNone(zone.quick_veto.remaining_duration)
                 return
         self.fail("No correct zone found")
 
@@ -104,7 +104,7 @@ class MapperTest(unittest.TestCase):
 
         self.assertEqual(0, room0.id)
         self.assertEqual("Room 1", room0.name)
-        self.assertEqual(OperationMode.AUTO, room0.operation_mode)
+        self.assertEqual(OperatingModes.AUTO, room0.operating_mode)
         self.assertEqual(False, room0.window_open)
         self.assertEqual(17.5, room0.target_temperature)
         self.assertEqual(17.9, room0.current_temperature)
@@ -130,7 +130,7 @@ class MapperTest(unittest.TestCase):
 
         self.assertEqual(0, room0.id)
         self.assertEqual("Room 1", room0.name)
-        self.assertEqual(OperationMode.AUTO, room0.operation_mode)
+        self.assertEqual(OperatingModes.AUTO, room0.operating_mode)
         self.assertEqual(False, room0.window_open)
         self.assertEqual(20.0, room0.target_temperature)
         self.assertEqual(17.9, room0.current_temperature)
@@ -180,11 +180,11 @@ class MapperTest(unittest.TestCase):
 
         holiday_mode = mapper.map_holiday_mode(raw_system)
         self.assertIsNotNone(holiday_mode)
-        self.assertFalse(holiday_mode.active)
+        self.assertFalse(holiday_mode.is_active)
         self.assertIsNotNone(holiday_mode.start_date)
         self.assertIsNotNone(holiday_mode.end_date)
         self.assertIsNotNone(holiday_mode.target_temperature)
-        self.assertFalse(holiday_mode.is_currently_active)
+        self.assertFalse(holiday_mode.is_applied)
         self.assertIsNone(holiday_mode.active_mode)
 
     def test_holiday_mode(self) -> None:
@@ -195,9 +195,9 @@ class MapperTest(unittest.TestCase):
 
         holiday_mode = mapper.map_holiday_mode(raw_system)
         quick_mode = mapper.map_quick_mode(raw_system)
-        self.assertEqual(QuickMode.QM_HOLIDAY, quick_mode)
+        self.assertEqual(QuickModes.HOLIDAY, quick_mode)
         self.assertIsNotNone(holiday_mode)
-        self.assertTrue(holiday_mode.active)
+        self.assertTrue(holiday_mode.is_active)
         self.assertEqual(date(2019, 1, 2), holiday_mode.start_date)
         self.assertEqual(date(2019, 1, 3), holiday_mode.end_date)
         self.assertEqual(15, holiday_mode.target_temperature)
@@ -208,13 +208,13 @@ class MapperTest(unittest.TestCase):
             raw_system = json.loads(file.read())
 
         circulation = mapper.map_circulation(raw_system)
-        self.assertEqual(OperationMode.AUTO, circulation.operation_mode)
+        self.assertEqual(OperatingModes.AUTO, circulation.operating_mode)
         self.assertEqual("Control_DHW", circulation.id)
         self.assertIsNone(circulation.current_temperature)
         self.assertIsNone(circulation.target_temperature)
         self.assertIsNotNone(circulation.time_program)
         self.assertIsNotNone(circulation.time_program.days['monday']
-                             .settings[0].mode)
+                             .settings[0].setting)
 
     def test_hot_water(self) -> None:
         """Test map hot water."""
@@ -226,10 +226,10 @@ class MapperTest(unittest.TestCase):
         hot_water = mapper.map_hot_water(raw_system, raw_livereport)
         self.assertEqual(44.5, hot_water.current_temperature)
         self.assertEqual(51, hot_water.target_temperature)
-        self.assertEqual(OperationMode.AUTO, hot_water.operation_mode)
+        self.assertEqual(OperatingModes.AUTO, hot_water.operating_mode)
         self.assertEqual("Control_DHW", hot_water.id)
         self.assertIsNotNone(hot_water.time_program.days['monday']
-                             .settings[0].mode)
+                             .settings[0].setting)
 
     def test_no_hotwater(self) -> None:
         """Test map no hot water."""
@@ -249,7 +249,7 @@ class MapperTest(unittest.TestCase):
         hot_water = mapper.map_hot_water(raw_system, json.loads('{}'))
         self.assertEqual(None, hot_water.current_temperature)
         self.assertEqual(51, hot_water.target_temperature)
-        self.assertEqual(OperationMode.AUTO, hot_water.operation_mode)
+        self.assertEqual(OperatingModes.AUTO, hot_water.operating_mode)
         self.assertEqual("Control_DHW", hot_water.id)
 
     def test_boiler_status(self) -> None:
@@ -318,9 +318,9 @@ class MapperTest(unittest.TestCase):
         hotwater = mapper.map_hot_water_alone(raw_hotwater, 'control_dhw',
                                               raw_livereport)
         self.assertEqual('control_dhw', hotwater.id)
-        self.assertEqual(OperationMode.AUTO, hotwater.operation_mode)
+        self.assertEqual(OperatingModes.AUTO, hotwater.operating_mode)
         self.assertIsNotNone(hotwater.time_program.days['monday']
-                             .settings[0].mode)
+                             .settings[0].setting)
 
     def test_circulation_alone(self) -> None:
         """Test map circulation."""
@@ -330,10 +330,10 @@ class MapperTest(unittest.TestCase):
         circulation = mapper.map_circulation_alone(raw_circulation,
                                                    'control_dhw')
         self.assertEqual('control_dhw', circulation.id)
-        self.assertEqual(OperationMode.AUTO, circulation.operation_mode)
+        self.assertEqual(OperatingModes.AUTO, circulation.operating_mode)
         self.assertIsNotNone(circulation.time_program)
         self.assertIsNotNone(circulation.time_program.days['monday']
-                             .settings[0].mode)
+                             .settings[0].setting)
 
     def test_no_circulation(self) -> None:
         """Test map no circulation."""

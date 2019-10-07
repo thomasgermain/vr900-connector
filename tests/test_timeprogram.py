@@ -1,15 +1,15 @@
 import unittest
 from datetime import datetime
 
-from vr900connector.model import TimeProgramDaySetting, TimeProgramDay, \
-    TimeProgram, OperationMode
+from vr900connector.model import TimePeriodSetting, TimeProgramDay, \
+    TimeProgram, OperatingModes
 
 
 class TimeProgramTest(unittest.TestCase):
 
     def test_time_program_simple(self) -> None:
-        tpds1 = TimeProgramDaySetting('00:00', 25, OperationMode.ON)
-        tpds2 = TimeProgramDaySetting('02:00', 20, OperationMode.OFF)
+        tpds1 = TimePeriodSetting('00:00', 25, OperatingModes.ON)
+        tpds2 = TimePeriodSetting('02:00', 20, OperatingModes.OFF)
 
         monday = TimeProgramDay([tpds1, tpds2])
 
@@ -24,8 +24,8 @@ class TimeProgramTest(unittest.TestCase):
         self._assert(tpds1, current)
 
     def test_time_program_after_last(self) -> None:
-        tpds1 = TimeProgramDaySetting('00:00', 25, OperationMode.ON)
-        tpds2 = TimeProgramDaySetting('02:00', 20, OperationMode.OFF)
+        tpds1 = TimePeriodSetting('00:00', 25, OperatingModes.ON)
+        tpds2 = TimePeriodSetting('02:00', 20, OperatingModes.OFF)
 
         monday = TimeProgramDay([tpds1, tpds2])
 
@@ -40,10 +40,10 @@ class TimeProgramTest(unittest.TestCase):
         self._assert(tpds2, current)
 
     def test_time_program_before_first(self) -> None:
-        tpds1 = TimeProgramDaySetting('01:00', 25, OperationMode.ON)
-        tpds2 = TimeProgramDaySetting('02:00', 20, OperationMode.OFF)
+        tpds1 = TimePeriodSetting('01:00', 25, OperatingModes.ON)
+        tpds2 = TimePeriodSetting('02:00', 20, OperatingModes.OFF)
 
-        tpds_sunday = TimeProgramDaySetting('15:00', 15, OperationMode.OFF)
+        tpds_sunday = TimePeriodSetting('15:00', 15, OperatingModes.OFF)
 
         sunday = TimeProgramDay([tpds_sunday])
         monday = TimeProgramDay([tpds1, tpds2])
@@ -54,11 +54,11 @@ class TimeProgramTest(unittest.TestCase):
         self._assert(tpds_sunday, current)
 
     def test_wrong_start_time(self) -> None:
-        self.assertRaises(ValueError, TimeProgramDaySetting, 'xx', 25, 'Test1')
+        self.assertRaises(ValueError, TimePeriodSetting, 'xx', 25, 'Test1')
 
-    def _assert(self, expected: TimeProgramDaySetting,
-                actual: TimeProgramDaySetting) -> None:
+    def _assert(self, expected: TimePeriodSetting,
+                actual: TimePeriodSetting) -> None:
         self.assertEqual(expected.target_temperature,
                          actual.target_temperature)
-        self.assertEqual(expected.mode, actual.mode)
+        self.assertEqual(expected.setting, actual.setting)
         self.assertEqual(expected.start_time, actual.start_time)
