@@ -262,13 +262,13 @@ class MapperTest(unittest.TestCase):
         boiler_status = mapper.map_boiler_status(hvac, raw_livereport)
         self.assertEqual("...", boiler_status.hint)
         self.assertEqual("...", boiler_status.description)
-        self.assertEqual("S.8", boiler_status.code)
+        self.assertEqual("S.8", boiler_status.status_code)
         self.assertEqual("Mode chauffage : Arrêt temporaire après une "
                          "opération de chauffage", boiler_status.title)
         self.assertEqual("VC BE 246/5-3", boiler_status.device_name)
         self.assertFalse(boiler_status.is_error)
         self.assertEqual(datetime.fromtimestamp(1545896904282/1000),
-                         boiler_status.last_update)
+                         boiler_status.timestamp)
         self.assertEqual(1.9, boiler_status.water_pressure)
         self.assertEqual(38, boiler_status.current_temperature)
 
@@ -289,13 +289,13 @@ class MapperTest(unittest.TestCase):
         boiler_status = mapper.map_boiler_status(hvac, None)
         self.assertEqual("...", boiler_status.hint)
         self.assertEqual("...", boiler_status.description)
-        self.assertEqual("S.8", boiler_status.code)
+        self.assertEqual("S.8", boiler_status.status_code)
         self.assertEqual("Mode chauffage : Arrêt temporaire après une "
                          "opération de chauffage", boiler_status.title)
         self.assertEqual("VC BE 246/5-3", boiler_status.device_name)
         self.assertFalse(boiler_status.is_error)
         self.assertEqual(datetime.fromtimestamp(1545896904282/1000),
-                         boiler_status.last_update)
+                         boiler_status.timestamp)
         self.assertIsNone(boiler_status.water_pressure)
         self.assertIsNone(boiler_status.current_temperature)
 

@@ -170,8 +170,8 @@ def map_boiler_status(hvac_state, live_report) -> Optional[BoilerStatus]:
             water_pressure = _find_water_pressure_report(live_report)
             boiler_temperature = _find_boiler_temperature_report(live_report)
 
-            return BoilerStatus(device_name, description, title, code,
-                                hint, last_update, water_pressure,
+            return BoilerStatus(device_name, title, code, description,
+                                last_update, hint, water_pressure,
                                 boiler_temperature)
     return None
 
