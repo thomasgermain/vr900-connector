@@ -10,8 +10,22 @@ from . import ActiveMode, HolidayMode, HotWater, Room, Zone, BoilerStatus, \
 
 @attr.s
 class System:
-    """This class represents the main class to manipulate vaillant system.
-    It is designed to know everything about the system.
+    """This class represents the main class to manipulate vaillant system. It
+    groups all the information about the system.
+
+    Args:
+        holiday_mode (HolidayMode): Holiday mode.
+        system_status (SystemStatus): Status of the system.
+        boiler_status (BoilerStatus): Status of the boiler.
+        zones (List[Zone]): List of zone.
+        rooms (List[Room]): List of room.
+        hot_water (HotWater): If hot water is present, it's available here.
+        circulation (Circulation): If circulation is present, it's available
+            here.
+        outdoor_temperature (float): Outdoor temperature
+        quick_mode (QuickMode):  If any quick mode is running, it's available
+            here.
+        errors (List[Error]): If there are errors, you can find them here.
     """
 
     holiday_mode = attr.ib(type=HolidayMode)
@@ -39,18 +53,42 @@ class System:
             self._rooms = dict((room.id, room) for room in self.rooms)
 
     def set_zone(self, zone_id: str, zone: Zone) -> None:
-        """Set *zone* for id."""
+        """Set :class:`~vr900connector.model.component.Zone` for the given id.
+
+        Args:
+            zone_id (str): id of the zone
+            zone (Zone): the zone to set
+
+        Returns:
+            None
+        """
         self._zones[zone_id] = zone
         self.zones = list(self._zones.values())
 
     def set_room(self, room_id: str, room: Room) -> None:
-        """Set *room* for id."""
+        """Set :class:`~vr900connector.model.component.Room` for the given id.
+
+        Args:
+            room_id (str): id of the room
+            room (Room): the room to set
+
+        Returns:
+            None
+        """
         self._rooms[room_id] = room
         self.rooms = list(self._rooms.values())
 
     def get_active_mode_zone(self, zone: Zone) -> ActiveMode:
-        """Gets current *active mode* for a *room*. This is the only way to get
-        it through the vr900connector.
+        """Get the current
+        :class:`~vr900connector.model.mode.ActiveMode` for a
+        :class:`~vr900connector.model.component.Zone`. This is the only way to
+        get the real one.
+
+        Args:
+            zone (Zone): The zone you want the active mode for.
+
+        Returns:
+            ActiveMode: The active mode.
         """
         mode: ActiveMode = zone.active_mode
 
@@ -83,8 +121,16 @@ class System:
         return mode
 
     def get_active_mode_room(self, room: Room) -> ActiveMode:
-        """Gets current *active mode* for a *room*. This is the only way to get
-        it through the vr900connector.
+        """Get the current
+        :class:`~vr900connector.model.mode.ActiveMode` for a
+        :class:`~vr900connector.model.component.Room`. This is the only way to
+        get the real one.
+
+        Args:
+            room (Room): The room you want the active mode for.
+
+        Returns:
+            ActiveMode: The active mode.
         """
         # Holiday mode takes precedence over everything
         if self.holiday_mode.active_mode:
@@ -92,6 +138,7 @@ class System:
 
         # Global system quick mode takes over room settings
         if self.quick_mode and self.quick_mode.for_room:
+            # TODO party quick mode
             if self.quick_mode == QuickModes.SYSTEM_OFF:
                 return ActiveMode(Room.MIN_TARGET_TEMP, self.quick_mode)
 
@@ -100,8 +147,18 @@ class System:
     def get_active_mode_circulation(self,
                                     circulation: Optional[Circulation] = None)\
             -> Optional[ActiveMode]:
-        """Gets current *active mode* for *circulation*. This is the only way
-        to get it through the vr900connector.
+        """Get the current
+        :class:`~vr900connector.model.mode.ActiveMode` for a
+        :class:`~vr900connector.model.component.Circulation`. This is the only
+        way to get the real one.
+
+        Args:
+            circulation (Circulation): The circulation you want the active mode
+            for. If ``None`` is passed, it will pick up the circulation from the
+            system.
+
+        Returns:
+            ActiveMode: The active mode.
         """
         if not circulation:
             circulation = self.circulation
@@ -120,8 +177,18 @@ class System:
 
     def get_active_mode_hot_water(self, hot_water: Optional[HotWater] = None)\
             -> Optional[ActiveMode]:
-        """Gets current *active mode* for *hot water*. This is the only way to
-        get it through the vr900connector.
+        """Get the current
+        :class:`~vr900connector.model.mode.ActiveMode` for a
+        :class:`~vr900connector.model.component.HotWater`. This is the only way
+        to get the real one.
+
+        Args:
+            hot_water (HotWater): The hot water you want the active mode
+            for. If ``None`` is passed, it will pick up the hot water from the
+            system.
+
+        Returns:
+            ActiveMode: The active mode.
         """
         if not hot_water:
             hot_water = self.hot_water

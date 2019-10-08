@@ -1,5 +1,6 @@
 """Groups all time program related functionality. Time program is used when
-*AUTO* operation mode is activated."""
+:class:`~vr900connector.model.mode.OperatingModes.AUTO` operation mode is
+activated."""
 import copy
 from datetime import timedelta, datetime
 from typing import List, Dict, Optional, Any
@@ -21,12 +22,29 @@ def _to_absolute_minutes(start_time: str) -> int:
 # pylint: disable=too-few-public-methods
 @attr.s
 class TimePeriodSetting:
-    """This class represents a time program setting within a day."""
+    """This is a period setting, defining what the
+    :class:`~vr900connector.model.component.Component` should do when on
+    :class:`~vr900connector.model.mode.OperatingModes.AUTO`.
+
+    There is not end of the period, the end of the period is equal to the start
+    time of the next period.
+
+    Args:
+        start_time (str): Start time of the period, format is HH:mm.
+        target_temperature (float): Target temperature to reach during this time
+            period, target temperature is only available for
+            :class:`~vr900connector.model.component.Room`.
+        setting (SettingMode): The setting configured, see
+            :class:`~vr900connector.model.mode.SettingModes`, this is not
+            available for a :class:`~vr900connector.model.component.Room`.
+    """
 
     start_time = attr.ib(type=str)
     target_temperature = attr.ib(type=Optional[float])
     setting = attr.ib(type=Optional[SettingMode])
     absolute_minutes = attr.ib(type=int, init=False)
+    """Represents :attr:`start_time` in absolute minute. hours * 60 + minutes.
+    This is more convenient to compare TimePeriodSetting using this."""
 
     def __attrs_post_init__(self) -> None:
         self.absolute_minutes = _to_absolute_minutes(self.start_time)
@@ -46,8 +64,11 @@ class TimePeriodSetting:
 # pylint: disable=too-few-public-methods
 @attr.s
 class TimeProgramDay:
-    """This class represents a time program day, it's basically a list of
-    TimeProgramDaySetting."""
+    """This is a day, this is basically a list of :class:`TimePeriodSetting`.
+
+    Args:
+        settings (List[TimePeriodSetting]): List of periods for this day.
+    """
 
     settings = attr.ib(type=List[TimePeriodSetting])
 
@@ -55,13 +76,25 @@ class TimeProgramDay:
 # pylint: disable=too-few-public-methods
 @attr.s
 class TimeProgram:
-    """This class represents a time program (a week), reflecting the
-    configuration done through mobile app."""
+    """This is the full time program, a week, reflecting the configuration done
+    hrough mobile app.
+
+    Args:
+        days (Dict[str, TimeProgramDay]): Days of the week.
+    """
 
     days = attr.ib(type=Dict[str, TimeProgramDay])
 
     def get_for(self, search_date: datetime) -> TimePeriodSetting:
-        """Return the corresponding time program day setting for a given date.
+        """Get the corresponding :class:`TimePeriodSetting`
+        for the given time.
+
+        Args:
+            search_date (datetime): Only the day, the hour and minute are used
+                in order to get the right :class:`TimePeriodSetting`.
+
+        Returns:
+            TimePeriodSetting: The corresponding setting.
         """
         day = search_date.strftime("%A").lower()
         day_before = (search_date - timedelta(days=1)).strftime("%A").lower()

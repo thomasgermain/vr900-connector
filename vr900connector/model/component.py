@@ -50,9 +50,9 @@ class Component:
 
     @property
     def active_mode(self) -> ActiveMode:
-        """Get the :class:`~vr900connector.model.mode.ActiveMode` for this
-        component. All operating modes and quick veto is handled, **but not
-        quick mode.**
+        """ActiveMode: Get the :class:`~vr900connector.model.mode.ActiveMode`
+        for this component. All operating modes and quick veto are handled,
+        **but not quick mode.**
 
         Note:
         :class:`Component.active_mode` should not be used directly through the

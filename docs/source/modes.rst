@@ -5,6 +5,7 @@ Modes
 Mode
 ****
 .. autoclass:: Mode
+   :members:
 
 QuickVeto
 *********
