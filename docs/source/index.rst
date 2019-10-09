@@ -12,3 +12,4 @@ Index
    Modes <modes.rst>
    Components <components.rst>
    Model <model.rst>
+   SystemManager <systemmanager.rst>

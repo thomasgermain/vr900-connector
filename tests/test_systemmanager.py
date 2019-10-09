@@ -139,7 +139,7 @@ class SystemManagerTest(unittest.TestCase):
 
     def test_set_hot_water_operation_mode_wrong_mode(self) -> None:
         self.manager.\
-            set_hot_water_operation_mode('hotwater', OperatingModes.NIGHT)
+            set_hot_water_operating_mode('hotwater', OperatingModes.NIGHT)
 
     @responses.activate
     def test_set_hot_water_operation_mode_heating_mode(self) -> None:
@@ -149,7 +149,7 @@ class SystemManagerTest(unittest.TestCase):
             .format(serial_number=serial_number)
 
         responses.add(responses.PUT, url, status=200)
-        self.manager.set_hot_water_operation_mode('hotwater',
+        self.manager.set_hot_water_operating_mode('hotwater',
                                                   OperatingModes.ON)
         self.assertEqual(url, responses.calls[-1].request.url)
 
@@ -171,14 +171,14 @@ class SystemManagerTest(unittest.TestCase):
         url = urls.room_operation_mode('1').format(serial_number=serial_number)
 
         responses.add(responses.PUT, url, status=200)
-        self.manager.set_room_operation_mode('1', OperatingModes.AUTO)
+        self.manager.set_room_operating_mode('1', OperatingModes.AUTO)
         self.assertEqual(url, responses.calls[-1].request.url)
 
     def test_set_room_operation_mode_no_new_mode(self) -> None:
-        self.manager.set_room_operation_mode('1', None)
+        self.manager.set_room_operating_mode('1', None)
 
     def test_set_room_operation_mode_wrong_mode(self) -> None:
-        self.manager.set_room_operation_mode('1', OperatingModes.NIGHT)
+        self.manager.set_room_operating_mode('1', OperatingModes.NIGHT)
 
     @responses.activate
     def test_set_zone_operation_mode_heating_mode(self) -> None:
