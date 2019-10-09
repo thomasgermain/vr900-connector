@@ -248,7 +248,7 @@ class QuickModes:
     :class:`~vr900connector.model.component.Room` are not affected.
     """
 
-    # TODO check what's happening with party mode for a room, according to doc,
+    # check what's happening with party mode for a room, according to doc,
     # this has impact on room, it should use DAY temperature from the
     # controlled zone
     PARTY = QuickMode('QM_PARTY', True, True, False)

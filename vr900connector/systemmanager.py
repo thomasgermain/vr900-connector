@@ -83,12 +83,12 @@ class SystemManager:
                       hot_water, circulation, outdoor_temp, quick_mode, errors)
 
     def get_hot_water(self, dhw_id: str) -> Optional[HotWater]:
-        """Get the :class:`~vr900connector.model.component.HotWater` information
-        for the given id.
+        """Get the :class:`~vr900connector.model.component.HotWater`
+        information for the given id.
 
         Args:
-            dhw_id (str): domestic hot water id (same as :func:`get_circulation`
-                )
+            dhw_id (str): domestic hot water id (same as
+            :func:`get_circulation`)
 
         Returns:
             HotWater: the hot water information, if any.
@@ -99,12 +99,12 @@ class SystemManager:
         return mapper.map_hot_water_alone(full_system, dhw_id, live_report)
 
     def get_room(self, room_id: str) -> Optional[Room]:
-        """Get the :class:`~vr900connector.model.component.Room` information for
-        the given id.
+        """Get the :class:`~vr900connector.model.component.Room` information
+        for the given id.
 
         Args:
-            room_id (str): Id of the room, this is actually an index, 1,2,3,4...
-                depending of the number of rooms you have.
+            room_id (str): Id of the room, this is actually an index, 1,2,3,4
+            ... depending of the number of rooms you have.
 
         Returns:
             Room: the room information, if any.
@@ -412,8 +412,8 @@ class SystemManager:
 
             * active to `False`
 
-            This will ensure the :class:`~vr900connector.model.mode.HolidayMode`
-            is not active.
+            This will ensure the
+            :class:`~vr900connector.model.mode.HolidayMode` is not active.
 
         """
 

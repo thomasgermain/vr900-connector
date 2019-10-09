@@ -27,5 +27,6 @@ class HotWaterTest(unittest.TestCase):
         active_mode = hot_water.active_mode
 
         self.assertEqual(OperatingModes.OFF, active_mode.current_mode)
-        self.assertEqual(HotWater.MIN_TARGET_TEMP, active_mode.target_temperature)
+        self.assertEqual(HotWater.MIN_TARGET_TEMP,
+                         active_mode.target_temperature)
         self.assertIsNone(active_mode.sub_mode)

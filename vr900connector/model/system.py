@@ -8,6 +8,7 @@ from . import ActiveMode, HolidayMode, HotWater, Room, Zone, BoilerStatus, \
     Circulation, QuickMode, QuickModes, Error, SystemStatus
 
 
+# pylint: disable=too-many-instance-attributes
 @attr.s
 class System:
     """This class represents the main class to manipulate vaillant system. It
@@ -138,7 +139,7 @@ class System:
 
         # Global system quick mode takes over room settings
         if self.quick_mode and self.quick_mode.for_room:
-            # TODO party quick mode
+            # party quick mode
             if self.quick_mode == QuickModes.SYSTEM_OFF:
                 return ActiveMode(Room.MIN_TARGET_TEMP, self.quick_mode)
 
@@ -154,8 +155,8 @@ class System:
 
         Args:
             circulation (Circulation): The circulation you want the active mode
-            for. If ``None`` is passed, it will pick up the circulation from the
-            system.
+            for. If ``None`` is passed, it will pick up the circulation from
+            the system.
 
         Returns:
             ActiveMode: The active mode.

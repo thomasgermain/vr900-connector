@@ -27,8 +27,8 @@ class Error:
 # pylint: disable=too-few-public-methods
 @attr.s
 class BoilerStatus(Error):
-    """Status of the boiler. This is sent with an error format, but in this case
-    , it's more like a status.
+    """Status of the boiler. This is sent with an error format, but in this
+    case, it's more like a status.
 
     Args:
         hint (str): Directly coming from the API, most of the time the value is

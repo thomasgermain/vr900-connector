@@ -31,8 +31,8 @@ class TimePeriodSetting:
 
     Args:
         start_time (str): Start time of the period, format is HH:mm.
-        target_temperature (float): Target temperature to reach during this time
-            period, target temperature is only available for
+        target_temperature (float): Target temperature to reach during this
+        time period, target temperature is only available for
             :class:`~vr900connector.model.component.Room`.
         setting (SettingMode): The setting configured, see
             :class:`~vr900connector.model.mode.SettingModes`, this is not
@@ -77,7 +77,7 @@ class TimeProgramDay:
 @attr.s
 class TimeProgram:
     """This is the full time program, a week, reflecting the configuration done
-    hrough mobile app.
+    through mobile app.
 
     Args:
         days (Dict[str, TimeProgramDay]): Days of the week.

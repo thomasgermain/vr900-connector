@@ -40,6 +40,7 @@ class Component:
             `None` for :class:`Circulation` and :class:`HotWater`.
     """
 
+    # pylint: disable=invalid-name
     id = attr.ib(type=str)
     name = attr.ib(type=Optional[str])
     time_program = attr.ib(type=TimeProgram)

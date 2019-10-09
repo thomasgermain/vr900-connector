@@ -110,7 +110,8 @@ class SystemTest(unittest.TestCase):
 
         self.assertEqual(OperatingModes.AUTO, active_mode.current_mode)
         self.assertEqual(SettingModes.OFF, active_mode.sub_mode)
-        self.assertEqual(HotWater.MIN_TARGET_TEMP, active_mode.target_temperature)
+        self.assertEqual(HotWater.MIN_TARGET_TEMP,
+                         active_mode.target_temperature)
 
     def test_get_active_mode_hot_water_system_off(self) -> None:
         """Test active mode hot water system off."""
@@ -124,7 +125,8 @@ class SystemTest(unittest.TestCase):
         active_mode = system.get_active_mode_hot_water()
 
         self.assertEqual(QuickModes.SYSTEM_OFF, active_mode.current_mode)
-        self.assertEqual(HotWater.MIN_TARGET_TEMP, active_mode.target_temperature)
+        self.assertEqual(HotWater.MIN_TARGET_TEMP,
+                         active_mode.target_temperature)
 
     def test_get_active_mode_hot_water_one_day_away(self) -> None:
         """Test get active mode for hot water with one day away."""
@@ -138,7 +140,8 @@ class SystemTest(unittest.TestCase):
         active_mode = system.get_active_mode_hot_water()
 
         self.assertEqual(QuickModes.ONE_DAY_AWAY, active_mode.current_mode)
-        self.assertEqual(HotWater.MIN_TARGET_TEMP, active_mode.target_temperature)
+        self.assertEqual(HotWater.MIN_TARGET_TEMP,
+                         active_mode.target_temperature)
 
     def test_get_active_mode_hot_water_hot_water_boost(self) -> None:
         """Test get active mode for hot water with hot water boost."""
@@ -169,7 +172,8 @@ class SystemTest(unittest.TestCase):
         active_mode = system.get_active_mode_hot_water()
 
         self.assertEqual(QuickModes.HOLIDAY, active_mode.current_mode)
-        self.assertEqual(HotWater.MIN_TARGET_TEMP, active_mode.target_temperature)
+        self.assertEqual(HotWater.MIN_TARGET_TEMP,
+                         active_mode.target_temperature)
 
     def test_get_active_mode_zone(self) -> None:
         """Test get active mode for zone."""
@@ -269,7 +273,7 @@ class SystemTest(unittest.TestCase):
         """Test get active mode for zone one day home."""
 
         timeprogram_day_setting_sunday = \
-            TimePeriodSetting('00:00', 25, OperatingModes.DAY)
+            TimePeriodSetting('00:00', 25, SettingModes.DAY)
 
         timeprogram = testutil.default_time_program(SettingModes.DAY, 20)
         timeprogram.days['sunday'] = \

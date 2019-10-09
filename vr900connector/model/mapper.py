@@ -161,7 +161,7 @@ def map_boiler_status(hvac_state, live_report) -> Optional[BoilerStatus]:
     if hvac_state:
         hvac_state_info = _find_hvac_message_status(hvac_state)
         if hvac_state_info:
-            last_update = _datetime(hvac_state_info.get("timestamp"))
+            last_update = _datetime_mandatory(hvac_state_info.get("timestamp"))
             device_name = str(hvac_state_info.get("deviceName"))
             code = str(hvac_state_info.get("statusCode"))
             title = str(hvac_state_info.get("title"))

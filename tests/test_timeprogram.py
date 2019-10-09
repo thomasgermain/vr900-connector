@@ -2,14 +2,14 @@ import unittest
 from datetime import datetime
 
 from vr900connector.model import TimePeriodSetting, TimeProgramDay, \
-    TimeProgram, OperatingModes
+    TimeProgram, SettingModes
 
 
 class TimeProgramTest(unittest.TestCase):
 
     def test_time_program_simple(self) -> None:
-        tpds1 = TimePeriodSetting('00:00', 25, OperatingModes.ON)
-        tpds2 = TimePeriodSetting('02:00', 20, OperatingModes.OFF)
+        tpds1 = TimePeriodSetting('00:00', 25, SettingModes.ON)
+        tpds2 = TimePeriodSetting('02:00', 20, SettingModes.OFF)
 
         monday = TimeProgramDay([tpds1, tpds2])
 
@@ -24,8 +24,8 @@ class TimeProgramTest(unittest.TestCase):
         self._assert(tpds1, current)
 
     def test_time_program_after_last(self) -> None:
-        tpds1 = TimePeriodSetting('00:00', 25, OperatingModes.ON)
-        tpds2 = TimePeriodSetting('02:00', 20, OperatingModes.OFF)
+        tpds1 = TimePeriodSetting('00:00', 25, SettingModes.ON)
+        tpds2 = TimePeriodSetting('02:00', 20, SettingModes.OFF)
 
         monday = TimeProgramDay([tpds1, tpds2])
 
@@ -40,10 +40,10 @@ class TimeProgramTest(unittest.TestCase):
         self._assert(tpds2, current)
 
     def test_time_program_before_first(self) -> None:
-        tpds1 = TimePeriodSetting('01:00', 25, OperatingModes.ON)
-        tpds2 = TimePeriodSetting('02:00', 20, OperatingModes.OFF)
+        tpds1 = TimePeriodSetting('01:00', 25, SettingModes.ON)
+        tpds2 = TimePeriodSetting('02:00', 20, SettingModes.OFF)
 
-        tpds_sunday = TimePeriodSetting('15:00', 15, OperatingModes.OFF)
+        tpds_sunday = TimePeriodSetting('15:00', 15, SettingModes.OFF)
 
         sunday = TimeProgramDay([tpds_sunday])
         monday = TimeProgramDay([tpds1, tpds2])
