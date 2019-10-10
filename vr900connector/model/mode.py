@@ -248,10 +248,7 @@ class QuickModes:
     :class:`~vr900connector.model.component.Room` are not affected.
     """
 
-    # check what's happening with party mode for a room, according to doc,
-    # this has impact on room, it should use DAY temperature from the
-    # controlled zone
-    PARTY = QuickMode('QM_PARTY', True, True, False)
+    PARTY = QuickMode('QM_PARTY', True, False, False)
     """The advanced function brings the room temperature to the set desired
     Day temperature, in accordance with the set time periods.
     The advanced function is deactivated after six hours or if you cancel it

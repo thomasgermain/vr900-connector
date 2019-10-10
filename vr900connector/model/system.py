@@ -139,7 +139,6 @@ class System:
 
         # Global system quick mode takes over room settings
         if self.quick_mode and self.quick_mode.for_room:
-            # party quick mode
             if self.quick_mode == QuickModes.SYSTEM_OFF:
                 return ActiveMode(Room.MIN_TARGET_TEMP, self.quick_mode)
 
