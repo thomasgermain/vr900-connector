@@ -29,9 +29,8 @@ setup(name='vr900-connector',
       },
       classifiers=[
           'License :: OSI Approved :: MIT License',
-          'Development Status :: 4 - Beta',
+          'Development Status :: 7 - Inactive',
           'Programming Language :: Python',
-          'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7',
           'Topic :: Home Automation'
